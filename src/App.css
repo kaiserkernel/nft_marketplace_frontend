@@ -1,0 +1,33 @@
+.background-image {
+  background-image: url("../public/assets/bg.svg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: black;
+}
+
+/* Mobile background for small and medium screens */
+@media (max-width: 640px) {
+  .background-image {
+    background-image: url("../public/assets/mobileBg.svg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: black;
+  }
+}
+
+.bg-gradient {
+  background: linear-gradient(to right, #ce89ca, #5885bf, #7258df, #75eea3);
+}
+
+.bg-gradient-hover {
+  background: linear-gradient(to left, #a05a9d, #3f6594, #5234b0, #4bb878);
+}
+
+.gradient-text {
+  background: linear-gradient(to right, #ce89ca, #5885bf, #7258df, #75eea3);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent !important;
+}
