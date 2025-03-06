@@ -3,8 +3,13 @@ import { motion } from "framer-motion";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import Button from "../Button";
 
-const NFTBanner = ({ height }: { height: number }) => {
-  const [image, setImage] = useState<string | null>(null);
+interface NFTBannerProps {
+  height: number;
+  image: string | null;
+  setImage: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
+const NFTBanner: React.FC<NFTBannerProps> = ({ height, image, setImage }) => {
   const [mediaType, setMediaType] = useState<"image" | "video" | null>(null);
   const [isHovered, setIsHovered] = useState<boolean>(false);
 

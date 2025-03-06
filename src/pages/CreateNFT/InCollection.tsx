@@ -9,6 +9,7 @@ import Modal from "../../components/common/Modal";
 import CreateCollection from "./Collection";
 
 const CreateInCollection = () => {
+  const [image, setImage] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string>("");
   const [attributes, setAttributes] = useState<{ trait: string; value: string }[]>([]);
   const [royaltyNFT, setRoyaltyNFT] = useState<string>("");
@@ -44,7 +45,7 @@ const CreateInCollection = () => {
   return (
     <div className="w-full flex gap-10">
       <div className="basis-1/2">
-        <NFTBanner height={800} />
+        <NFTBanner height={800} image={image} setImage={setImage}/>
       </div>
       <div className="basis-1/2 flex flex-col justify-between">
         <h2 className="text-white text-2xl font-semibold">Create an NFT in a Collection</h2>
