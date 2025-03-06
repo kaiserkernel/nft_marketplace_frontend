@@ -8,6 +8,7 @@ interface ButtonProps {
   iconPosition?: "left" | "right";
   width?: "full" | number;
   onClick?: () => void;
+  disabled?: boolean
 }
 
 const Button: FC<ButtonProps> = ({
@@ -17,6 +18,7 @@ const Button: FC<ButtonProps> = ({
   iconPosition,
   width,
   onClick,
+  disabled
 }) => {
   const [isFocused, setIsFocused] = useState<boolean>(false);
 
@@ -83,6 +85,7 @@ const Button: FC<ButtonProps> = ({
         `}
       style={widthStyle}
       onClick={onClick}
+      disabled={disabled}
     >
       {iconPosition === "left" && icon}
       {label}

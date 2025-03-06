@@ -7,17 +7,13 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children?: ReactNode;
-  btnText: string;
-  handleClick: () => void;
 }
 
 const Modal: FC<ModalProps> = ({
   title,
   children,
-  btnText,
   isOpen,
   onClose,
-  handleClick,
 }) => {
   return (
     <AnimatePresence>
@@ -53,15 +49,6 @@ const Modal: FC<ModalProps> = ({
               {children}
             </div>
 
-            {/* Footer */}
-            <div className="absolute bottom-1 w-full p-4">
-              <Button
-                label={btnText}
-                type="blue"
-                width="full"
-                onClick={handleClick}
-              />
-            </div>
           </motion.div>
         </div>
       )}

@@ -81,11 +81,9 @@ const Profile = () => {
       <Modal
         title="Edit Profile"
         isOpen={isOpen}
-        btnText="Save"
         onClose={() => {
           setIsOpen(false);
         }}
-        handleClick={handleModalClick}
       >
         <Banner />
         <div className="w-full">
@@ -183,6 +181,16 @@ const Profile = () => {
               />
             </div>
           </div>
+        </div>
+        
+        {/* Footer */}
+        <div className="absolute bottom-1 w-full p-4">
+          <Button
+            label={"Save"}
+            type="blue"
+            width="full"
+            onClick={handleModalClick}
+          />
         </div>
       </Modal>
     </>

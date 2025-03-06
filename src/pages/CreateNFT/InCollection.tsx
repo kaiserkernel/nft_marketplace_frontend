@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { ToastContainer } from "react-toastify";
+
 import NFTBanner from "../../components/common/NFTBanner";
 import InputField from "../../components/common/InputField";
 import TextArea from "../../components/common/TextArea";
@@ -44,6 +46,7 @@ const CreateInCollection = () => {
 
   return (
     <div className="w-full flex gap-10">
+      <ToastContainer/>
       <div className="basis-1/2">
         <NFTBanner height={800} image={image} setImage={setImage}/>
       </div>
@@ -138,10 +141,8 @@ const CreateInCollection = () => {
       {/* Modal for Collection Creation */}
       <Modal
         title="Create a Collection"
-        btnText="Create Collection"
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        handleClick={handleCreateCollection}
       >
         <CreateCollection btnClicked = {createCollectionClicked} />
       </Modal>

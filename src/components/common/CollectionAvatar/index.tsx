@@ -2,22 +2,26 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { FaCloudUploadAlt } from "react-icons/fa";
 
-const CollectionAvatar = () => {
-  const [image, setImage] = useState<string | null>(null);
+interface CollectionAvatarProps {
+  avatarImage: string | null,
+  setAvatarImage: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
+const CollectionAvatar: React.FC<CollectionAvatarProps> = ({ avatarImage, setAvatarImage }) => {
   const [isHovered, setIsHovered] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     return () => {
-      if (image) URL.revokeObjectURL(image);
+      if (avatarImage) URL.revokeObjectURL(avatarImage);
     };
-  }, [image]);
+  }, [avatarImage]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && file.type.startsWith("image")) {
       const fileUrl = URL.createObjectURL(file);
-      setImage((prevImage) => {
+      setAvatarImage((prevImage) => {
         if (prevImage) URL.revokeObjectURL(prevImage);
         return fileUrl;
       });
@@ -35,9 +39,9 @@ const CollectionAvatar = () => {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {image ? (
+        {avatarImage ? (
           <img
-            src={image}
+            src={avatarImage}
             alt="Uploaded"
             className="w-[99px] h-[99px] object-cover rounded-full"
           />
@@ -58,7 +62,7 @@ const CollectionAvatar = () => {
         )}
 
         {/* Animated Transparent Overlay */}
-        {image && (
+        {avatarImage && (
           <>
             <input
               type="file"
