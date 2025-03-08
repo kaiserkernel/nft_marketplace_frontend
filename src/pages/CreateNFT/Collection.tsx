@@ -12,6 +12,8 @@ import useWallet from "../../hooks/useWallet";
 import { useContract } from "../../context/ContractContext";
 import { pinata } from "../../utils/config";
 
+import { createCollection } from "../../services/colllectionService";
+
 interface CreateCollectionProps {
   isOpen: boolean,
   onClose: () => void
@@ -100,30 +102,16 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
       const collectionAddress = receipt.events[0].args.collectionAddress;
 
       // Save collection data to backend (MongoDB)
-      await fetch("/api/collections", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: collectionData.name,
-          symbol: collectionData.tokenSymbol,
-          description,
-          image: imageURL,
-          metadataURI,
-          owner: walletAddress,
-          contractAddress: collectionAddress,
-        }),
-      });
-
-      // const tx = await contract.createCollection(
-      //   collectionData.name,
-      //   collectionData.tokenSymbol,
-      //   description,
-      //   LogoImage
-      // );
-
-      // const res = await tx.wait();
-      // console.log(res, 'create res')
-      // alert("Collection created successfully!");
+      const _collectionData = {
+        name: collectionData.name,
+        symbol: collectionData.tokenSymbol,
+        description,
+        image: imageURL,
+        metadataURI,
+        owner: walletAddress,
+        contractAddress: collectionAddress
+      }
+      const collection = await createCollection(_collectionData);
       notify("Collection created successfully", "success");
     } catch (error) {
       console.error("Error creating collection:", error);
