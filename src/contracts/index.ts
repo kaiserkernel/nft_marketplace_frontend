@@ -29,26 +29,8 @@ export const ContractABI = [
       {
         "indexed": false,
         "internalType": "string",
-        "name": "description",
+        "name": "metadataURI",
         "type": "string"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "image",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "avatar",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "royalty",
-        "type": "uint256"
       }
     ],
     "name": "CollectionCreated",
@@ -86,23 +68,8 @@ export const ContractABI = [
       },
       {
         "internalType": "string",
-        "name": "description",
+        "name": "metadataURI",
         "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "image",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "avatar",
-        "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "royalty",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -122,23 +89,8 @@ export const ContractABI = [
       },
       {
         "internalType": "string",
-        "name": "description",
+        "name": "metadataURI",
         "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "image",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "avatar",
-        "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "royalty",
-        "type": "uint256"
       }
     ],
     "name": "createCollection",
@@ -174,23 +126,8 @@ export const ContractABI = [
           },
           {
             "internalType": "string",
-            "name": "description",
+            "name": "metadataURI",
             "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "image",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "avatar",
-            "type": "string"
-          },
-          {
-            "internalType": "uint256",
-            "name": "royalty",
-            "type": "uint256"
           }
         ],
         "internalType": "struct NFTFactory.CollectionInfo[]",
