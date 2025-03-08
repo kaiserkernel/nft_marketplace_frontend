@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import { ContractABI } from "../contracts/index"; // Make sure the path is correct
 
 const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS || "";
-const RPC_URL = "http://127.0.0.1:8545"; // Local Hardhat Network
+const RPC_URL = process.env.REACT_APP_RPC_URL; // Testnet Network
 
 // Define types for context
 interface ContractContextType {
