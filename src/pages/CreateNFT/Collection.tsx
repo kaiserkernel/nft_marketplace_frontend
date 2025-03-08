@@ -67,9 +67,18 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
   }
 
   const handleCreateCollection = async () => {
-    if (!contract) return
-    if (!validatorForm()) return;
-    if (!logoImageFile) return;
+    if (!contract) {
+      console.log(1)
+      return;
+    }
+    if (!validatorForm()) {
+      console.log(2)
+      return;
+    }
+    if (!logoImageFile) {
+      console.log(3)
+      return;
+    }
       
     setIsProcessing(true);
 

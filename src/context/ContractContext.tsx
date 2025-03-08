@@ -23,9 +23,10 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const initContract = async () => {
       try {
         const provider = new ethers.JsonRpcProvider(RPC_URL);
-        const signer = await provider.getSigner();
+        const signer = new ethers.Wallet(process.env.REACT_APP_PRIVATE_KEY as string, provider);
 
         const contract = new ethers.Contract(CONTRACT_ADDRESS, ContractABI, signer);
+        console.log(contract, 'contract')
         setContract(contract);
       } catch (error) {
         console.error("Error initializing contract:", error);

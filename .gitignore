@@ -17,3 +17,6 @@ docker-compose.override.yml
 
 # VS Code
 .vscode/
+
+# sensitive environment variable
+.env
