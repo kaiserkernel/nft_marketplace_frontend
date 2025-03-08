@@ -3,7 +3,8 @@ import { ethers } from "ethers";
 import { ContractABI } from "../contracts/index"; // Make sure the path is correct
 
 const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS || "";
-const RPC_URL = process.env.REACT_APP_RPC_URL; // Testnet Network
+const RPC_URL = process.env.REACT_APP_RPC_URL;
+const PROVIDER_PRIVATE_KEY = process.env.REACT_APP_PRIVATE_KEY; // Testnet Network
 
 // Define types for context
 interface ContractContextType {
@@ -22,8 +23,10 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     const initContract = async () => {
       try {
+        console.log(RPC_URL, 'rpc')
+        console.log(PROVIDER_PRIVATE_KEY, 'private key')
         const provider = new ethers.JsonRpcProvider(RPC_URL);
-        const signer = new ethers.Wallet(process.env.REACT_APP_PRIVATE_KEY as string, provider);
+        const signer = new ethers.Wallet(PROVIDER_PRIVATE_KEY as string, provider);
 
         const contract = new ethers.Contract(CONTRACT_ADDRESS, ContractABI, signer);
         console.log(contract, 'contract')

@@ -99,7 +99,7 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
       // Upload metadata JSON to IPFS
       const metadataUpload = await pinata.upload.public.json(metadata);
       const metadataURI = await pinata.gateways.public.convert(metadataUpload.cid);
-
+      console.log(metadataURI, 'metadata uri');
       // Call smart contract to create collection
       const tx = await contract.createCollection(
         collectionData.name,
@@ -108,6 +108,7 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
       );
 
       const receipt = await tx.wait();
+      console.log(receipt, 'receipt')
       const collectionAddress = receipt.events[0].args.collectionAddress;
 
       // Save collection data to backend (MongoDB)
@@ -138,7 +139,7 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
           type="blue"
           width="full"
           onClick={handleCreateCollection}
-          disabled={isProcessing}
+          // disabled={isProcessing}
         />
       </div>
     )
