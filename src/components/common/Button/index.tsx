@@ -1,5 +1,6 @@
 import React, { FC, ReactNode, useState } from "react";
 import { motion } from "framer-motion";
+import ReactLoading from "react-loading";
 
 interface ButtonProps {
   type: "colorful" | "primary" | "outline" | "blue" | "text";
@@ -87,9 +88,15 @@ const Button: FC<ButtonProps> = ({
       onClick={onClick}
       disabled={disabled}
     >
-      {iconPosition === "left" && icon}
-      {label}
-      {iconPosition === "right" && icon}
+      {
+        disabled ? <ReactLoading /> : (
+          <>
+            {iconPosition === "left" && icon}
+            {label}
+            {iconPosition === "right" && icon}
+          </>
+        )
+      }
     </button>
   );
 };

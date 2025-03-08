@@ -7,6 +7,7 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children?: ReactNode;
+  FooterBtn?: () => JSX.Element
 }
 
 const Modal: FC<ModalProps> = ({
@@ -14,6 +15,7 @@ const Modal: FC<ModalProps> = ({
   children,
   isOpen,
   onClose,
+  FooterBtn
 }) => {
   return (
     <AnimatePresence>
@@ -49,6 +51,8 @@ const Modal: FC<ModalProps> = ({
               {children}
             </div>
 
+            {/* Footer */}
+            {FooterBtn && <FooterBtn/>}
           </motion.div>
         </div>
       )}

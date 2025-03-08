@@ -38,6 +38,19 @@ const Profile = () => {
 
   const handleModalClick = () => {};
 
+  const footerBtn = () => {
+    return (
+      <div className="absolute bottom-1 p-4 w-full">
+        <Button
+          label={"Save"}
+          type="blue"
+          width="full"
+          onClick={handleModalClick}
+        />
+      </div>
+    )
+  }
+
   return (
     <>
       {/* Banner section */}
@@ -84,6 +97,7 @@ const Profile = () => {
         onClose={() => {
           setIsOpen(false);
         }}
+        FooterBtn={footerBtn}
       >
         <Banner />
         <div className="w-full">
@@ -183,15 +197,6 @@ const Profile = () => {
           </div>
         </div>
         
-        {/* Footer */}
-        <div className="absolute bottom-1 w-full p-4">
-          <Button
-            label={"Save"}
-            type="blue"
-            width="full"
-            onClick={handleModalClick}
-          />
-        </div>
       </Modal>
     </>
   );

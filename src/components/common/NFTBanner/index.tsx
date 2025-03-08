@@ -2,14 +2,16 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import Button from "../Button";
+import { FileObject } from "pinata";
 
 interface NFTBannerProps {
   height: number;
   image: string | null;
   setImage: React.Dispatch<React.SetStateAction<string | null>>;
+  setImageFile: React.Dispatch<React.SetStateAction<FileObject | null>>;
 }
 
-const NFTBanner: React.FC<NFTBannerProps> = ({ height, image, setImage }) => {
+const NFTBanner: React.FC<NFTBannerProps> = ({ height, image, setImage, setImageFile }) => {
   const [mediaType, setMediaType] = useState<"image" | "video" | null>(null);
   const [isHovered, setIsHovered] = useState<boolean>(false);
 
@@ -24,6 +26,9 @@ const NFTBanner: React.FC<NFTBannerProps> = ({ height, image, setImage }) => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // set file
+      setImageFile(file);
+
       const fileUrl = URL.createObjectURL(file);
       const fileType = file.type.startsWith("video") ? "video" : "image";
       setMediaType(fileType);

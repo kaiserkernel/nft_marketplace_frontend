@@ -1,27 +1,31 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { FaCloudUploadAlt } from "react-icons/fa";
+import { FileObject } from "pinata";
 
-interface CollectionAvatarProps {
-  avatarImage: string | null,
-  setAvatarImage: React.Dispatch<React.SetStateAction<string | null>>;
+interface CollectionLogoProps {
+  logoImage: string | null,
+  setLogoImage: React.Dispatch<React.SetStateAction<string | null>>;
+  setLogoImageFile: React.Dispatch<React.SetStateAction<FileObject | null>>;
 }
 
-const CollectionAvatar: React.FC<CollectionAvatarProps> = ({ avatarImage, setAvatarImage }) => {
+const CollectionAvatar: React.FC<CollectionLogoProps> = ({ logoImage, setLogoImage, setLogoImageFile }) => {
   const [isHovered, setIsHovered] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     return () => {
-      if (avatarImage) URL.revokeObjectURL(avatarImage);
+      if (logoImage) URL.revokeObjectURL(logoImage);
     };
-  }, [avatarImage]);
+  }, [logoImage]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && file.type.startsWith("image")) {
+      setLogoImageFile(file);
+
       const fileUrl = URL.createObjectURL(file);
-      setAvatarImage((prevImage) => {
+      setLogoImage((prevImage) => {
         if (prevImage) URL.revokeObjectURL(prevImage);
         return fileUrl;
       });
@@ -39,9 +43,9 @@ const CollectionAvatar: React.FC<CollectionAvatarProps> = ({ avatarImage, setAva
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {avatarImage ? (
+        {logoImage ? (
           <img
-            src={avatarImage}
+            src={logoImage}
             alt="Uploaded"
             className="w-[99px] h-[99px] object-cover rounded-full"
           />
@@ -62,7 +66,7 @@ const CollectionAvatar: React.FC<CollectionAvatarProps> = ({ avatarImage, setAva
         )}
 
         {/* Animated Transparent Overlay */}
-        {avatarImage && (
+        {logoImage && (
           <>
             <input
               type="file"

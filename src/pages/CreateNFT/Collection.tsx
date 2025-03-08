@@ -1,35 +1,35 @@
 import React, { useState, useEffect, useRef } from "react";
+import { FileObject } from "pinata";
 
-import NFTBanner from "../../components/common/NFTBanner";
-import CollectionAvatar from "../../components/common/CollectionAvatar";
+import CollectionLogo from "../../components/common/CollectionLogo"
 import InputField from "../../components/common/InputField";
 import TextArea from "../../components/common/TextArea";
 import Button from "../../components/common/Button";
 import { notify } from "../../components/common/Notify";
+import Modal from "../../components/common/Modal";
 
 import useWallet from "../../hooks/useWallet";
-
 import { useContract } from "../../context/ContractContext";
+import { pinata } from "../../utils/config";
 
 interface CreateCollectionProps {
-  btnClicked: boolean;
+  isOpen: boolean,
+  onClose: () => void
 }
 
 interface CollectionData {
-  displayName: string;
+  name: string;
   tokenSymbol: string;
-  royaltyCollection: number;
 }
 
-const CreateCollection: React.FC<CreateCollectionProps> = ({ btnClicked }) => {
-  const [image, setImage] = useState<string | null>(null);
-  const [avatarImage, setAvatarImage] = useState<string | null>(null);
-  const [displayDescription, setDisplayDescription] = useState<string>("");
+const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => {
+  const [LogoImage, setLogoImage] = useState<string | null>(null);
+  const [logoImageFile, setLogoImageFile] = useState<FileObject | null>(null);
+  const [description, setDescription] = useState<string>("");
   const isMounted = useRef(true); // Track first render
   const [collectionData, setCollectionData] = useState<CollectionData>({
-    displayName: "",
-    tokenSymbol: "",
-    royaltyCollection: 0
+    name: "",
+    tokenSymbol: ""
   })
 
   const { contract } = useContract();
@@ -38,23 +38,12 @@ const CreateCollection: React.FC<CreateCollectionProps> = ({ btnClicked }) => {
   const { isWalletConnected, walletAddress, walletBalance } = useWallet();
 
   const validatorForm = () => {
-    if (!collectionData.displayName || !collectionData.tokenSymbol || !collectionData.royaltyCollection || !displayDescription || !image || !avatarImage) {
+    if (!collectionData.name || !collectionData.tokenSymbol || !description || !LogoImage) {
       notify("Please complete all fields", "warning");
       return false;
     }
     return true;
   }
-
-  // useEffect(() => {
-  //   if (isMounted.current) {
-  //     isMounted.current = false; // Skip first execution
-  //     return;
-  //   }
-  // }, [btnClicked]);
-
-  const handleRoyaltySelection = (percent: number) => {
-    setCollectionData(prev => ({...prev, royaltyCollection: percent}));
-  };
 
   const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
     const {name, value}  = evt.target;
@@ -75,53 +64,115 @@ const CreateCollection: React.FC<CreateCollectionProps> = ({ btnClicked }) => {
     }));
   }
 
-  const handleCreateCollection = () => {
-    if (contract) {
-      const validateResult = validatorForm();
+  const handleCreateCollection = async () => {
+    if (!contract) return
+    if (!validatorForm()) return;
+    if (!logoImageFile) return;
+      
+    setIsProcessing(true);
 
-      if (!validateResult) return;
-
-      // Create Collection
-      const createCollection = async () => {
-        try {
-          setIsProcessing(true);
-          const tx = await contract.createCollection(
-            collectionData.displayName,
-            collectionData.tokenSymbol,
-            displayDescription,
-            image,
-            avatarImage,
-            500
-          );
-          await tx.wait();
-          // alert("Collection created successfully!");
-          notify("Collection created successfully", "success");
-        } catch (error) {
-          console.error("Error creating collection:", error);
-          notify("Error occured on creating collection", "error");
-        } finally {
-          setIsProcessing(false);
-        }
+    // Create Collection
+    try {
+      // upload images to IPFS
+      const uploadLogoImage = await pinata.upload.public.file(logoImageFile);
+      const imageURL = await pinata.gateways.public.convert(uploadLogoImage.cid);
+      console.log(imageURL, 'avatar image url');
+  
+      // Create metadata JSON
+      const metadata = {
+        name: collectionData.name,
+        description,
+        image: imageURL,
       };
-      createCollection();
-    }    
+
+      // Upload metadata JSON to IPFS
+      const metadataUpload = await pinata.upload.public.json(metadata);
+      const metadataURI = await pinata.gateways.public.convert(metadataUpload.cid);
+
+      // Call smart contract to create collection
+      const tx = await contract.createCollection(
+        collectionData.name,
+        collectionData.tokenSymbol,
+        metadataURI
+      );
+
+      const receipt = await tx.wait();
+      const collectionAddress = receipt.events[0].args.collectionAddress;
+
+      // Save collection data to backend (MongoDB)
+      await fetch("/api/collections", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: collectionData.name,
+          symbol: collectionData.tokenSymbol,
+          description,
+          image: imageURL,
+          metadataURI,
+          owner: walletAddress,
+          contractAddress: collectionAddress,
+        }),
+      });
+
+      // const tx = await contract.createCollection(
+      //   collectionData.name,
+      //   collectionData.tokenSymbol,
+      //   description,
+      //   LogoImage
+      // );
+
+      // const res = await tx.wait();
+      // console.log(res, 'create res')
+      // alert("Collection created successfully!");
+      notify("Collection created successfully", "success");
+    } catch (error) {
+      console.error("Error creating collection:", error);
+      notify("Error occured on creating collection", "error");
+    } finally {
+      setIsProcessing(false);
+    }
   }
 
+  const footerBtn = () => {
+    return (
+      <div className="absolute bottom-1 p-4 w-full">
+        <Button
+          label={"Create Collection"}
+          type="blue"
+          width="full"
+          onClick={handleCreateCollection}
+          disabled={isProcessing}
+        />
+      </div>
+    )
+  }
+
+  useEffect(() => {
+    // initialize all state
+    setLogoImage(null);
+    setDescription("");
+    setCollectionData({
+      name: "",
+      tokenSymbol: ""
+    })
+  } , [isOpen])
+
   return (
-    <div>
-      <NFTBanner 
-        height={300} 
-        image={image} 
-        setImage={setImage}
-      />
+    <Modal
+      title="Create a Collection"
+      isOpen={isOpen}
+      onClose={onClose}
+      FooterBtn={footerBtn}
+    >
       <div className="mt-8">
         <h3 className="text-white font-semibold text-md">
           Your Collection’s Avatar
         </h3>
         <div className="mt-2">
-          <CollectionAvatar 
-            avatarImage={avatarImage} 
-            setAvatarImage={setAvatarImage}
+          <CollectionLogo 
+            logoImage={LogoImage} 
+            setLogoImage={setLogoImage}
+            setLogoImageFile={setLogoImageFile}
           />
         </div>
       </div>
@@ -134,10 +185,10 @@ const CreateCollection: React.FC<CreateCollectionProps> = ({ btnClicked }) => {
         <InputField
           itemType="default"
           type="text"
-          name="displayName"
+          name="name"
           placeholder="Name your Collection"
           bordered
-          value={collectionData.displayName}
+          value={collectionData.name}
           onChange={handleChange}
         />
       </div>
@@ -147,8 +198,8 @@ const CreateCollection: React.FC<CreateCollectionProps> = ({ btnClicked }) => {
       <TextArea
         label="Description"
         placeholder="Exclusive NFTs that blend art and blockchain. Own a unique piece of digital art!"
-        value={displayDescription}
-        onChange={(value: string) => setDisplayDescription(value)}
+        value={description}
+        onChange={(value: string) => setDescription(value)}
       />
 
       {/* Token Symbol */}
@@ -166,47 +217,8 @@ const CreateCollection: React.FC<CreateCollectionProps> = ({ btnClicked }) => {
           onChange={handleChange}
         />
       </div>
-
-      {/* Royalties for the Creator */}
-      <div className="mt-4">
-        <h3 className="text-white font-semibold text-md mb-2">
-          Royalties for the Creator
-        </h3>
-        <InputField
-          itemType="default"
-          type="text"
-          name="royaltyCollection"
-          placeholder="0%"
-          bordered
-          value={collectionData.royaltyCollection}
-          onChange={handleChange}
-        />
-        <div className="flex flex-row items-center gap-2 mt-2">
-          {([["0%", 0], ["10%", 10], ["20%", 20], ["30%", 30]] as Array<[string, number]>).map((percent) => (
-            <Button
-              key={percent[0]}
-              type="primary"
-              label={percent[0]}
-              onClick={() => handleRoyaltySelection(percent[1])}
-            />
-          ))}
-        </div>
-        <p className="text-white/70 text-xs mt-2 px-1">
-          Collect royalties every time your NFT is sold. The amount is
-          deducted from the final sale price and sent to your address.
-        </p>
-      </div>
       
-      {/* Footer */}
-      <div className="absolute bottom-1 w-full p-4">
-        <Button
-          label={"Create Collection"}
-          type="blue"
-          width="full"
-          onClick={handleCreateCollection}
-        />
-      </div>
-    </div>
+    </Modal>
   );
 };
 

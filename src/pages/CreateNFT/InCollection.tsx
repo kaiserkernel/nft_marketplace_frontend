@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ToastContainer } from "react-toastify";
+import { FileObject } from "pinata";
 
 import NFTBanner from "../../components/common/NFTBanner";
 import InputField from "../../components/common/InputField";
@@ -7,16 +8,19 @@ import TextArea from "../../components/common/TextArea";
 import AttributeInput from "../../components/common/AttributeInput";
 import Button from "../../components/common/Button";
 import Alert from "../../components/common/Alert";
-import Modal from "../../components/common/Modal";
 import CreateCollection from "./Collection";
+
+import { useContract } from "../../context/ContractContext";
 
 const CreateInCollection = () => {
   const [image, setImage] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string>("");
   const [attributes, setAttributes] = useState<{ trait: string; value: string }[]>([]);
   const [royaltyNFT, setRoyaltyNFT] = useState<string>("");
-  const [createCollectionClicked, setCreateCollectionClicked] = useState<boolean>(false);
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [imageFile, setImageFile] = useState<FileObject | null>(null);
+
+  const { contract } = useContract();
 
   const handleAddAttribute = () => {
     setAttributes([...attributes, { trait: "", value: "" }]);
@@ -36,19 +40,19 @@ const CreateInCollection = () => {
     setRoyaltyNFT(percent);
   };
 
-  const handleCollectionModal = () => {
+  const handleOpenCollectionModal = async () => {
     setIsOpen(true);
-  };
-
-  const handleCreateCollection = () => {
-    setCreateCollectionClicked((prev) => !prev);
+    if (contract) {
+      const tx = await contract.getAllCollections();
+      console.log(tx, 'all collections')
+    }
   };
 
   return (
     <div className="w-full flex gap-10">
       <ToastContainer/>
       <div className="basis-1/2">
-        <NFTBanner height={800} image={image} setImage={setImage}/>
+        <NFTBanner height={800} image={image} setImage={setImage} setImageFile={setImageFile}/>
       </div>
       <div className="basis-1/2 flex flex-col justify-between">
         <h2 className="text-white text-2xl font-semibold">Create an NFT in a Collection</h2>
@@ -77,7 +81,7 @@ const CreateInCollection = () => {
         <div>
           <h3 className="text-white font-semibold text-md">Collection</h3>
           <div className="mt-4">
-            <Button type="outline" label="Collection" onClick={handleCollectionModal} />
+            <Button type="outline" label="Collection" onClick={handleOpenCollectionModal} />
           </div>
         </div>
 
@@ -139,13 +143,8 @@ const CreateInCollection = () => {
       </div>
 
       {/* Modal for Collection Creation */}
-      <Modal
-        title="Create a Collection"
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-      >
-        <CreateCollection btnClicked = {createCollectionClicked} />
-      </Modal>
+        <CreateCollection isOpen={isOpen} onClose={() => setIsOpen(false)}/>
+      {/* </Modal> */}
     </div>
   );
 };
