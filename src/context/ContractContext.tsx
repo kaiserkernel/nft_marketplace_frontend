@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { ethers } from "ethers";
+import { notify } from "../components/common/Notify";
+
 import { ContractABI } from "../contracts/index"; // Make sure the path is correct
 
 const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS || "";
-const RPC_URL = process.env.REACT_APP_RPC_URL;
-const PROVIDER_PRIVATE_KEY = process.env.REACT_APP_PRIVATE_KEY; // Testnet Network
 
 // Define types for context
 interface ContractContextType {
@@ -26,14 +26,8 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     const initContract = async () => {
       try {
-        // const provider = new ethers.JsonRpcProvider(RPC_URL);
-        // setProvider(provider);
-        // const signer = new ethers.Wallet(PROVIDER_PRIVATE_KEY as string, provider);
-
-        // const contract = new ethers.Contract(CONTRACT_ADDRESS, ContractABI, signer);
-
-        // Initialize the provider (for MetaMask connection)
         if (!window.ethereum) {
+          notify("Please check out Internet connection", "warning");
           console.log("Please check out Internet connection");
           return;
         }
@@ -48,12 +42,9 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
         // Get the signer (ethers v6 requires an address)
         const signer = await provider.getSigner();
-        console.log("Signer Address:", await signer.getAddress());
 
         // Check if the network is BSC Testnet (Chain ID: 97)
         const network = await provider.getNetwork();
-        console.log("Connected Network:", Number(network.chainId)); // Must be 97
-        
         
         if (Number(network.chainId) !== 97) {
           await _ethereum.request({
@@ -66,6 +57,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         const contract = new ethers.Contract(CONTRACT_ADDRESS, ContractABI, signer);
         setContract(contract);
       } catch (error) {
+        notify("Initialize contract occur error", "error");
         console.error("Error initializing contract:", error);
       }
     };
