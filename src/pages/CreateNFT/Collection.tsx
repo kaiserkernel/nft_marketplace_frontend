@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { FileObject } from "pinata";
 
 import CollectionLogo from "../../components/common/CollectionLogo"
@@ -24,30 +24,21 @@ interface CollectionData {
   tokenSymbol: string;
 }
 
-interface CollectionCreatedEvent {
-  owner: string;
-  collectionAddress: string;
-  name: string;
-  symbol: string;
-  metadataURI: string;
-}
-
 const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => {
   const [LogoImage, setLogoImage] = useState<string | null>(null);
   const [logoImageFile, setLogoImageFile] = useState<FileObject | null>(null);
   const [description, setDescription] = useState<string>("");
-  const isMounted = useRef(true); // Track first render
   const [collectionData, setCollectionData] = useState<CollectionData>({
     name: "",
     tokenSymbol: ""
   })
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
   const { contract, provider } = useContract();
-  
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const { isWalletConnected, walletAddress, walletBalance } = useWallet();
+  const { isWalletConnected } = useWallet();
 
-  const validatorForm = () => {
+  // Validate form before creating collection
+  const validatorForm = (): boolean => {
     if (!collectionData.name || !collectionData.tokenSymbol || !description || !LogoImage) {
       notify("Please complete all fields", "warning");
       return false;
@@ -55,37 +46,22 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
     return true;
   }
 
+  // Handle input changes
   const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
     const {name, value}  = evt.target;
-    if (name === 'royaltyCollection') {
-      const _royalty = Number(value);
-      if (isNaN(_royalty)) {
-        notify("Please input number on royalty", "error");
-        return;
-      }
-      if (_royalty > 50) {
-        notify("Please set royalty less than 50", "error");
-        return;
-      }
-    }
-    setCollectionData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+
+    setCollectionData(prev => ({ ...prev, [name]: value }));
   }
 
   const handleCreateCollection = async () => {
     if (!contract || !provider) {
       notify("Please check internet connection", "error");
-      console.log(1)
       return;
     }
     if (!validatorForm()) {
-      console.log(2)
       return;
     }
     if (!logoImageFile) {
-      console.log(3)
       notify("Please check logo image again", "error")
       return;
     }
@@ -97,20 +73,12 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
       // upload images to IPFS
       const uploadLogoImage = await pinata.upload.public.file(logoImageFile);
       const imageURL = await pinata.gateways.public.convert(uploadLogoImage.cid);
-      console.log(imageURL, 'avatar image url');
   
-      // Create metadata JSON
-      const metadata = {
-        name: collectionData.name,
-        description,
-        image: imageURL,
-      };
-
-      // Upload metadata JSON to IPFS
+      // Create metadata JSON and upload to IPFS
+      const metadata = { name: collectionData.name, description, image: imageURL };
       const metadataUpload = await pinata.upload.public.json(metadata);
       const metadataURI = await pinata.gateways.public.convert(metadataUpload.cid);
-      console.log(metadataURI, 'metadata uri');
-
+      
       // Estimate the gas required for the transaction
       const gasEstimate = await contract.createCollection.estimateGas(
         collectionData.name,
@@ -119,17 +87,14 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
       );
 
       // Call smart contract to create collection
-      const tx = await contract.createCollection(
-        collectionData.name,
-        collectionData.tokenSymbol,
-        metadataURI,
-        { gasLimit: gasEstimate } // Include estimated gas limit
-      );
+      const tx = await contract.createCollection( collectionData.name, collectionData.tokenSymbol, metadataURI, { 
+        gasLimit: gasEstimate 
+      });
 
-      const receipt = await tx.wait();
+      await tx.wait();
+      notify("Collection created successfully", "success");
     } catch (error: any) {
       if (error.code === "ACTION_REJECTED") {
-        console.error("User rejected the transaction.");
         notify("Transaction rejected by user.", "warning");
       } else {
         console.error("Error creating collection:", error);
@@ -139,6 +104,43 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
       setIsProcessing(false);
     }
   }
+
+  useEffect(() => {
+    if (!contract) return;
+  
+    const handleCollectionCreated = async (
+      owner: string,
+      collectionAddress: string,
+      name: string,
+      symbol: string,
+      metadataURI: string
+    ) => {
+      const _collectionData = { name, symbol, metadataURI, owner, contractAddress: collectionAddress };
+      try {
+        await createCollection(_collectionData);
+        notify("Collection created successfully", "success");
+      } catch (error) {
+        notify("Failed to create collection", "error");
+      }
+    };
+  
+    // Attach event listener
+    contract.on("CollectionCreated", handleCollectionCreated);
+  
+    // Cleanup function to remove the listener when component unmounts or contract changes
+    return () => {
+      contract.off("CollectionCreated", handleCollectionCreated);
+    };
+  }, [contract]);  
+
+  useEffect(() => {
+    // initialize all state
+    if (!isOpen) return;
+    
+    setLogoImage(null);
+    setDescription("");
+    setCollectionData({ name: "", tokenSymbol: ""});
+  } , [isOpen])
 
   const footerBtn = () => {
     return (
@@ -153,55 +155,6 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
       </div>
     )
   }
-
-  useEffect(() => {
-    // initialize all state
-    setLogoImage(null);
-    setDescription("");
-    setCollectionData({
-      name: "",
-      tokenSymbol: ""
-    })
-  } , [isOpen])
-
-  useEffect(() => {
-    if (!contract) return;
-  
-    const handleCollectionCreated = async (
-      owner: string,
-      collectionAddress: string,
-      name: string,
-      symbol: string,
-      metadataURI: string
-    ) => {
-      console.log("New Collection Created:", { owner, collectionAddress, name, symbol, metadataURI });
-  
-      // Save collection data to backend (MongoDB)
-      const _collectionData = {
-        name,
-        symbol,
-        metadataURI,
-        owner,
-        contractAddress: collectionAddress
-      };
-  
-      try {
-        await createCollection(_collectionData);
-        notify("Collection created successfully", "success");
-      } catch (error) {
-        console.error("Failed to save collection:", error);
-        notify("Failed to create collection", "error");
-      }
-    };
-  
-    // Attach event listener
-    contract.on("CollectionCreated", handleCollectionCreated);
-  
-    // Cleanup function to remove the listener when component unmounts or contract changes
-    return () => {
-      contract.off("CollectionCreated", handleCollectionCreated);
-    };
-  }, [contract]);  
 
   return (
     <Modal
