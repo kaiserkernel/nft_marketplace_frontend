@@ -43,8 +43,8 @@ const CreateInCollection = () => {
   const handleOpenCollectionModal = async () => {
     setIsOpen(true);
     if (contract) {
-      const tx = await contract.getAllCollections();
-      console.log(tx, 'all collections')
+      // const tx = await contract.getAllCollections();
+      // console.log(tx, 'all collections')
     }
   };
 

@@ -1,6 +1,7 @@
 import React, { FC, ReactNode, useState } from "react";
 import { motion } from "framer-motion";
-import ReactLoading from "react-loading";
+// import ReactLoading from "react-loading";
+import { ThreeDot } from "react-loading-indicators"
 
 interface ButtonProps {
   type: "colorful" | "primary" | "outline" | "blue" | "text";
@@ -89,7 +90,7 @@ const Button: FC<ButtonProps> = ({
       disabled={disabled}
     >
       {
-        disabled ? <ReactLoading /> : (
+        disabled ? <ThreeDot color="#ffffff" size="small" /> : (
           <>
             {iconPosition === "left" && icon}
             {label}

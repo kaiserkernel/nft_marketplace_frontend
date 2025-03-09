@@ -10,7 +10,7 @@ import Modal from "../../components/common/Modal";
 
 import useWallet from "../../hooks/useWallet";
 import { useContract } from "../../context/ContractContext";
-import { pinata } from "../../utils/config";
+import { pinata } from "../../config/pinata";
 
 import { createCollection } from "../../services/colllectionService";
 
@@ -24,6 +24,14 @@ interface CollectionData {
   tokenSymbol: string;
 }
 
+interface CollectionCreatedEvent {
+  owner: string;
+  collectionAddress: string;
+  name: string;
+  symbol: string;
+  metadataURI: string;
+}
+
 const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => {
   const [LogoImage, setLogoImage] = useState<string | null>(null);
   const [logoImageFile, setLogoImageFile] = useState<FileObject | null>(null);
@@ -34,7 +42,7 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
     tokenSymbol: ""
   })
 
-  const { contract } = useContract();
+  const { contract, provider } = useContract();
   
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const { isWalletConnected, walletAddress, walletBalance } = useWallet();
@@ -67,7 +75,8 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
   }
 
   const handleCreateCollection = async () => {
-    if (!contract) {
+    if (!contract || !provider) {
+      notify("Please check internet connection", "error");
       console.log(1)
       return;
     }
@@ -77,6 +86,7 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
     }
     if (!logoImageFile) {
       console.log(3)
+      notify("Please check logo image again", "error")
       return;
     }
       
@@ -100,32 +110,31 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
       const metadataUpload = await pinata.upload.public.json(metadata);
       const metadataURI = await pinata.gateways.public.convert(metadataUpload.cid);
       console.log(metadataURI, 'metadata uri');
-      // Call smart contract to create collection
-      const tx = await contract.createCollection(
+
+      // Estimate the gas required for the transaction
+      const gasEstimate = await contract.createCollection.estimateGas(
         collectionData.name,
         collectionData.tokenSymbol,
         metadataURI
       );
 
-      const receipt = await tx.wait();
-      console.log(receipt, 'receipt')
-      const collectionAddress = receipt.events[0].args.collectionAddress;
-
-      // Save collection data to backend (MongoDB)
-      const _collectionData = {
-        name: collectionData.name,
-        symbol: collectionData.tokenSymbol,
-        description,
-        image: imageURL,
+      // Call smart contract to create collection
+      const tx = await contract.createCollection(
+        collectionData.name,
+        collectionData.tokenSymbol,
         metadataURI,
-        owner: walletAddress,
-        contractAddress: collectionAddress
+        { gasLimit: gasEstimate } // Include estimated gas limit
+      );
+
+      const receipt = await tx.wait();
+    } catch (error: any) {
+      if (error.code === "ACTION_REJECTED") {
+        console.error("User rejected the transaction.");
+        notify("Transaction rejected by user.", "warning");
+      } else {
+        console.error("Error creating collection:", error);
+        notify("Error occured on creating collection", "error");
       }
-      const collection = await createCollection(_collectionData);
-      notify("Collection created successfully", "success");
-    } catch (error) {
-      console.error("Error creating collection:", error);
-      notify("Error occured on creating collection", "error");
     } finally {
       setIsProcessing(false);
     }
@@ -139,7 +148,7 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
           type="blue"
           width="full"
           onClick={handleCreateCollection}
-          // disabled={isProcessing}
+          disabled={isProcessing}
         />
       </div>
     )
@@ -154,6 +163,45 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
       tokenSymbol: ""
     })
   } , [isOpen])
+
+  useEffect(() => {
+    if (!contract) return;
+  
+    const handleCollectionCreated = async (
+      owner: string,
+      collectionAddress: string,
+      name: string,
+      symbol: string,
+      metadataURI: string
+    ) => {
+      console.log("New Collection Created:", { owner, collectionAddress, name, symbol, metadataURI });
+  
+      // Save collection data to backend (MongoDB)
+      const _collectionData = {
+        name,
+        symbol,
+        metadataURI,
+        owner,
+        contractAddress: collectionAddress
+      };
+  
+      try {
+        await createCollection(_collectionData);
+        notify("Collection created successfully", "success");
+      } catch (error) {
+        console.error("Failed to save collection:", error);
+        notify("Failed to create collection", "error");
+      }
+    };
+  
+    // Attach event listener
+    contract.on("CollectionCreated", handleCollectionCreated);
+  
+    // Cleanup function to remove the listener when component unmounts or contract changes
+    return () => {
+      contract.off("CollectionCreated", handleCollectionCreated);
+    };
+  }, [contract]);  
 
   return (
     <Modal
