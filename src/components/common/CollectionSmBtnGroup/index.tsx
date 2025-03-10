@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 
-import { pinata } from '../../../config/pinata';
 import { CollectionProps } from '../../../types';
 import { fetchMetaData } from '../../../services/colllectionService';
 
