@@ -1,6 +1,7 @@
 import React, { useState,  useEffect } from "react";
 import { ToastContainer } from "react-toastify";
 import { FileObject } from "pinata";
+import { OrbitProgress } from "react-loading-indicators"
 
 import NFTBanner from "../../components/common/NFTBanner";
 import InputField from "../../components/common/InputField";
@@ -23,7 +24,8 @@ const CreateInCollection = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [imageFile, setImageFile] = useState<FileObject | null>(null);
   const [collections, setCollections] = useState<CollectionProps[] | null>(null);
-  const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
+  const [selectedCollection, setSelectedCollection] = useState<CollectionProps | null>(null);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
   const { contract, walletAddress } = useContract();
 
@@ -53,11 +55,12 @@ const CreateInCollection = () => {
     if (!walletAddress) return;
 
     const fetchCollections = async () => {
+      setIsProcessing(true);
      const { collection } = await fetchOwnerCollection(walletAddress);
-     console.log(collection, 'col')
      if (collection) {
       setCollections(collection);
      }
+     setIsProcessing(false);
     }
 
     fetchCollections();
@@ -94,13 +97,25 @@ const CreateInCollection = () => {
 
         {/* Collection Modal Trigger */}
         <div>
-          <h3 className="text-white font-semibold text-md">Collection</h3>
+          <h3 className="text-white font-semibold text-md">Collection</h3><div className="mt-4 flex space-x-4">
+          {
+            isProcessing && <OrbitProgress color="#fff" size="medium" />
+          }
           {
             collections && <CollectionBtnGroup collections={collections} setSelectedCollection={setSelectedCollection}/>
           }
-          <div className="mt-4">
-            <Button type="outline" label="Collection" onClick={handleOpenCollectionModal} />
-          </div>
+          
+          {/* Button Group in Horizontal Row */}
+          <button 
+            onClick={handleOpenCollectionModal} 
+            className="relative w-32 h-32 bg-white text-black font-bold border-4 rounded-lg shadow-lg overflow-hidden"
+          >
+            <span className="absolute inset-0 flex items-center justify-center text-7xl font-extrabold text-black transition duration-300">
+              +
+            </span>
+            <span className="absolute inset-0 border-8 border-transparent rounded-lg"></span>
+          </button>
+        </div>
         </div>
 
         {/* Royalties */}
@@ -132,7 +147,7 @@ const CreateInCollection = () => {
         </div>
 
         {/* Attributes */}
-        <div>
+        <div className="mb-4">
           <h3 className="text-white font-semibold text-md">Attributes</h3>
           <div className="mt-2 grid grid-cols-2 gap-4">
             {attributes.map((attr, index) => (
@@ -151,10 +166,12 @@ const CreateInCollection = () => {
         </div>
 
         {/* Alert */}
-        <Alert
-          title="It will be impossible to alter the NFT data."
-          message="Editing NFTs is currently unavailable."
-        />
+        <div className="mb-4">
+          <Alert
+            title="It will be impossible to alter the NFT data."
+            message="Editing NFTs is currently unavailable."
+          />
+        </div>
 
         {/* Create NFT Button */}
         <Button type="blue" label="Create NFT" />

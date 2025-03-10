@@ -3,7 +3,9 @@ export interface CollectionProps {
     name: string,
     owner: string,
     symbol: string,
-    metadatURI: string,
+    metadataURI: string,
+    description?: string,
+    image?: string,
     contractAddress: string,
     createdAt: string,
     __v: number

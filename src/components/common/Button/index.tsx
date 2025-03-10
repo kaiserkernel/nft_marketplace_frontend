@@ -1,6 +1,5 @@
 import React, { FC, ReactNode, useState } from "react";
 import { motion } from "framer-motion";
-// import ReactLoading from "react-loading";
 import { ThreeDot } from "react-loading-indicators"
 
 interface ButtonProps {

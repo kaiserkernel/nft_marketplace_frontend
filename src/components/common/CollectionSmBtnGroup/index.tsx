@@ -1,56 +1,76 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
+
+import { pinata } from '../../../config/pinata';
 import { CollectionProps } from '../../../types';
+import { fetchMetaData } from '../../../services/colllectionService';
 
 interface CollectionBtnProps {
-    collections: CollectionProps[],
-    setSelectedCollection: React.Dispatch<React.SetStateAction<string | null>>;
+  collections: CollectionProps[];
+  setSelectedCollection: React.Dispatch<React.SetStateAction<CollectionProps | null>>;
 }
 
-interface CollectionData {
-    _id: string,
-    name: string,
-    description: string,
-    image: string,
-    symbol: string,
-    createdAt: string
-}
+const CollectionBtn: React.FC<CollectionBtnProps> = ({ collections, setSelectedCollection }) => {
+  const [collectionList, setCollectionList] = useState<CollectionProps[]>([]);
+  
+  useEffect(() => {
+    // Create an async function to fetch metadata
+    const fetchMetadataInfo = async () => {
+      try {
+        // Use Promise.all to fetch metadata for all collections concurrently
+        const metadataPromises = collections.map(async (log) => {
+          const _uri = log.metadataURI;
+          const { data } = await fetchMetaData(_uri);
+          const {description, image} = data;
+          console.log(data, 'data')
+          return { ...log, description, image };
+        });
 
-interface MetaData {
-    description: string,
-    image: string
-}
+        // Wait for all metadata to be fetched
+        const metadataList = await Promise.all(metadataPromises);
 
-const CollectionBtn: React.FC<CollectionBtnProps> = (props) => {
-    const { collections, setSelectedCollection } = props;
-    const [ collectionList, setCollectionList ] = useState<CollectionData[]>([]);
+        // Filter out any failed fetches (null values)
+        const validMetadata = metadataList.filter((data) => data !== null);
 
-    useEffect(() => {
-        collections.forEach((log) => {
-            const fetchMetadataInfo = async () => {
-                const response = await fetch(log.metadatURI);
-                if (!response.ok) {
-                    console.log("error fetch metadata url");
-                    
+        // Update the state with the valid metadata
+        setCollectionList(validMetadata as CollectionProps[]);
+      } catch (error) {
+        console.error("Error fetching metadata:", error);
+      }
+    };
+
+    // Call the async function inside useEffect
+    fetchMetadataInfo();
+  }, [collections]);
+
+  return (
+    <div>
+      {/* Display the collection button group */}
+      <div>
+        {collectionList.length > 0 ? (
+          collectionList.map((collection) => (
+            <button
+              key={collection._id}
+              onClick={() => setSelectedCollection(collection)}
+              className="relative w-32 h-32 overflow-hidden rounded-md"
+            >
+                {
+                    collection.image && (
+                        <>
+                            <img src={collection.image} alt={collection.name} className="w-full h-full object-cover transition duration-300 hover:blur-sm" />
+                            <span className="absolute inset-0 flex items-center justify-center text-white text-lg font-bold opacity-0 transition duration-300 hover:opacity-100">
+                                {collection.name}
+                            </span>
+                        </>
+                    )
                 }
-                const data: MetaData = await response.json();
-                console.log(response, 'response')
-                console.log(data, 'data')
-            }
-
-            fetchMetadataInfo();
-            // const response = await fetch(log.metadatURI);
-            // if (!response.ok) {
-            //   throw new Error('Failed to fetch metadata');
-            // }
-    
-        })
-    }, [collections]);
-
-    return (
-        <>
-            Collection Button Group
-        </>
-    )
-}
+            </button>
+          ))
+        ) : (
+          null
+        )}
+      </div>
+    </div>
+  );
+};
 
 export default CollectionBtn;
