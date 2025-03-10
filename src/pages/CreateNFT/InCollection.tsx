@@ -118,11 +118,14 @@ const CreateInCollection = () => {
             !isProcessing && (
               <button 
                 onClick={handleOpenCollectionModal} 
-                className="relative w-32 h-32 bg-white text-black font-bold border-4 rounded-lg shadow-lg overflow-hidden"
+                className="relative w-32 h-32 bg-white text-black font-bold border-4 rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:bg-gray-100"
               >
-                <span className="absolute inset-0 flex items-center justify-center text-7xl font-extrabold text-black transition duration-300">
+                {/* Plus Sign that Grows on Hover */}
+                <span className="absolute inset-0 flex items-center justify-center text-7xl font-extrabold text-black group-hover:scale-125 transition-all duration-300 transform">
                   +
                 </span>
+
+                {/* Border */}
                 <span className="absolute inset-0 border-8 border-transparent rounded-lg"></span>
               </button>
             )

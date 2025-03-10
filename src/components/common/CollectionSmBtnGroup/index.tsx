@@ -52,16 +52,23 @@ const CollectionBtn: React.FC<CollectionBtnProps> = ({ collections, setSelectedC
             <button
               key={collection._id}
               onClick={() => setSelectedCollection(collection)}
-              className="relative w-32 h-32 overflow-hidden rounded-md"
+              className="relative w-32 h-32 group"
             >
                 {
                     collection.image && (
-                        <>
-                            <img src={collection.image} alt={collection.name} className="w-full h-full object-cover transition duration-300 hover:blur-sm" />
-                            <span className="absolute inset-0 flex items-center justify-center text-white text-lg font-bold opacity-0 transition duration-300 hover:opacity-100">
+                        <div className="relative w-full h-full group rounded-md border-4 border-white border-opacity-30 transition-all duration-500 hover:border-opacity-100 hover:shadow-lg">
+                            {/* Image with Hover Blur Effect */}
+                            <img 
+                                src={collection.image} 
+                                alt={collection.name} 
+                                className="w-full h-full object-cover transition duration-300 group-hover:blur-sm"
+                            />
+                            
+                            {/* Text Fades in on Hover */}
+                            <span className="absolute inset-0 flex items-center justify-center text-white text-lg font-bold opacity-0 transition duration-300 group-hover:opacity-100">
                                 {collection.name}
                             </span>
-                        </>
+                        </div>
                     )
                 }
             </button>
