@@ -8,7 +8,7 @@ import TextArea from "../../components/common/TextArea";
 import AttributeInput from "../../components/common/AttributeInput";
 import Button from "../../components/common/Button";
 import Alert from "../../components/common/Alert";
-import CreateCollection from "./Collection";
+import CreateCollectionModal from "./CreateCollectionModal";
 
 import { useContract } from "../../context/ContractContext";
 
@@ -166,7 +166,7 @@ const CreateInCollection = () => {
       </div>
 
       {/* Modal for Collection Creation */}
-        <CreateCollection isOpen={isOpen} onClose={() => setIsOpen(false)}/>
+        <CreateCollectionModal isOpen={isOpen} onClose={() => setIsOpen(false)}/>
       {/* </Modal> */}
     </div>
   );

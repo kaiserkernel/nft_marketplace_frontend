@@ -13,7 +13,7 @@ import { pinata } from "../../config/pinata";
 
 import { createCollection } from "../../services/colllectionService";
 
-interface CreateCollectionProps {
+interface CreateCollectionModalProps {
   isOpen: boolean,
   onClose: () => void
 }
@@ -23,7 +23,7 @@ interface CollectionData {
   tokenSymbol: string;
 }
 
-const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => {
+const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onClose}) => {
   const [LogoImage, setLogoImage] = useState<string | null>(null);
   const [logoImageFile, setLogoImageFile] = useState<FileObject | null>(null);
   const [description, setDescription] = useState<string>("");
@@ -223,4 +223,4 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
   );
 };
 
-export default CreateCollection;
+export default CreateCollectionModal;
