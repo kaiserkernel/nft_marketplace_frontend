@@ -118,7 +118,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setIsWalletConnected(false);
 
       // navigate home page
-      navigator("/");
+      // navigator("/");
     }
   }, [isConnected, address, walletProvider])
 

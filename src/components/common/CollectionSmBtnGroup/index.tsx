@@ -48,7 +48,7 @@ const CollectionBtn: React.FC<CollectionBtnProps> = (props) => {
 
     return (
         <>
-            
+            Collection Button Group
         </>
     )
 }

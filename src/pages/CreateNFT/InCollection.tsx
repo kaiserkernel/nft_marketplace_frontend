@@ -54,6 +54,7 @@ const CreateInCollection = () => {
 
     const fetchCollections = async () => {
      const { collection } = await fetchOwnerCollection(walletAddress);
+     console.log(collection, 'col')
      if (collection) {
       setCollections(collection);
      }
