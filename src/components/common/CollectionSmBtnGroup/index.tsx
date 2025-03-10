@@ -7,9 +7,10 @@ import { fetchMetaData } from '../../../services/colllectionService';
 interface CollectionBtnProps {
   collections: CollectionProps[];
   setSelectedCollection: React.Dispatch<React.SetStateAction<CollectionProps | null>>;
+  setIsProcessing: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const CollectionBtn: React.FC<CollectionBtnProps> = ({ collections, setSelectedCollection }) => {
+const CollectionBtn: React.FC<CollectionBtnProps> = ({ collections, setSelectedCollection, setIsProcessing }) => {
   const [collectionList, setCollectionList] = useState<CollectionProps[]>([]);
   
   useEffect(() => {
@@ -21,7 +22,6 @@ const CollectionBtn: React.FC<CollectionBtnProps> = ({ collections, setSelectedC
           const _uri = log.metadataURI;
           const { data } = await fetchMetaData(_uri);
           const {description, image} = data;
-          console.log(data, 'data')
           return { ...log, description, image };
         });
 
@@ -35,6 +35,8 @@ const CollectionBtn: React.FC<CollectionBtnProps> = ({ collections, setSelectedC
         setCollectionList(validMetadata as CollectionProps[]);
       } catch (error) {
         console.error("Error fetching metadata:", error);
+      } finally {
+        setIsProcessing(false);
       }
     };
 

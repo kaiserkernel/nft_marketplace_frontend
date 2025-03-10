@@ -56,11 +56,17 @@ const CreateInCollection = () => {
 
     const fetchCollections = async () => {
       setIsProcessing(true);
-     const { collection } = await fetchOwnerCollection(walletAddress);
-     if (collection) {
-      setCollections(collection);
-     }
-     setIsProcessing(false);
+
+      try {
+        const { collection } = await fetchOwnerCollection(walletAddress);
+        if (collection) {
+          setCollections(collection);
+        } else {
+          setIsProcessing(false);
+        }
+      } catch (error) {
+        setIsProcessing(false);
+      }
     }
 
     fetchCollections();
@@ -102,19 +108,25 @@ const CreateInCollection = () => {
             isProcessing && <OrbitProgress color="#fff" size="medium" />
           }
           {
-            collections && <CollectionBtnGroup collections={collections} setSelectedCollection={setSelectedCollection}/>
+            collections && (
+              <CollectionBtnGroup collections={collections} setSelectedCollection={setSelectedCollection} setIsProcessing={setIsProcessing}/>
+            )
           }
           
           {/* Button Group in Horizontal Row */}
-          <button 
-            onClick={handleOpenCollectionModal} 
-            className="relative w-32 h-32 bg-white text-black font-bold border-4 rounded-lg shadow-lg overflow-hidden"
-          >
-            <span className="absolute inset-0 flex items-center justify-center text-7xl font-extrabold text-black transition duration-300">
-              +
-            </span>
-            <span className="absolute inset-0 border-8 border-transparent rounded-lg"></span>
-          </button>
+          {
+            !isProcessing && (
+              <button 
+                onClick={handleOpenCollectionModal} 
+                className="relative w-32 h-32 bg-white text-black font-bold border-4 rounded-lg shadow-lg overflow-hidden"
+              >
+                <span className="absolute inset-0 flex items-center justify-center text-7xl font-extrabold text-black transition duration-300">
+                  +
+                </span>
+                <span className="absolute inset-0 border-8 border-transparent rounded-lg"></span>
+              </button>
+            )
+          }
         </div>
         </div>
 
