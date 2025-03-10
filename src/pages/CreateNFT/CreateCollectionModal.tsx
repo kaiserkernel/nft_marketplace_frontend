@@ -73,7 +73,7 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
       const imageURL = await pinata.gateways.public.convert(uploadLogoImage.cid);
   
       // Create metadata JSON and upload to IPFS
-      const metadata = { name: collectionData.name, description, image: imageURL };
+      const metadata = { description, image: imageURL };
       const metadataUpload = await pinata.upload.public.json(metadata);
       const metadataURI = await pinata.gateways.public.convert(metadataUpload.cid);
       

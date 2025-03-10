@@ -1,13 +1,14 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { ethers, BrowserProvider, formatEther } from "ethers";
-import { notify } from "../components/common/Notify";
-import { ContractABI } from "../contracts/index"; // Make sure the path is correct
 import {
   type Provider,
   useAppKitAccount,
-  useAppKitNetwork,
   useAppKitProvider,
 } from "@reown/appkit/react";
+import { useNavigate } from "react-router-dom";
+
+import { notify } from "../components/common/Notify";
+import { ContractABI } from "../contracts/index"; // Make sure the path is correct
 
 // Environment variable for contract address (default to an empty string if not provided)
 const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS ?? "";
@@ -56,7 +57,8 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const { address, isConnected } = useAppKitAccount();
   const { walletProvider } = useAppKitProvider<Provider>("eip155");
-  const { chainId, switchNetwork } = useAppKitNetwork();
+
+  const navigator = useNavigate();
 
   const getAllUserInfo = async (provider: BrowserProvider, address: string) => {
     try {
@@ -77,28 +79,15 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
-  useEffect(() => {
-    if (!isConnected || !address || !walletProvider) {
-      notify("Please try again to connect wallet");
-
-      // initialize state
-      setContract(null);
-      setWsContract(null);
-      setWalletAddress(null);
-      setWalletAvatar(null);
-      setWalletBalance(null);
-      setIsWalletConnected(false);
-      return;
-    }
-
-    const _initContract = async () => {
+  useEffect(() => {   
+    const _initContract = async (_address: string) => {
       try {
         // Convert AppKit's provider to a BrowserProvider (Ethers v6 requirement)
         const browserProvider = new BrowserProvider(walletProvider);
         const signer = await browserProvider.getSigner(); // Get signer for transactions
   
         // Fetch wallet balance and avatar
-        await getAllUserInfo(browserProvider, address);  
+        await getAllUserInfo(browserProvider, _address);  
   
         // Initialize the contract with the signer and ABI, then set it in state
         const contractInstance = new ethers.Contract(CONTRACT_ADDRESS, ContractABI, signer);
@@ -108,18 +97,29 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         const wsProvider = new ethers.WebSocketProvider(WS_RPC_URL);
         const wsContractInstance = new ethers.Contract(CONTRACT_ADDRESS, ContractABI, wsProvider);
         setWsContract(wsContractInstance);
-        
-        // Set wallet state
-        setWalletAddress(address);
-        setIsWalletConnected(true);
       }
-    catch (error) {
-      notify("Error initializing contract", "error");
-      console.log(error);
-    }
+      catch (error) {
+        notify("Error initializing contract", "error");
+        console.log(error);
+      }
     }
 
-    _initContract();
+    if (isConnected && address) {
+      _initContract(address);
+      setIsWalletConnected(true);
+      setWalletAddress(address);
+    } else {
+      // initialize state
+      setContract(null);
+      setWsContract(null);
+      setWalletAddress(null);
+      setWalletAvatar(null);
+      setWalletBalance(null);
+      setIsWalletConnected(false);
+
+      // navigate home page
+      navigator("/");
+    }
   }, [isConnected, address, walletProvider])
 
   return (

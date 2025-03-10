@@ -9,21 +9,11 @@ import AttributeInput from "../../components/common/AttributeInput";
 import Button from "../../components/common/Button";
 import Alert from "../../components/common/Alert";
 import CreateCollectionModal from "./CreateCollectionModal";
+import CollectionBtnGroup from "../../components/common/CollectionSmBtnGroup";
 
 import { useContract } from "../../context/ContractContext";
-
 import { fetchOwnerCollection } from "../../services/colllectionService";
-
-interface CollectionProps {
-  _id: string,
-  name: string,
-  owner: string,
-  symbol: string,
-  metadatURI: string,
-  contractAddress: string,
-  createdAt: string,
-  __v: number
-}
+import { CollectionProps } from "../../types";
 
 const CreateInCollection = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -33,6 +23,7 @@ const CreateInCollection = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [imageFile, setImageFile] = useState<FileObject | null>(null);
   const [collections, setCollections] = useState<CollectionProps[] | null>(null);
+  const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
 
   const { contract, walletAddress } = useContract();
 
@@ -103,6 +94,9 @@ const CreateInCollection = () => {
         {/* Collection Modal Trigger */}
         <div>
           <h3 className="text-white font-semibold text-md">Collection</h3>
+          {
+            collections && <CollectionBtnGroup collections={collections} setSelectedCollection={setSelectedCollection}/>
+          }
           <div className="mt-4">
             <Button type="outline" label="Collection" onClick={handleOpenCollectionModal} />
           </div>
