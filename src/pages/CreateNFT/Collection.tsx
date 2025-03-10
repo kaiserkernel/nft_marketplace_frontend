@@ -8,7 +8,6 @@ import Button from "../../components/common/Button";
 import { notify } from "../../components/common/Notify";
 import Modal from "../../components/common/Modal";
 
-import useWallet from "../../hooks/useWallet";
 import { useContract } from "../../context/ContractContext";
 import { pinata } from "../../config/pinata";
 
@@ -35,7 +34,6 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
   const { contract, wsContract } = useContract();
-  const { isWalletConnected } = useWallet();
 
   // Validate form before creating collection
   const validatorForm = (): boolean => {

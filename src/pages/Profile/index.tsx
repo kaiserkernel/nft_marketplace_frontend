@@ -1,8 +1,4 @@
 import React, { useState } from "react";
-import Banner from "../../components/common/Banner";
-import useWallet from "../../hooks/useWallet";
-import { walletAddressFormat } from "../../lib/helper";
-import Button from "../../components/common/Button";
 import {
   FaDiscord,
   FaInstagram,
@@ -13,12 +9,18 @@ import {
   FaTwitter,
   FaYoutube,
 } from "react-icons/fa";
+
+import Banner from "../../components/common/Banner";
+import Button from "../../components/common/Button";
 import Tabs from "../../components/common/Tabs";
-import Collected from "./Collected";
-import History from "./History";
 import Modal from "../../components/common/Modal";
 import InputField from "../../components/common/InputField";
 import TextArea from "../../components/common/TextArea";
+
+import { useContract } from "../../context/ContractContext";
+import { walletAddressFormat } from "../../utils/WalletAddressFormator";
+import Collected from "./Collected";
+import History from "./History";
 
 const tabItems = [
   { label: "Collected", content: <Collected /> },
@@ -27,7 +29,7 @@ const tabItems = [
 
 const Profile = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const { walletAddress } = useWallet();
+  const { walletAddress } = useContract();
   const [displayName, setDisplayName] = useState<string>(
     walletAddressFormat(walletAddress)
   );
@@ -38,7 +40,7 @@ const Profile = () => {
 
   const handleModalClick = () => {};
 
-  const footerBtn = () => {
+  const FooterBtn = () => {
     return (
       <div className="absolute bottom-1 p-4 w-full">
         <Button
@@ -97,7 +99,7 @@ const Profile = () => {
         onClose={() => {
           setIsOpen(false);
         }}
-        FooterBtn={footerBtn}
+        FooterBtn={FooterBtn}
       >
         <Banner />
         <div className="w-full">

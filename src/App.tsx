@@ -1,10 +1,9 @@
-import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"; // Import BrowserRouter
 import "./App.css";
 import Container from "./components/layouts/Container";
 import { createAppKit } from "@reown/appkit/react";
 import { EthersAdapter } from "@reown/appkit-adapter-ethers";
-import { bsc, mainnet } from "@reown/appkit/networks";
+import { bsc, mainnet, bscTestnet } from "@reown/appkit/networks";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import SingleNFT from "./pages/CreateNFT/SingleNFT";
@@ -24,7 +23,7 @@ const metadata = {
 // 3. Create an AppKit instance
 createAppKit({
   adapters: [new EthersAdapter()],
-  networks: [bsc, mainnet],
+  networks: [bsc, mainnet, bscTestnet],
   metadata,
   projectId,
   features: {

@@ -34,7 +34,7 @@ const CreateInCollection = () => {
   const [imageFile, setImageFile] = useState<FileObject | null>(null);
   const [collections, setCollections] = useState<CollectionProps[] | null>(null);
 
-  const { contract, address } = useContract();
+  const { contract, walletAddress } = useContract();
 
   const handleAddAttribute = () => {
     setAttributes([...attributes, { trait: "", value: "" }]);
@@ -59,17 +59,17 @@ const CreateInCollection = () => {
   };
 
   useEffect(() => {
-    if (!address) return;
+    if (!walletAddress) return;
 
     const fetchCollections = async () => {
-     const { collection } = await fetchOwnerCollection(address);
+     const { collection } = await fetchOwnerCollection(walletAddress);
      if (collection) {
       setCollections(collection);
      }
     }
 
     fetchCollections();
-  }, [address])
+  }, [walletAddress])
 
   return (
     <div className="w-full flex gap-10">

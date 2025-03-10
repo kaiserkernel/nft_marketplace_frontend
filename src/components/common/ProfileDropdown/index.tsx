@@ -14,12 +14,14 @@ import {
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import ConnectWallet from "../ConnectWallet";
-import Avatar from "../Avatar";
-import useWallet from "../../../hooks/useWallet";
-import type { DropdownItemType } from "../Dropdown";
 import { useAppKit } from "@reown/appkit/react";
+
+import Avatar from "../Avatar";
+import type { DropdownItemType } from "../Dropdown";
 import IconButton from "../IconButton";
 import Button from "../Button";
+
+import { useContract } from "../../../context/ContractContext";
 
 const dropdownItems: DropdownItemType[] = [
   {
@@ -39,7 +41,7 @@ const ProfileDropdown = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { isWalletConnected, walletAddress, walletBalance } = useWallet();
+  const { isWalletConnected, walletAddress, walletBalance } = useContract();
   const { open } = useAppKit();
 
   useEffect(() => {

@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import { FaWallet } from "react-icons/fa";
 import { useAppKit } from "@reown/appkit/react";
 import Button from "../Button";
