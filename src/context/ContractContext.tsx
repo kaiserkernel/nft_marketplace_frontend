@@ -5,24 +5,28 @@ import { ContractABI } from "../contracts/index"; // Make sure the path is corre
 
 // Environment variable for contract address (default to an empty string if not provided)
 const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS ?? "";
+const WS_RPC_URL = process.env.REACT_APP_TESTNET_WS_RPC_URL ?? "";
 
 
 // Define types for context to ensure type safety
 interface ContractContextType {
   contract: ethers.Contract | null; // Contract instance or null if not yet initialized
   provider: ethers.Provider | null; // Provider instance or null if not yet initialized
+  wsContract: ethers.Contract | null; // Provider instance or null if not yet initialized
 }
 
 // Create context with default values (null for contract and provider)
 const ContractContext = createContext<ContractContextType>({
   contract: null,
-  provider: null
+  provider: null,
+  wsContract: null
 });
 
 // Context Provider Component that manages the contract and provider state
 export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [contract, setContract] = useState<ethers.Contract | null>(null);
   const [provider, setProvider] = useState<ethers.Provider | null>(null);
+  const [wsContract, setWsContract] = useState<ethers.Contract | null>(null);
 
   useEffect(() => {
     // Initialize contract and provider
@@ -53,15 +57,25 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
    
         // If the user is not on the BSC Testnet (Chain ID: 97), attempt to switch to it
         if (Number(network.chainId) !== 97) {
-          await ethereumProvider.request({
-            method: "wallet_switchEthereumChain",
-            params: [{ chainId: "0x61" }], // Chain ID for BSC Testnet in hex format
-          });
+          try {
+            await ethereumProvider.request({
+              method: "wallet_switchEthereumChain",
+              params: [{ chainId: "0x61" }], // Chain ID for BSC Testnet in hex format
+            });
+          } catch (error) {
+            console.log("Failed to switch to BSC Testnet", error);
+          }
         }
 
         // Initialize the contract with the signer and ABI, then set it in the state
         const contract = new ethers.Contract(CONTRACT_ADDRESS, ContractABI, signer);
         setContract(contract);
+
+        // Set up WebSocket provider to listen for contract events
+        console.log(WS_RPC_URL, 'ws rpc url')
+        const wsProvider = new ethers.WebSocketProvider("wss://bsc-testnet.publicnode.com"); // BSC WebSocket endpoint
+        const wsContract = new ethers.Contract(CONTRACT_ADDRESS, ContractABI, wsProvider);
+        setWsContract(wsContract);
       } catch (error) {
         // If an error occurs, notify the user
         notify("Error initializing contract", "error");
@@ -74,7 +88,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, []);
 
   return (
-    <ContractContext.Provider value={{ contract, provider }}>
+    <ContractContext.Provider value={{ contract, provider, wsContract }}>
       {children}
     </ContractContext.Provider>
   );

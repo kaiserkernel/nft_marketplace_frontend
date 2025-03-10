@@ -34,7 +34,7 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
   })
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-  const { contract, provider } = useContract();
+  const { contract, provider, wsContract } = useContract();
   const { isWalletConnected } = useWallet();
 
   // Validate form before creating collection
@@ -106,7 +106,7 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
   }
 
   useEffect(() => {
-    if (!contract) return;
+    if (!wsContract || !provider) return;
   
     const handleCollectionCreated = async (
       owner: string,
@@ -117,21 +117,25 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
     ) => {
       const _collectionData = { name, symbol, metadataURI, owner, contractAddress: collectionAddress };
       try {
-        await createCollection(_collectionData);
-        notify("Collection created successfully", "success");
+        const t = await createCollection(_collectionData);
+        console.log("Hurray")
       } catch (error) {
         notify("Failed to create collection", "error");
       }
     };
   
-    // Attach event listener
-    contract.on("CollectionCreated", handleCollectionCreated);
-  
+    try {
+      // Attach event listener to the contract
+      wsContract.on("CollectionCreated", handleCollectionCreated);
+    } catch (error) {
+      console.error("Error setting up event listener:", error);
+    }
+
     // Cleanup function to remove the listener when component unmounts or contract changes
     return () => {
-      contract.off("CollectionCreated", handleCollectionCreated);
+      wsContract.off("CollectionCreated", handleCollectionCreated);
     };
-  }, [contract]);  
+  }, [wsContract, provider]);  
 
   useEffect(() => {
     // initialize all state
@@ -142,7 +146,7 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
     setCollectionData({ name: "", tokenSymbol: ""});
   } , [isOpen])
 
-  const footerBtn = () => {
+  const FooterBtn = () => {
     return (
       <div className="absolute bottom-1 p-4 w-full">
         <Button
@@ -161,7 +165,7 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
       title="Create a Collection"
       isOpen={isOpen}
       onClose={onClose}
-      FooterBtn={footerBtn}
+      FooterBtn={FooterBtn}
     >
       <div className="mt-8">
         <h3 className="text-white font-semibold text-md">
