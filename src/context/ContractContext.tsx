@@ -11,22 +11,22 @@ const WS_RPC_URL = process.env.REACT_APP_TESTNET_WS_RPC_URL ?? "";
 // Define types for context to ensure type safety
 interface ContractContextType {
   contract: ethers.Contract | null; // Contract instance or null if not yet initialized
-  provider: ethers.Provider | null; // Provider instance or null if not yet initialized
   wsContract: ethers.Contract | null; // Provider instance or null if not yet initialized
+  address: string | null;
 }
 
 // Create context with default values (null for contract and provider)
 const ContractContext = createContext<ContractContextType>({
   contract: null,
-  provider: null,
-  wsContract: null
+  wsContract: null,
+  address: null
 });
 
 // Context Provider Component that manages the contract and provider state
 export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [contract, setContract] = useState<ethers.Contract | null>(null);
-  const [provider, setProvider] = useState<ethers.Provider | null>(null);
   const [wsContract, setWsContract] = useState<ethers.Contract | null>(null);
+  const [address, setAddress] = useState<string | null>(null);
 
   useEffect(() => {
     // Initialize contract and provider
@@ -41,19 +41,14 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       try {
         // Cast window.ethereum to an EIP-1193 provider type for compatibility with ethers
         const ethereumProvider = window.ethereum as unknown as ethers.Eip1193Provider;
-
-        // Request account access from the user (MetaMask)
-        await ethereumProvider.request({ method: "eth_requestAccounts" });
+        await ethereumProvider.request({ method: "eth_requestAccounts" }); // Request account access from the user (MetaMask)
 
         // Initialize the provider with ethers (v6), using the Ethereum provider from MetaMask
         const provider = new ethers.BrowserProvider(ethereumProvider);
-        setProvider(provider); // Set the provider state
-
-        // Get the signer from the provider (signer is needed to interact with the blockchain)
-        const signer = await provider.getSigner();
-
-        // Fetch network details to ensure the user is connected to the correct network
-        const network = await provider.getNetwork();
+        const signer = await provider.getSigner(); // Get the signer from the provider (signer is needed to interact with the blockchain)
+        const address = await signer.getAddress(); // Get the user's wallet address
+        setAddress(address);
+        const network = await provider.getNetwork(); // Fetch network details to ensure the user is connected to the correct network
    
         // If the user is not on the BSC Testnet (Chain ID: 97), attempt to switch to it
         if (Number(network.chainId) !== 97) {
@@ -72,8 +67,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setContract(contract);
 
         // Set up WebSocket provider to listen for contract events
-        console.log(WS_RPC_URL, 'ws rpc url')
-        const wsProvider = new ethers.WebSocketProvider("wss://bsc-testnet.publicnode.com"); // BSC WebSocket endpoint
+        const wsProvider = new ethers.WebSocketProvider(WS_RPC_URL); // BSC WebSocket endpoint
         const wsContract = new ethers.Contract(CONTRACT_ADDRESS, ContractABI, wsProvider);
         setWsContract(wsContract);
       } catch (error) {
@@ -88,7 +82,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, []);
 
   return (
-    <ContractContext.Provider value={{ contract, provider, wsContract }}>
+    <ContractContext.Provider value={{ contract, wsContract, address }}>
       {children}
     </ContractContext.Provider>
   );

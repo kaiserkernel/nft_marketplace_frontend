@@ -26,8 +26,21 @@ const createCollection = async (_collectionData: CollectionData) => {
   }
 }
 
-const fetchCollection = () => {
-
+const fetchOwnerCollection = async (owner: string) => {
+  try {
+    const response = await axios.post("/api/collection/owner", {owner}, {
+      headers: { "Content-Type": "application/json" }
+    })
+    return response.data;
+  } catch (error:any) {
+    if (isAxiosError(error)) {
+      error.response?.data.msg.map((str: string) => {
+        notify(str, "error");
+      });
+    }
+    else
+      notify("Error occured. Please try again", "error");
+  }
 }
 
-export {createCollection, fetchCollection}
+export {createCollection, fetchOwnerCollection}

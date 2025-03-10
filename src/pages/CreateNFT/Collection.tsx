@@ -34,7 +34,7 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
   })
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-  const { contract, provider, wsContract } = useContract();
+  const { contract, wsContract } = useContract();
   const { isWalletConnected } = useWallet();
 
   // Validate form before creating collection
@@ -54,7 +54,7 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
   }
 
   const handleCreateCollection = async () => {
-    if (!contract || !provider) {
+    if (!contract) {
       notify("Please check internet connection", "error");
       return;
     }
@@ -106,7 +106,7 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
   }
 
   useEffect(() => {
-    if (!wsContract || !provider) return;
+    if (!wsContract) return;
   
     const handleCollectionCreated = async (
       owner: string,
@@ -135,7 +135,7 @@ const CreateCollection:React.FC<CreateCollectionProps> = ({isOpen, onClose}) => 
     return () => {
       wsContract.off("CollectionCreated", handleCollectionCreated);
     };
-  }, [wsContract, provider]);  
+  }, [wsContract]);  
 
   useEffect(() => {
     // initialize all state

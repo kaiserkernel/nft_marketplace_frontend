@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,  useEffect } from "react";
 import { ToastContainer } from "react-toastify";
 import { FileObject } from "pinata";
 
@@ -12,6 +12,19 @@ import CreateCollection from "./Collection";
 
 import { useContract } from "../../context/ContractContext";
 
+import { fetchOwnerCollection } from "../../services/colllectionService";
+
+interface CollectionProps {
+  _id: string,
+  name: string,
+  owner: string,
+  symbol: string,
+  metadatURI: string,
+  contractAddress: string,
+  createdAt: string,
+  __v: number
+}
+
 const CreateInCollection = () => {
   const [image, setImage] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string>("");
@@ -19,8 +32,9 @@ const CreateInCollection = () => {
   const [royaltyNFT, setRoyaltyNFT] = useState<string>("");
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [imageFile, setImageFile] = useState<FileObject | null>(null);
+  const [collections, setCollections] = useState<CollectionProps[] | null>(null);
 
-  const { contract } = useContract();
+  const { contract, address } = useContract();
 
   const handleAddAttribute = () => {
     setAttributes([...attributes, { trait: "", value: "" }]);
@@ -42,11 +56,20 @@ const CreateInCollection = () => {
 
   const handleOpenCollectionModal = async () => {
     setIsOpen(true);
-    if (contract) {
-      // const tx = await contract.getAllCollections();
-      // console.log(tx, 'all collections')
-    }
   };
+
+  useEffect(() => {
+    if (!address) return;
+
+    const fetchCollections = async () => {
+     const { collection } = await fetchOwnerCollection(address);
+     if (collection) {
+      setCollections(collection);
+     }
+    }
+
+    fetchCollections();
+  }, [address])
 
   return (
     <div className="w-full flex gap-10">
