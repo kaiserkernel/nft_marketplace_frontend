@@ -13,10 +13,9 @@ import TextArea from "../../components/common/TextArea";
 import AttributeInput from "../../components/common/AttributeInput";
 import Button from "../../components/common/Button";
 import Alert from "../../components/common/Alert";
-import { notify } from "../../components/common/Notify";
 
 import { useContract } from "../../context/ContractContext";
-import { fetchOwnerCollection, createCollection } from "../../services/colllectionService";
+import { fetchOwnerCollection } from "../../services/colllectionService";
 import { CollectionProps } from "../../types";
 
 const CreateInCollection = () => {
@@ -31,11 +30,13 @@ const CreateInCollection = () => {
   
   const [isCreateCollectionModalOpen, setIsCreateCollectionModalOpen] = useState<boolean>(false);
   const [isSelectCollectionModalOpen, setIsSelectCollectionModalOpen] = useState<boolean>(false);
+
   const [confirmedCollectionId, setConfirmedCollectionId] = useState<string | null>(null);
+  const [collectionCreatedFlag, setCollectionCreatedFlag] = useState<boolean>(false);
 
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-  const { contract, walletAddress, wsContract } = useContract();
+  const { walletAddress } = useContract();
 
   const handleAddAttribute = () => {
     setAttributes([...attributes, { trait: "", value: "" }]);
@@ -82,39 +83,7 @@ const CreateInCollection = () => {
     }
 
     fetchCollections();
-  }, [walletAddress])
-
-  useEffect(() => {
-    if (!wsContract) return;
-  
-    const handleCollectionCreated = async (
-      owner: string,
-      collectionAddress: string,
-      name: string,
-      symbol: string,
-      metadataURI: string
-    ) => {
-      const _collectionData = { name, symbol, metadataURI, owner, contractAddress: collectionAddress };
-      try {
-        const t = await createCollection(_collectionData);
-        console.log(t, "Hurray")
-      } catch (error) {
-        notify("Failed to create collection", "error");
-      }
-    };
-  
-    try {
-      // Attach event listener to the contract
-      wsContract.on("CollectionCreated", handleCollectionCreated);
-    } catch (error) {
-      console.error("Error setting up event listener:", error);
-    }
-
-    // Cleanup function to remove the listener when component unmounts or contract changes
-    return () => {
-      wsContract.off("CollectionCreated", handleCollectionCreated);
-    };
-  }, [wsContract]);  
+  }, [walletAddress, collectionCreatedFlag])
 
   return (
     <div className="w-full flex gap-10">
@@ -243,7 +212,11 @@ const CreateInCollection = () => {
       </div>
 
       {/* Modal for Collection Creation */}
-      <CreateCollectionModal isOpen={isCreateCollectionModalOpen} onClose={() => setIsCreateCollectionModalOpen(false)}/>
+      <CreateCollectionModal 
+        isOpen={isCreateCollectionModalOpen} 
+        onClose={() => setIsCreateCollectionModalOpen(false)}
+        setCreated={setCollectionCreatedFlag}
+      />
 
       {/* Modal for Select Collection */}
       { selectedCollection &&  (

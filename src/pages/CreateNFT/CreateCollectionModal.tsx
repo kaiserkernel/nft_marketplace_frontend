@@ -4,16 +4,17 @@ import { FileObject } from "pinata";
 import CollectionLogo from "../../components/common/CollectionLogo"
 import InputField from "../../components/common/InputField";
 import TextArea from "../../components/common/TextArea";
-import Button from "../../components/common/Button";
 import { notify } from "../../components/common/Notify";
 import Modal from "../../components/common/Modal";
 
+import { createCollection } from "../../services/colllectionService";
 import { useContract } from "../../context/ContractContext";
 import { pinata } from "../../config/pinata";
 
 interface CreateCollectionModalProps {
   isOpen: boolean,
-  onClose: () => void
+  onClose: () => void,
+  setCreated: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 interface CollectionData {
@@ -21,7 +22,7 @@ interface CollectionData {
   tokenSymbol: string;
 }
 
-const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onClose}) => {
+const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onClose, setCreated}) => {
   const [LogoImage, setLogoImage] = useState<string | null>(null);
   const [logoImageFile, setLogoImageFile] = useState<FileObject | null>(null);
   const [description, setDescription] = useState<string>("");
@@ -109,6 +110,39 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
     setDescription("");
     setCollectionData({ name: "", tokenSymbol: ""});
   } , [isOpen])
+
+  useEffect(() => {
+    if (!wsContract) return;
+  
+    const handleCollectionCreated = async (
+      owner: string,
+      collectionAddress: string,
+      name: string,
+      symbol: string,
+      metadataURI: string
+    ) => {
+      const _collectionData = { name, symbol, metadataURI, owner, contractAddress: collectionAddress };
+      try {
+        await createCollection(_collectionData);
+        setCreated(prev => !prev);
+        onClose();
+      } catch (error) {
+        notify("Failed to create collection", "error");
+      }
+    };
+  
+    try {
+      // Attach event listener to the contract
+      wsContract.on("CollectionCreated", handleCollectionCreated);
+    } catch (error) {
+      console.error("Error setting up event listener:", error);
+    }
+
+    // Cleanup function to remove the listener when component unmounts or contract changes
+    return () => {
+      wsContract.off("CollectionCreated", handleCollectionCreated);
+    };
+  }, [wsContract]);  
 
   return (
     <Modal
