@@ -92,7 +92,7 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
       notify("Collection created successfully", "success");
     } catch (error: any) {
       if (error.code === "ACTION_REJECTED") {
-        notify("Transaction rejected by user.", "warning");
+        notify("Transaction rejected.", "warning");
       } else {
         console.error("Error creating collection:", error);
         notify("Error occured on creating collection", "error");

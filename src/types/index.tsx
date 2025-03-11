@@ -17,5 +17,6 @@ export interface NFTData {
     tokenId: number,
     tokenURI: string,
     royalty: number,
-    createdAt?: string
+    createdAt?: string,
+    collectionAddress?: string
 }

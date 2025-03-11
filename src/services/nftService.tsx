@@ -5,6 +5,7 @@ import { NFTData } from "../types";
 
 const mintNFTDB = async (_data: NFTData) => {
     try {
+      console.log(_data, 'data')
         const response = await axios.post("/api/nft/mint", _data, {
           headers: { "Content-Type": "application/json" }
         });

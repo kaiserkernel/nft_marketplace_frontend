@@ -59,6 +59,7 @@ const CreateInCollection = () => {
 
   const { walletAddress, signer, wsProvider } = useContract();
 
+  const [collectionContract, setCollectionContract] = useState<ethers.Contract | null>(null);
   const [wsCollectionContract, setWsCollectionContract] = useState<ethers.Contract | null>(null);
 
   const validatorForm = () => {
@@ -111,7 +112,7 @@ const CreateInCollection = () => {
       notify("Please check wallet connection", "warning");
       return;
     }
-    if (!confirmedCollectionAddress) {
+    if (!confirmedCollectionAddress || !collectionContract) {
       notify("Please select collection", "warning");
       return;
     }
@@ -138,19 +139,15 @@ const CreateInCollection = () => {
       
       const _royaltyNFT = royaltyNFT * 100;
       
-      const contractInstance = new ethers.Contract(confirmedCollectionAddress, ContractCollectionABI, signer);
-      const _wsContractInstance =  new ethers.Contract(confirmedCollectionAddress, ContractCollectionABI, wsProvider);
-      setWsCollectionContract(_wsContractInstance);
-
       // Estimate the gas required for the transaction
-      const gasEstimate = await contractInstance.mintNFT.estimateGas(
+      const gasEstimate = await collectionContract.mintNFT.estimateGas(
         walletAddress,
         metadataURI,
         _royaltyNFT
       );
       
       // Call smart contract to create collection
-      const tx = await contractInstance.mintNFT( walletAddress, metadataURI, _royaltyNFT, { 
+      const tx = await collectionContract.mintNFT( walletAddress, metadataURI, _royaltyNFT, { 
         gasLimit: gasEstimate 
       });
 
@@ -158,7 +155,7 @@ const CreateInCollection = () => {
       notify("NFT minted successfully", "success");
     } catch (error: any) {
       if (error.code === "ACTION_REJECTED") {
-        notify("Transaction rejected by user.", "warning");
+        notify("Transaction rejected.", "warning");
       } else {
         console.error("Error mint NFT:", error);
         notify("Error occured on mint NFT", "error");
@@ -167,6 +164,17 @@ const CreateInCollection = () => {
       setIsNFTProcessing(false);
     }
   }
+
+  useEffect(() => {
+    if (!confirmedCollectionAddress) return;
+
+    const contractInstance = new ethers.Contract(confirmedCollectionAddress, ContractCollectionABI, signer);
+    setCollectionContract(contractInstance);
+
+    const _wsContractInstance =  new ethers.Contract(confirmedCollectionAddress, ContractCollectionABI, wsProvider);
+    setWsCollectionContract(_wsContractInstance);
+
+  }, [confirmedCollectionAddress])
 
   useEffect(() => {
     if (!walletAddress) return;
@@ -191,14 +199,27 @@ const CreateInCollection = () => {
 
   useEffect(() => {
     if (!wsCollectionContract) return;
-
-    const handleMintNFTDB = async (_nftData: NFTData) => {
-      await mintNFTDB(_nftData);
-      notify("Successfully mint NFT", "success");
+    
+    const handleMintNFTDB = async (
+      owner: string,
+      _tokenId: number,
+      tokenURI: string,
+      _royalty: number,
+      collectionAddress: string
+    ) => {
+      try {
+        const tokenId = Number(_tokenId);
+        const royalty = Number(_royalty);
+        const _nftData = { owner, tokenId, tokenURI, royalty, collectionAddress };
+        await mintNFTDB(_nftData);
+      } catch (error) {
+        console.log("Create NFTDB data occur error", error)
+      }
     }
 
     try {
       // Attach event listener to the contract
+      console.log("ws listener")
       wsCollectionContract.on("NFTMinted", handleMintNFTDB);
     } catch (error) {
       console.error("Error setting up event listener:", error);
