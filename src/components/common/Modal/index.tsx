@@ -1,12 +1,17 @@
 import { FC, ReactNode, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
+import Button from "../Button";
+
 interface ModalProps {
   title: string;
   isOpen: boolean;
   onClose: () => void;
   children?: ReactNode;
-  FooterBtn?: () => JSX.Element
+  btnLabel: string,
+  btnType: "colorful" | "primary" | "outline" | "blue" | "text",
+  btnClick: () => void
+  btnProcessing?: boolean
 }
 
 const Modal: FC<ModalProps> = ({
@@ -14,7 +19,10 @@ const Modal: FC<ModalProps> = ({
   children,
   isOpen,
   onClose,
-  FooterBtn
+  btnLabel,
+  btnType,
+  btnClick,
+  btnProcessing
 }) => {
   return (
     <AnimatePresence>
@@ -51,7 +59,15 @@ const Modal: FC<ModalProps> = ({
             </div>
 
             {/* Footer */}
-            {FooterBtn && <FooterBtn/>}
+            <div className="absolute bottom-1 p-4 w-full">
+              <Button
+                label={btnLabel}
+                type={btnType}
+                width="full"
+                onClick={btnClick}
+                disabled={btnProcessing}
+              />
+            </div>
           </motion.div>
         </div>
       )}

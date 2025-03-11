@@ -110,26 +110,15 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
     setCollectionData({ name: "", tokenSymbol: ""});
   } , [isOpen])
 
-  const FooterBtn = () => {
-    return (
-      <div className="absolute bottom-1 p-4 w-full">
-        <Button
-          label={"Create Collection"}
-          type="blue"
-          width="full"
-          onClick={handleCreateCollection}
-          disabled={isProcessing}
-        />
-      </div>
-    )
-  }
-
   return (
     <Modal
       title="Create a Collection"
       isOpen={isOpen}
       onClose={onClose}
-      FooterBtn={FooterBtn}
+      btnLabel="Create Collection"
+      btnType="blue"
+      btnClick={handleCreateCollection}
+      btnProcessing={isProcessing}
     >
       <div className="mt-8">
         <h3 className="text-white font-semibold text-md">
