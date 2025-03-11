@@ -95,7 +95,7 @@ const CreateInCollection = () => {
         <h2 className="text-white text-2xl font-semibold">Create an NFT in a Collection</h2>
 
         {/* Display Name */}
-        <div>
+        <div className="mt-4">
           <h3 className="text-white font-semibold text-md mb-2">Display Name</h3>
           <InputField
             itemType="default"
@@ -109,47 +109,50 @@ const CreateInCollection = () => {
         </div>
 
         {/* Description */}
-        <TextArea
-          label="Description"
-          placeholder="Describe the idea behind your NFT and explain how it stands out from the rest."
-        />
+        <div className="mt-4">
+          <TextArea
+            label="Description"
+            placeholder="Describe the idea behind your NFT and explain how it stands out from the rest."
+          />
+        </div>
 
         {/* Collection Modal Trigger */}
-        <div>
-          <h3 className="text-white font-semibold text-md">Collection</h3><div className="mt-4 flex space-x-4">
-          {
-            isProcessing && <OrbitProgress color="#fff" size="medium" />
-          }
-          {
-            collections && (
-              <CollectionBtnGroup 
-                collections={collections} 
-                setSelectedCollection={setSelectedCollection} 
-                setIsProcessing={setIsProcessing} 
-                setIsSelectCollectionModalOpen={setIsSelectCollectionModalOpen}
-                confirmedCollectionId={confirmedCollectionId}
-              />
-            )
-          }
-          
-          {/* Button Group in Horizontal Row */}
-          {
-            !isProcessing && (
-              <button 
-                onClick={handleOpenCollectionModal} 
-                className="relative w-32 h-32 bg-white text-black font-bold border-4 rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:bg-gray-100"
-              >
-                {/* Plus Sign that Grows on Hover */}
-                <span className="absolute inset-0 flex items-center justify-center text-7xl font-extrabold text-black group-hover:scale-125 transition-all duration-300 transform">
-                  +
-                </span>
+          <div className="mt-4">
+            <h3 className="text-white font-semibold text-md">Collection</h3>
+            <div className="mt-2 flex space-x-4">
+            {
+              isProcessing && <OrbitProgress color="#fff" size="medium" />
+            }
+            {
+              collections && (
+                <CollectionBtnGroup 
+                  collections={collections} 
+                  setSelectedCollection={setSelectedCollection} 
+                  setIsProcessing={setIsProcessing} 
+                  setIsSelectCollectionModalOpen={setIsSelectCollectionModalOpen}
+                  confirmedCollectionId={confirmedCollectionId}
+                />
+              )
+            }
+            
+            {/* Button Group in Horizontal Row */}
+            {
+              !isProcessing && (
+                <button 
+                  onClick={handleOpenCollectionModal} 
+                  className="relative w-32 h-32 bg-white text-black font-bold border-4 rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:bg-gray-100"
+                >
+                  {/* Plus Sign that Grows on Hover */}
+                  <span className="absolute inset-0 flex items-center justify-center text-7xl font-extrabold text-black group-hover:scale-125 transition-all duration-300 transform">
+                    +
+                  </span>
 
-                {/* Border */}
-                <span className="absolute inset-0 border-8 border-transparent rounded-lg"></span>
-              </button>
-            )
-          }
-        </div>
+                  {/* Border */}
+                  <span className="absolute inset-0 border-8 border-transparent rounded-lg"></span>
+                </button>
+              )
+            }
+          </div>
         </div>
 
         {/* Royalties */}
@@ -181,9 +184,9 @@ const CreateInCollection = () => {
         </div>
 
         {/* Attributes */}
-        <div className="mb-4">
+        <div className="mt-4">
           <h3 className="text-white font-semibold text-md">Attributes</h3>
-          <div className="mt-2 grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             {attributes.map((attr, index) => (
               <AttributeInput
                 key={index}
@@ -195,12 +198,13 @@ const CreateInCollection = () => {
               />
             ))}
           </div>
-          <div className="h-4"></div>
-          <Button type="outline" label="Add attribute" onClick={handleAddAttribute} />
+          <div className="mt-2">
+            <Button type="outline" label="Add attribute" onClick={handleAddAttribute} />
+          </div>
         </div>
 
         {/* Alert */}
-        <div className="mb-4">
+        <div className="my-4">
           <Alert
             title="It will be impossible to alter the NFT data."
             message="Editing NFTs is currently unavailable."

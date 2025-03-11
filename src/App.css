@@ -1,5 +1,5 @@
 .background-image {
-  background-image: url("../public/assets/bg.svg");
+  /* background-image: url("../public/assets/bg.svg"); */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -9,7 +9,7 @@
 /* Mobile background for small and medium screens */
 @media (max-width: 640px) {
   .background-image {
-    background-image: url("../public/assets/mobileBg.svg");
+    /* background-image: url("../public/assets/mobileBg.svg"); */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
