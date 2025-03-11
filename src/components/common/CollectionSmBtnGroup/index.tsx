@@ -7,11 +7,19 @@ interface CollectionBtnProps {
   collections: CollectionProps[];
   setSelectedCollection: React.Dispatch<React.SetStateAction<CollectionProps | null>>;
   setIsProcessing: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsSelectCollectionModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  confirmedCollectionId: string | null
 }
 
-const CollectionBtn: React.FC<CollectionBtnProps> = ({ collections, setSelectedCollection, setIsProcessing }) => {
+const CollectionBtn: React.FC<CollectionBtnProps> = (props) => {
+  const { collections, setSelectedCollection, setIsProcessing, setIsSelectCollectionModalOpen, confirmedCollectionId } = props;
   const [collectionList, setCollectionList] = useState<CollectionProps[]>([]);
   
+  const handleBtnClick = (_collection: CollectionProps) => {
+    setIsSelectCollectionModalOpen(true);
+    setSelectedCollection(_collection)
+  }
+
   useEffect(() => {
     // Create an async function to fetch metadata
     const fetchMetadataInfo = async () => {
@@ -51,7 +59,7 @@ const CollectionBtn: React.FC<CollectionBtnProps> = ({ collections, setSelectedC
           collectionList.map((collection) => (
             <button
               key={collection._id}
-              onClick={() => setSelectedCollection(collection)}
+              onClick={() => handleBtnClick(collection)}
               className="relative w-32 h-32 group"
             >
                 {
@@ -65,9 +73,15 @@ const CollectionBtn: React.FC<CollectionBtnProps> = ({ collections, setSelectedC
                             />
                             
                             {/* Text Fades in on Hover */}
-                            <span className="absolute inset-0 flex items-center justify-center text-white text-lg font-bold opacity-0 transition duration-300 group-hover:opacity-100">
-                                {collection.name}
-                            </span>
+                            {
+                                collection._id === confirmedCollectionId ? (
+                                    <>Confirmed</>
+                                ) : (
+                                    <span className="absolute inset-0 flex items-center justify-center text-white text-lg font-bold opacity-0 transition duration-300 group-hover:opacity-100">
+                                        {collection.name}
+                                    </span>
+                                )
+                            }
                         </div>
                     )
                 }

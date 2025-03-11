@@ -3,17 +3,20 @@ import { ToastContainer } from "react-toastify";
 import { FileObject } from "pinata";
 import { OrbitProgress } from "react-loading-indicators"
 
+import CreateCollectionModal from "./CreateCollectionModal";
+import CollectionSelectModal from "./CollectionSelectModal"
+
+import CollectionBtnGroup from "../../components/common/CollectionSmBtnGroup";
 import NFTBanner from "../../components/common/NFTBanner";
 import InputField from "../../components/common/InputField";
 import TextArea from "../../components/common/TextArea";
 import AttributeInput from "../../components/common/AttributeInput";
 import Button from "../../components/common/Button";
 import Alert from "../../components/common/Alert";
-import CreateCollectionModal from "./CreateCollectionModal";
-import CollectionBtnGroup from "../../components/common/CollectionSmBtnGroup";
+import { notify } from "../../components/common/Notify";
 
 import { useContract } from "../../context/ContractContext";
-import { fetchOwnerCollection } from "../../services/colllectionService";
+import { fetchOwnerCollection, createCollection } from "../../services/colllectionService";
 import { CollectionProps } from "../../types";
 
 const CreateInCollection = () => {
@@ -21,13 +24,18 @@ const CreateInCollection = () => {
   const [displayName, setDisplayName] = useState<string>("");
   const [attributes, setAttributes] = useState<{ trait: string; value: string }[]>([]);
   const [royaltyNFT, setRoyaltyNFT] = useState<string>("");
-  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [imageFile, setImageFile] = useState<FileObject | null>(null);
+
   const [collections, setCollections] = useState<CollectionProps[] | null>(null);
   const [selectedCollection, setSelectedCollection] = useState<CollectionProps | null>(null);
+  
+  const [isCreateCollectionModalOpen, setIsCreateCollectionModalOpen] = useState<boolean>(false);
+  const [isSelectCollectionModalOpen, setIsSelectCollectionModalOpen] = useState<boolean>(false);
+  const [confirmedCollectionId, setConfirmedCollectionId] = useState<string | null>(null);
+
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-  const { contract, walletAddress } = useContract();
+  const { contract, walletAddress, wsContract } = useContract();
 
   const handleAddAttribute = () => {
     setAttributes([...attributes, { trait: "", value: "" }]);
@@ -48,8 +56,12 @@ const CreateInCollection = () => {
   };
 
   const handleOpenCollectionModal = async () => {
-    setIsOpen(true);
+    setIsCreateCollectionModalOpen(true);
   };
+
+  const handleClickMint = () => {
+    
+  }
 
   useEffect(() => {
     if (!walletAddress) return;
@@ -71,6 +83,38 @@ const CreateInCollection = () => {
 
     fetchCollections();
   }, [walletAddress])
+
+  useEffect(() => {
+    if (!wsContract) return;
+  
+    const handleCollectionCreated = async (
+      owner: string,
+      collectionAddress: string,
+      name: string,
+      symbol: string,
+      metadataURI: string
+    ) => {
+      const _collectionData = { name, symbol, metadataURI, owner, contractAddress: collectionAddress };
+      try {
+        const t = await createCollection(_collectionData);
+        console.log(t, "Hurray")
+      } catch (error) {
+        notify("Failed to create collection", "error");
+      }
+    };
+  
+    try {
+      // Attach event listener to the contract
+      wsContract.on("CollectionCreated", handleCollectionCreated);
+    } catch (error) {
+      console.error("Error setting up event listener:", error);
+    }
+
+    // Cleanup function to remove the listener when component unmounts or contract changes
+    return () => {
+      wsContract.off("CollectionCreated", handleCollectionCreated);
+    };
+  }, [wsContract]);  
 
   return (
     <div className="w-full flex gap-10">
@@ -109,7 +153,13 @@ const CreateInCollection = () => {
           }
           {
             collections && (
-              <CollectionBtnGroup collections={collections} setSelectedCollection={setSelectedCollection} setIsProcessing={setIsProcessing}/>
+              <CollectionBtnGroup 
+                collections={collections} 
+                setSelectedCollection={setSelectedCollection} 
+                setIsProcessing={setIsProcessing} 
+                setIsSelectCollectionModalOpen={setIsSelectCollectionModalOpen}
+                confirmedCollectionId={confirmedCollectionId}
+              />
             )
           }
           
@@ -189,12 +239,21 @@ const CreateInCollection = () => {
         </div>
 
         {/* Create NFT Button */}
-        <Button type="blue" label="Create NFT" />
+        <Button type="blue" label="Create NFT" onClick={handleClickMint}/>
       </div>
 
       {/* Modal for Collection Creation */}
-        <CreateCollectionModal isOpen={isOpen} onClose={() => setIsOpen(false)}/>
-      {/* </Modal> */}
+      <CreateCollectionModal isOpen={isCreateCollectionModalOpen} onClose={() => setIsCreateCollectionModalOpen(false)}/>
+
+      {/* Modal for Select Collection */}
+      { selectedCollection &&  (
+        <CollectionSelectModal 
+          isOpen={isSelectCollectionModalOpen} 
+          onClose={() => setIsSelectCollectionModalOpen(false)} 
+          collection={selectedCollection}
+          setConfirmedCollectionId={setConfirmedCollectionId}
+        />
+      )}
     </div>
   );
 };

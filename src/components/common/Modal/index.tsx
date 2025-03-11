@@ -1,6 +1,5 @@
 import { FC, ReactNode, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Button from "../Button";
 
 interface ModalProps {
   title: string;

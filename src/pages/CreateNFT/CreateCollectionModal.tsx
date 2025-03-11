@@ -11,8 +11,6 @@ import Modal from "../../components/common/Modal";
 import { useContract } from "../../context/ContractContext";
 import { pinata } from "../../config/pinata";
 
-import { createCollection } from "../../services/colllectionService";
-
 interface CreateCollectionModalProps {
   isOpen: boolean,
   onClose: () => void
@@ -102,38 +100,6 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
       setIsProcessing(false);
     }
   }
-
-  useEffect(() => {
-    if (!wsContract) return;
-  
-    const handleCollectionCreated = async (
-      owner: string,
-      collectionAddress: string,
-      name: string,
-      symbol: string,
-      metadataURI: string
-    ) => {
-      const _collectionData = { name, symbol, metadataURI, owner, contractAddress: collectionAddress };
-      try {
-        const t = await createCollection(_collectionData);
-        console.log("Hurray")
-      } catch (error) {
-        notify("Failed to create collection", "error");
-      }
-    };
-  
-    try {
-      // Attach event listener to the contract
-      wsContract.on("CollectionCreated", handleCollectionCreated);
-    } catch (error) {
-      console.error("Error setting up event listener:", error);
-    }
-
-    // Cleanup function to remove the listener when component unmounts or contract changes
-    return () => {
-      wsContract.off("CollectionCreated", handleCollectionCreated);
-    };
-  }, [wsContract]);  
 
   useEffect(() => {
     // initialize all state
