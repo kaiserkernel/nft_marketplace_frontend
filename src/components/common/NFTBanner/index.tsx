@@ -6,33 +6,32 @@ import { FileObject } from "pinata";
 
 interface NFTBannerProps {
   height: number;
-  image: string | null;
-  setImage: React.Dispatch<React.SetStateAction<string | null>>;
-  setImageFile: React.Dispatch<React.SetStateAction<FileObject | null>>;
+  setImage: React.Dispatch<React.SetStateAction<FileObject | null>>;
 }
 
-const NFTBanner: React.FC<NFTBannerProps> = ({ height, image, setImage, setImageFile }) => {
+const NFTBanner: React.FC<NFTBannerProps> = ({ height, setImage }) => {
   const [mediaType, setMediaType] = useState<"image" | "video" | null>(null);
   const [isHovered, setIsHovered] = useState<boolean>(false);
+  const [imageURL, setImageURL] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    return () => {
-      if (image) URL.revokeObjectURL(image);
-    };
-  }, [image]);
+  // useEffect(() => {
+  //   return () => {
+  //     if (image) URL.revokeObjectURL(image);
+  //   };
+  // }, [image]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       // set file
-      setImageFile(file);
+      setImage(file);
 
       const fileUrl = URL.createObjectURL(file);
       const fileType = file.type.startsWith("video") ? "video" : "image";
       setMediaType(fileType);
-      setImage((prevImage) => {
+      setImageURL((prevImage) => {
         if (prevImage) URL.revokeObjectURL(prevImage);
         return fileUrl;
       });
@@ -51,18 +50,18 @@ const NFTBanner: React.FC<NFTBannerProps> = ({ height, image, setImage, setImage
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="absolute inset-[1px] bg-[#131314] rounded-3xl flex flex-col items-center justify-center">
-        {image ? (
+        {imageURL ? (
           mediaType === "video" ? (
             <video
               className="w-full h-full object-contain rounded-3xl"
               autoPlay
             >
-              <source src={image} type="video/mp4" />
+              <source src={imageURL} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           ) : (
             <img
-              src={image}
+              src={imageURL}
               alt="Uploaded"
               className="w-full h-full object-cover rounded-3xl"
             />
@@ -99,7 +98,7 @@ const NFTBanner: React.FC<NFTBannerProps> = ({ height, image, setImage, setImage
       </div>
 
       {/* Animated Transparent Overlay */}
-      {image && (
+      {imageURL && (
         <>
           <input
             type="file"

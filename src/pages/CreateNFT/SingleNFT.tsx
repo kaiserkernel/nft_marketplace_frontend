@@ -38,7 +38,7 @@ const SingleNFT = () => {
   return (
     <div className="w-full flex gap-10">
       <div className="basis-1/2">
-        <NFTBanner height={800} image={image} setImage={setImage} setImageFile={setImageFile}/>
+        {/* <NFTBanner height={800} image={image} setImage={setImage} setImageFile={setImageFile}/> */}
       </div>
       <div className="basis-1/2 flex flex-col justify-between">
         <h2 className="text-white text-2xl font-semibold">

@@ -9,7 +9,7 @@ interface CollectionData {
     contractAddress: string;
   }
 
-const createCollection = async (_collectionData: CollectionData) => {
+const createCollectionDB = async (_collectionData: CollectionData) => {
   try {
     const response = await axios.post("/api/collection/create", _collectionData, {
       headers: { "Content-Type": "application/json" }
@@ -60,4 +60,4 @@ const fetchMetaData = async (uri: string) => {
   }
 }
 
-export {createCollection, fetchOwnerCollection, fetchMetaData}
+export {createCollectionDB, fetchOwnerCollection, fetchMetaData}

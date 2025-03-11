@@ -7,7 +7,7 @@ import TextArea from "../../components/common/TextArea";
 import { notify } from "../../components/common/Notify";
 import Modal from "../../components/common/Modal";
 
-import { createCollection } from "../../services/colllectionService";
+import { createCollectionDB } from "../../services/colllectionService";
 import { useContract } from "../../context/ContractContext";
 import { pinata } from "../../config/pinata";
 
@@ -52,7 +52,7 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
 
   const handleCreateCollection = async () => {
     if (!contract) {
-      notify("Please check internet connection", "error");
+      notify("Please check wallet connection", "error");
       return;
     }
     if (!validatorForm()) {
@@ -121,9 +121,10 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
       symbol: string,
       metadataURI: string
     ) => {
+      console.log("event fetch collectioncreated")
       const _collectionData = { name, symbol, metadataURI, owner, contractAddress: collectionAddress };
       try {
-        await createCollection(_collectionData);
+        await createCollectionDB(_collectionData);
         setCreated(prev => !prev);
         onClose();
       } catch (error) {

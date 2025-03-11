@@ -10,3 +10,12 @@ export interface CollectionProps {
     createdAt: string,
     __v: number
 }
+
+export interface NFTData {
+    _id?: string,
+    owner: string
+    tokenId: number,
+    tokenURI: string,
+    royalty: number,
+    createdAt?: string
+}

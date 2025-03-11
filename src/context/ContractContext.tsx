@@ -5,10 +5,9 @@ import {
   useAppKitAccount,
   useAppKitProvider,
 } from "@reown/appkit/react";
-import { useNavigate } from "react-router-dom";
 
 import { notify } from "../components/common/Notify";
-import { ContractABI } from "../contracts/index"; // Make sure the path is correct
+import { ContractFactoryABI } from "../contracts/index"; // Make sure the path is correct
 
 // Environment variable for contract address (default to an empty string if not provided)
 const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS ?? "";
@@ -28,6 +27,8 @@ interface ContractContextType {
   setWalletBalance: React.Dispatch<React.SetStateAction<string | null>>;
   setWalletAvatar: React.Dispatch<React.SetStateAction<string | null>>;
   setIsWalletConnected: React.Dispatch<React.SetStateAction<boolean>>;
+  signer: ethers.JsonRpcSigner | null,
+  wsProvider: ethers.WebSocketProvider | null
 }
 
 // Create context with default values
@@ -43,7 +44,9 @@ const ContractContext = createContext<ContractContextType>({
   setWalletAddress: () => {},
   setWalletBalance: () => {},
   setWalletAvatar: () => {},
-  setIsWalletConnected: () => {}
+  setIsWalletConnected: () => {},
+  signer: null,
+  wsProvider: null
 });
 
 // Context Provider Component that manages the contract and provider state
@@ -54,11 +57,11 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [walletBalance, setWalletBalance] = useState<string | null>(null);
   const [walletAvatar, setWalletAvatar] = useState<string | null>(null);
   const [isWalletConnected, setIsWalletConnected] = useState<boolean>(false);
+  const [signer, setSigner] = useState<ethers.JsonRpcSigner | null>(null);
+  const [wsProvider, setWsProvider] = useState<ethers.WebSocketProvider | null>(null);
 
   const { address, isConnected } = useAppKitAccount();
   const { walletProvider } = useAppKitProvider<Provider>("eip155");
-
-  const navigator = useNavigate();
 
   const getAllUserInfo = async (provider: BrowserProvider, address: string) => {
     try {
@@ -84,18 +87,20 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       try {
         // Convert AppKit's provider to a BrowserProvider (Ethers v6 requirement)
         const browserProvider = new BrowserProvider(walletProvider);
-        const signer = await browserProvider.getSigner(); // Get signer for transactions
+        const _signer = await browserProvider.getSigner(); // Get signer for transactions
+        setSigner(_signer);
   
         // Fetch wallet balance and avatar
-        await getAllUserInfo(browserProvider, _address);  
+        await getAllUserInfo(browserProvider, _address);
   
         // Initialize the contract with the signer and ABI, then set it in state
-        const contractInstance = new ethers.Contract(CONTRACT_ADDRESS, ContractABI, signer);
+        const contractInstance = new ethers.Contract(CONTRACT_ADDRESS, ContractFactoryABI, _signer);
         setContract(contractInstance);
   
         // Set up WebSocket provider to listen for contract events
-        const wsProvider = new ethers.WebSocketProvider(WS_RPC_URL);
-        const wsContractInstance = new ethers.Contract(CONTRACT_ADDRESS, ContractABI, wsProvider);
+        const _wsProvider = new ethers.WebSocketProvider(WS_RPC_URL);
+        setWsProvider(_wsProvider);
+        const wsContractInstance = new ethers.Contract(CONTRACT_ADDRESS, ContractFactoryABI, _wsProvider);
         setWsContract(wsContractInstance);
       }
       catch (error) {
@@ -123,7 +128,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [isConnected, address, walletProvider])
 
   return (
-    <ContractContext.Provider value={{ contract, wsContract, walletAddress, walletBalance, walletAvatar, isWalletConnected, setContract, setWsContract, setWalletAddress, setWalletBalance, setWalletAvatar, setIsWalletConnected }}>
+    <ContractContext.Provider value={{ contract, wsContract, walletAddress, walletBalance, walletAvatar, isWalletConnected, setContract, setWsContract, setWalletAddress, setWalletBalance, setWalletAvatar, setIsWalletConnected, signer, wsProvider }}>
       {children}
     </ContractContext.Provider>
   );

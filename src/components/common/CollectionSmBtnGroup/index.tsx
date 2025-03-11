@@ -8,11 +8,11 @@ interface CollectionBtnProps {
   setSelectedCollection: React.Dispatch<React.SetStateAction<CollectionProps | null>>;
   setIsProcessing: React.Dispatch<React.SetStateAction<boolean>>;
   setIsSelectCollectionModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  confirmedCollectionId: string | null
+  confirmedCollectionAddress: string | null
 }
 
 const CollectionBtn: React.FC<CollectionBtnProps> = (props) => {
-  const { collections, setSelectedCollection, setIsProcessing, setIsSelectCollectionModalOpen, confirmedCollectionId } = props;
+  const { collections, setSelectedCollection, setIsProcessing, setIsSelectCollectionModalOpen, confirmedCollectionAddress } = props;
   const [collectionList, setCollectionList] = useState<CollectionProps[]>([]);
   
   const handleBtnClick = (_collection: CollectionProps) => {
@@ -52,55 +52,53 @@ const CollectionBtn: React.FC<CollectionBtnProps> = (props) => {
   }, [collections]);
 
   return (
-    <div>
+    <>
       {/* Display the collection button group */}
-      <div>
-        {collectionList.length > 0 ? (
-          collectionList.map((collection) => (
-            <button
-              key={collection._id}
-              onClick={() => handleBtnClick(collection)}
-              className="relative w-32 h-32 group"
-            >
-                {
-                    collection.image && (
-                        <div className="relative w-full h-full group rounded-md border-4 border-white border-opacity-30 transition-all duration-500 hover:border-opacity-100 hover:shadow-lg">
-                            {/* Image with Hover Blur Effect */}
-                            <img 
-                                src={collection.image} 
-                                alt={collection.name} 
-                                className="w-full h-full object-cover transition duration-300 group-hover:blur-sm"
-                            />
-                            
-                            {/* Check sign if confirmed */}
-                            {
-                              collection._id === confirmedCollectionId && (
-                                <img 
-                                    src="/check-sign.webp"  // Replace with your actual path
-                                    alt="Confirmed"
-                                    className="absolute w-24 h-24 inset-0 m-auto opacity-90"
-                                />
-                              )
-                            }
+      {collectionList.length > 0 ? (
+        collectionList.map((collection) => (
+          <button
+            key={collection._id}
+            onClick={() => handleBtnClick(collection)}
+            className="relative w-32 h-32 group"
+          >
+              {
+                  collection.image && (
+                      <div className="relative w-full h-full group rounded-md border-4 border-white border-opacity-30 transition-all duration-500 hover:border-opacity-100 hover:shadow-lg">
+                          {/* Image with Hover Blur Effect */}
+                          <img 
+                              src={collection.image} 
+                              alt={collection.name} 
+                              className="w-full h-full object-cover transition duration-300 group-hover:blur-sm"
+                          />
+                          
+                          {/* Check sign if confirmed */}
+                          {
+                            collection.contractAddress === confirmedCollectionAddress && (
+                              <img 
+                                  src="/check-sign.webp"  // Replace with your actual path
+                                  alt="Confirmed"
+                                  className="absolute w-24 h-24 inset-0 m-auto opacity-90"
+                              />
+                            )
+                          }
 
-                            {/* Text Fades in on Hover if not confirmed*/}
-                            {
-                                collection._id !== confirmedCollectionId && (
-                                    <span className="absolute inset-0 flex items-center justify-center text-white text-lg font-bold opacity-0 transition duration-300 group-hover:opacity-100">
-                                        {collection.name}
-                                    </span>
-                                )
-                            }
-                        </div>
-                    )
-                }
-            </button>
-          ))
-        ) : (
-          null
-        )}
-      </div>
-    </div>
+                          {/* Text Fades in on Hover if not confirmed*/}
+                          {
+                              collection.contractAddress !== confirmedCollectionAddress && (
+                                  <span className="absolute inset-0 flex items-center justify-center text-white text-lg font-bold opacity-0 transition duration-300 group-hover:opacity-100">
+                                      {collection.name}
+                                  </span>
+                              )
+                          }
+                      </div>
+                  )
+              }
+          </button>
+        ))
+      ) : (
+        null
+      )}
+    </>
   );
 };
 

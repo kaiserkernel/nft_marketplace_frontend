@@ -8,17 +8,17 @@ import { CollectionProps } from "../../types";
 
 interface CollectionShowModalProps {
     collection: CollectionProps,
-    setConfirmedCollectionId: React.Dispatch<React.SetStateAction<string | null>>;
+    setConfirmedCollectionAddress: React.Dispatch<React.SetStateAction<string | null>>;
     isOpen: boolean,
     onClose: () => void
 }
 
 const CollectionShowModal: React.FC<CollectionShowModalProps> = (props) => {
-    const { collection, setConfirmedCollectionId, isOpen, onClose } = props;
+    const { collection, setConfirmedCollectionAddress, isOpen, onClose } = props;
     const { name, description, image, symbol, createdAt } = collection;
 
     const handleConfirm = () => {
-        setConfirmedCollectionId(collection._id);
+        setConfirmedCollectionAddress(collection.contractAddress);
         onClose();
     }
 

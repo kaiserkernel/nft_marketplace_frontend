@@ -2,6 +2,9 @@ import React, { useState,  useEffect } from "react";
 import { ToastContainer } from "react-toastify";
 import { FileObject } from "pinata";
 import { OrbitProgress } from "react-loading-indicators"
+import { ethers } from "ethers";
+
+import { ContractCollectionABI } from "../../contracts";
 
 import CreateCollectionModal from "./CreateCollectionModal";
 import CollectionSelectModal from "./CollectionSelectModal"
@@ -13,17 +16,34 @@ import TextArea from "../../components/common/TextArea";
 import AttributeInput from "../../components/common/AttributeInput";
 import Button from "../../components/common/Button";
 import Alert from "../../components/common/Alert";
+import { notify } from "../../components/common/Notify";
 
 import { useContract } from "../../context/ContractContext";
+import { CollectionProps, NFTData } from "../../types";
 import { fetchOwnerCollection } from "../../services/colllectionService";
-import { CollectionProps } from "../../types";
+import { mintNFTDB } from "../../services/nftService";
+import { pinata } from "../../config/pinata";
+
+interface Attribute {
+  trait: string;
+  value: string | number;
+}
+
+interface Metadata {
+  name: string;
+  description: string;
+  image: string;
+  attributes?: Attribute[];
+}
+
+const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS ?? "";
 
 const CreateInCollection = () => {
-  const [image, setImage] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string>("");
+  const [displayDescription, setDisplayDescription] = useState<string>("");
   const [attributes, setAttributes] = useState<{ trait: string; value: string }[]>([]);
-  const [royaltyNFT, setRoyaltyNFT] = useState<string>("");
-  const [imageFile, setImageFile] = useState<FileObject | null>(null);
+  const [royaltyNFT, setRoyaltyNFT] = useState<number>(0);
+  const [image, setImage] = useState<FileObject | null>(null);
 
   const [collections, setCollections] = useState<CollectionProps[] | null>(null);
   const [selectedCollection, setSelectedCollection] = useState<CollectionProps | null>(null);
@@ -31,12 +51,28 @@ const CreateInCollection = () => {
   const [isCreateCollectionModalOpen, setIsCreateCollectionModalOpen] = useState<boolean>(false);
   const [isSelectCollectionModalOpen, setIsSelectCollectionModalOpen] = useState<boolean>(false);
 
-  const [confirmedCollectionId, setConfirmedCollectionId] = useState<string | null>(null);
+  const [confirmedCollectionAddress, setConfirmedCollectionAddress] = useState<string | null>(null);
   const [collectionCreatedFlag, setCollectionCreatedFlag] = useState<boolean>(false);
 
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [isCollectionProcessing, setIsCollectionProcessing] = useState<boolean>(false);
+  const [isNFTProcessing, setIsNFTProcessing] = useState<boolean>(false);
 
-  const { walletAddress } = useContract();
+  const { walletAddress, signer, wsProvider } = useContract();
+
+  const [wsCollectionContract, setWsCollectionContract] = useState<ethers.Contract | null>(null);
+
+  const validatorForm = () => {
+    if (!displayName || !displayDescription) {
+      notify("Please complete input field", "warning");
+      return false
+    }
+    return true;
+  }
+
+  const formatAttributes = () => {
+    const _attributes = attributes.filter(log => log.trait && log.value);
+    return _attributes;
+  }
 
   const handleAddAttribute = () => {
     setAttributes([...attributes, { trait: "", value: "" }]);
@@ -53,43 +89,127 @@ const CreateInCollection = () => {
   };
 
   const handleRoyaltyChange = (percent: string) => {
-    setRoyaltyNFT(percent);
+    const _percent = Number(percent);
+    if ( isNaN(_percent) ) {
+      notify("Please input number as royalty", "warning");
+      return;
+    }
+    if (_percent > 50) {
+      notify("Please input number less then 50", "warning");
+      return;
+    }
+    setRoyaltyNFT(_percent);
   };
 
   const handleOpenCollectionModal = async () => {
     setIsCreateCollectionModalOpen(true);
   };
 
-  const handleClickMint = () => {
-    
+  const handleClickMint = async () => {
+    if (!validatorForm) return;
+    if (!walletAddress || !signer || !wsProvider) {
+      notify("Please check wallet connection", "warning");
+      return;
+    }
+    if (!confirmedCollectionAddress) {
+      notify("Please select collection", "warning");
+      return;
+    }
+    if (!image) {
+      notify("Please input image", "warning")
+      return;
+    }
+
+    setIsNFTProcessing(true);
+
+    const _attributes = formatAttributes();
+    try {
+      // upload images to IPFS
+      const uploadLogoImage = await pinata.upload.public.file(image);
+      const imageURL = await pinata.gateways.public.convert(uploadLogoImage.cid);
+  
+      // Create metadata JSON and upload to IPFS
+      const metadata: Metadata = { name: displayName, description: displayDescription, image: imageURL };
+      if (attributes.length > 0) {
+        metadata.attributes = _attributes;
+      }
+      const metadataUpload = await pinata.upload.public.json(metadata);
+      const metadataURI = await pinata.gateways.public.convert(metadataUpload.cid);
+      
+      const _royaltyNFT = royaltyNFT * 100;
+      
+      const contractInstance = new ethers.Contract(confirmedCollectionAddress, ContractCollectionABI, signer);
+      const _wsContractInstance =  new ethers.Contract(confirmedCollectionAddress, ContractCollectionABI, wsProvider);
+      setWsCollectionContract(_wsContractInstance);
+
+      // Estimate the gas required for the transaction
+      const gasEstimate = await contractInstance.mintNFT.estimateGas(
+        walletAddress,
+        metadataURI,
+        _royaltyNFT
+      );
+      
+      // Call smart contract to create collection
+      const tx = await contractInstance.mintNFT( walletAddress, metadataURI, _royaltyNFT, { 
+        gasLimit: gasEstimate 
+      });
+
+      await tx.wait();
+      notify("NFT minted successfully", "success");
+    } catch (error: any) {
+      if (error.code === "ACTION_REJECTED") {
+        notify("Transaction rejected by user.", "warning");
+      } else {
+        console.error("Error mint NFT:", error);
+        notify("Error occured on mint NFT", "error");
+      }
+    } finally {
+      setIsNFTProcessing(false);
+    }
   }
 
   useEffect(() => {
     if (!walletAddress) return;
 
     const fetchCollections = async () => {
-      setIsProcessing(true);
+      setIsCollectionProcessing(true);
 
       try {
         const { collection } = await fetchOwnerCollection(walletAddress);
         if (collection) {
           setCollections(collection);
         } else {
-          setIsProcessing(false);
+          setIsCollectionProcessing(false);
         }
       } catch (error) {
-        setIsProcessing(false);
+        setIsCollectionProcessing(false);
       }
     }
 
     fetchCollections();
   }, [walletAddress, collectionCreatedFlag])
 
+  useEffect(() => {
+    if (!wsCollectionContract) return;
+
+    const handleMintNFTDB = async (_nftData: NFTData) => {
+      await mintNFTDB(_nftData);
+      notify("Successfully mint NFT", "success");
+    }
+
+    try {
+      // Attach event listener to the contract
+      wsCollectionContract.on("NFTMinted", handleMintNFTDB);
+    } catch (error) {
+      console.error("Error setting up event listener:", error);
+    }
+  }, [wsCollectionContract])
+
   return (
     <div className="w-full flex gap-10">
       <ToastContainer/>
       <div className="basis-1/2">
-        <NFTBanner height={800} image={image} setImage={setImage} setImageFile={setImageFile}/>
+        <NFTBanner height={800} setImage={setImage} />
       </div>
       <div className="basis-1/2 flex flex-col justify-between">
         <h2 className="text-white text-2xl font-semibold">Create an NFT in a Collection</h2>
@@ -113,6 +233,8 @@ const CreateInCollection = () => {
           <TextArea
             label="Description"
             placeholder="Describe the idea behind your NFT and explain how it stands out from the rest."
+            value={displayDescription}
+            onChange={(_value) => setDisplayDescription(_value)}
           />
         </div>
 
@@ -121,23 +243,23 @@ const CreateInCollection = () => {
             <h3 className="text-white font-semibold text-md">Collection</h3>
             <div className="mt-2 flex space-x-4">
             {
-              isProcessing && <OrbitProgress color="#fff" size="medium" />
+              isCollectionProcessing && <OrbitProgress color="#fff" size="medium" />
             }
             {
               collections && (
                 <CollectionBtnGroup 
                   collections={collections} 
                   setSelectedCollection={setSelectedCollection} 
-                  setIsProcessing={setIsProcessing} 
+                  setIsProcessing={setIsCollectionProcessing} 
                   setIsSelectCollectionModalOpen={setIsSelectCollectionModalOpen}
-                  confirmedCollectionId={confirmedCollectionId}
+                  confirmedCollectionAddress={confirmedCollectionAddress}
                 />
               )
             }
             
             {/* Button Group in Horizontal Row */}
             {
-              !isProcessing && (
+              !isCollectionProcessing && (
                 <button 
                   onClick={handleOpenCollectionModal} 
                   className="relative w-32 h-32 bg-white text-black font-bold border-4 rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:bg-gray-100"
@@ -165,14 +287,14 @@ const CreateInCollection = () => {
             placeholder="0%"
             bordered
             value={royaltyNFT}
-            onChange={(e) => setRoyaltyNFT(e.target.value)}
+            onChange={(e) => handleRoyaltyChange(e.target.value)}
           />
           <div className="flex flex-row items-center gap-2 mt-2">
-            {["0%", "10%", "20%", "30%"].map((percent) => (
+            {["0", "10", "20", "30"].map((percent) => (
               <Button
                 key={percent}
                 type="primary"
-                label={percent}
+                label={percent + "%"}
                 onClick={() => handleRoyaltyChange(percent)}
               />
             ))}
@@ -212,7 +334,7 @@ const CreateInCollection = () => {
         </div>
 
         {/* Create NFT Button */}
-        <Button type="blue" label="Create NFT" onClick={handleClickMint}/>
+        <Button type="blue" label="Create NFT" onClick={handleClickMint} disabled={isNFTProcessing}/>
       </div>
 
       {/* Modal for Collection Creation */}
@@ -228,7 +350,7 @@ const CreateInCollection = () => {
           isOpen={isSelectCollectionModalOpen} 
           onClose={() => setIsSelectCollectionModalOpen(false)} 
           collection={selectedCollection}
-          setConfirmedCollectionId={setConfirmedCollectionId}
+          setConfirmedCollectionAddress={setConfirmedCollectionAddress}
         />
       )}
     </div>

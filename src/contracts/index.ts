@@ -1,5 +1,5 @@
-export const ContractABI = [
-  // NFT Factory ABI
+// NFT Factory contract ABI
+export const ContractFactoryABI = [
   {
     "anonymous": false,
     "inputs": [
@@ -151,10 +151,11 @@ export const ContractABI = [
     ],
     "stateMutability": "view",
     "type": "function"
-  },
-  
-  // NFT Collection ABI
-  
+  }
+]
+
+// NFT Collection Contract ABI
+export const ContractCollectionABI = [
   {
     "inputs": [
       {
@@ -464,6 +465,12 @@ export const ContractABI = [
         "internalType": "uint256",
         "name": "royalty",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "collectionAddress",
+        "type": "address"
       }
     ],
     "name": "NFTMinted",
