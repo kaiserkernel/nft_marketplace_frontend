@@ -72,11 +72,20 @@ const CollectionBtn: React.FC<CollectionBtnProps> = (props) => {
                                 className="w-full h-full object-cover transition duration-300 group-hover:blur-sm"
                             />
                             
-                            {/* Text Fades in on Hover */}
+                            {/* Check sign if confirmed */}
                             {
-                                collection._id === confirmedCollectionId ? (
-                                    <>Confirmed</>
-                                ) : (
+                              collection._id === confirmedCollectionId && (
+                                <img 
+                                    src="/check-sign.webp"  // Replace with your actual path
+                                    alt="Confirmed"
+                                    className="absolute w-24 h-24 inset-0 m-auto opacity-90"
+                                />
+                              )
+                            }
+
+                            {/* Text Fades in on Hover if not confirmed*/}
+                            {
+                                collection._id !== confirmedCollectionId && (
                                     <span className="absolute inset-0 flex items-center justify-center text-white text-lg font-bold opacity-0 transition duration-300 group-hover:opacity-100">
                                         {collection.name}
                                     </span>
