@@ -35,7 +35,7 @@ export const NFTViewModal = ({ nftMetaData, nftProps, isOpen, onClose }: NFTView
     });
     const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-    const { walletAddress, signer, wsProvider } = useContract();
+    const { signer, wsProvider } = useContract();
     const [collectionContract, setCollectionContract] = useState<ethers.Contract | null>(null);
     const [wsCollectionContract, setWsCollectionContract] = useState<ethers.Contract | null>(null);
 
@@ -155,6 +155,11 @@ export const NFTViewModal = ({ nftMetaData, nftProps, isOpen, onClose }: NFTView
             btnProcessing={isProcessing}
         >
             <ToastContainer />
+            
+            <div className="text-white text-sm">
+                <span className="font-bold">Address :</span> {nftProps.collection?._id}
+            </div>
+
             <div className="mt-4 bg-black p-3 rounded-md">
                 <span className="text-white font-semibold text-md mb-2">
                     Name : 
