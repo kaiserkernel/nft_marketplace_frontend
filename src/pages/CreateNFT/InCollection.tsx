@@ -1,11 +1,10 @@
-import React, { useState,  useEffect } from "react";
+import { useState,  useEffect } from "react";
 import { ToastContainer } from "react-toastify";
 import { FileObject } from "pinata";
 import { OrbitProgress } from "react-loading-indicators"
 import { ethers } from "ethers";
 
 import { ContractCollectionABI } from "../../contracts";
-
 import CreateCollectionModal from "./CreateCollectionModal";
 import CollectionSelectModal from "./CollectionSelectModal"
 
@@ -44,10 +43,10 @@ const CreateInCollection = () => {
   const [isNFTProcessing, setIsNFTProcessing] = useState<boolean>(false);
 
   const { walletAddress, signer, wsProvider } = useContract();
-
   const [collectionContract, setCollectionContract] = useState<ethers.Contract | null>(null);
   const [wsCollectionContract, setWsCollectionContract] = useState<ethers.Contract | null>(null);
 
+  // Form validation check for required fields
   const validatorForm = () => {
     if (!displayName || !displayDescription) {
       notify("Please complete input field", "warning");
@@ -56,25 +55,27 @@ const CreateInCollection = () => {
     return true;
   }
 
+  // Filter attributes to ensure trait and value are not empty
   const formatAttributes = () => {
-    const _attributes = attributes.filter(log => log.trait && log.value);
-    return _attributes;
-  }
-
+    return attributes.filter(log => log.trait && log.value);
+  };
+  
+  // Handle addition of a new attribute input
   const handleAddAttribute = () => {
     setAttributes([...attributes, { trait: "", value: "" }]);
   };
-
+  
+  // Update a specific attribute field (trait or value)
   const handleAttributeChange = (index: number, field: "trait" | "value", newValue: string) => {
-    setAttributes((prev) =>
-      prev.map((attr, i) => (i === index ? { ...attr, [field]: newValue } : attr))
-    );
+    setAttributes(prev => prev.map((attr, i) => (i === index ? { ...attr, [field]: newValue } : attr)));
   };
 
+  // Remove an attribute from the list
   const handleRemoveAttribute = (index: number) => {
-    setAttributes((prev) => prev.filter((_, i) => i !== index));
+    setAttributes(prev => prev.filter((_, i) => i !== index));
   };
 
+  // Handle royalty input and ensure valid percentage
   const handleRoyaltyChange = (percent: string) => {
     const _percent = Number(percent);
     if ( isNaN(_percent) ) {
@@ -88,10 +89,12 @@ const CreateInCollection = () => {
     setRoyaltyNFT(_percent);
   };
 
+  // Open the modal to create a new collection
   const handleOpenCollectionModal = async () => {
     setIsCreateCollectionModalOpen(true);
   };
 
+  // Mint the NFT and upload metadata to IPFS
   const handleClickMint = async () => {
     if (!validatorForm) return;
     if (!walletAddress || !signer || !wsProvider) {
@@ -111,7 +114,7 @@ const CreateInCollection = () => {
 
     const _attributes = formatAttributes();
     try {
-      // upload images to IPFS
+      // Upload images to IPFS
       const uploadLogoImage = await pinata.upload.public.file(image);
       const imageURL = await pinata.gateways.public.convert(uploadLogoImage.cid);
   
@@ -123,16 +126,12 @@ const CreateInCollection = () => {
       const metadataUpload = await pinata.upload.public.json(metadata);
       const metadataURI = await pinata.gateways.public.convert(metadataUpload.cid);
       
-      const _royaltyNFT = royaltyNFT * 100;
+      const _royaltyNFT = royaltyNFT * 100; // Convert to basis points
       
       // Estimate the gas required for the transaction
-      const gasEstimate = await collectionContract.mintNFT.estimateGas(
-        walletAddress,
-        metadataURI,
-        _royaltyNFT
-      );
+      const gasEstimate = await collectionContract.mintNFT.estimateGas( walletAddress, metadataURI, _royaltyNFT );
       
-      // Call smart contract to create collection
+      // Mint the NFT on the blockchain
       const tx = await collectionContract.mintNFT( walletAddress, metadataURI, _royaltyNFT, { 
         gasLimit: gasEstimate 
       });
@@ -140,17 +139,13 @@ const CreateInCollection = () => {
       await tx.wait();
       notify("NFT minted successfully", "success");
     } catch (error: any) {
-      if (error.code === "ACTION_REJECTED") {
-        notify("Transaction rejected.", "warning");
-      } else {
-        console.error("Error mint NFT:", error);
-        notify("Error occured on mint NFT", "error");
-      }
+      notify(error.code === "ACTION_REJECTED" ? "Transaction rejected." : "Error occured on mint NFT", "error");
     } finally {
       setIsNFTProcessing(false);
     }
   }
 
+  // Fetch and setup contract instances when the collection address is confirmed
   useEffect(() => {
     if (!confirmedCollectionAddress) return;
 
@@ -159,9 +154,9 @@ const CreateInCollection = () => {
 
     const _wsContractInstance =  new ethers.Contract(confirmedCollectionAddress, ContractCollectionABI, wsProvider);
     setWsCollectionContract(_wsContractInstance);
-
   }, [confirmedCollectionAddress, wsProvider])
 
+  // Fetch user's collections when wallet address changes
   useEffect(() => {
     if (!walletAddress) return;
 
@@ -183,6 +178,7 @@ const CreateInCollection = () => {
     fetchCollections();
   }, [walletAddress, collectionCreatedFlag])
 
+  // Set up event listener for "NFTMinted" event and store NFT data in DB
   useEffect(() => {
     if (!wsCollectionContract) return;
     
@@ -194,30 +190,30 @@ const CreateInCollection = () => {
       collection: string
     ) => {
       try {
-        const tokenId = Number(_tokenId);
-        const royalty = Number(_royalty);
-        const _nftData = { owner, tokenId, tokenURI, royalty, collection };
+        const _nftData = { owner, tokenId: Number(_tokenId), tokenURI, royalty: Number(_royalty), collection };
         await mintNFTDB(_nftData);
       } catch (error) {
         console.log("Create NFTDB data occur error", error)
       }
     }
 
-    try {
-      // Attach event listener to the contract
-      console.log("ws listener")
-      wsCollectionContract.on("NFTMinted", handleMintNFTDB);
-    } catch (error) {
-      console.error("Error setting up event listener:", error);
+    // Attach event listener to the contract
+    wsCollectionContract.on("NFTMinted", handleMintNFTDB);
+
+    return () => {
+      wsCollectionContract.off("NFTMinted", handleMintNFTDB);
     }
   }, [wsCollectionContract])
 
   return (
     <div className="w-full flex gap-10">
       <ToastContainer/>
+      {/* Left section for NFT Banner */}
       <div className="basis-1/2">
         <NFTBanner height={800} setImage={setImage} />
       </div>
+
+      {/* Right section for NFT Creation Form */}
       <div className="basis-1/2 flex flex-col justify-between">
         <h2 className="text-white text-2xl font-semibold">Create an NFT in a Collection</h2>
 

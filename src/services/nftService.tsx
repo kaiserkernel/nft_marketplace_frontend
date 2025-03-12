@@ -37,7 +37,7 @@ const fetchOwnedNFT =  async (_data: string) => {
   }
 }
 
-const setNFTPrice = async (_data: any) => {
+const setNFTPriceDB = async (_data: any) => {
   try {
     const response = await axios.post("/api/nft/price", _data, {
       headers: { "Content-Type": "application/json" }
@@ -55,4 +55,4 @@ const setNFTPrice = async (_data: any) => {
   }
 }
 
-export { mintNFTDB, fetchOwnedNFT, setNFTPrice }
+export { mintNFTDB, fetchOwnedNFT, setNFTPriceDB }

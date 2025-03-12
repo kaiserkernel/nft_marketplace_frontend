@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
 import { ToastContainer } from "react-toastify";
 import { ethers } from "ethers";
 
@@ -10,7 +10,7 @@ import { notify } from "../Notify";
 import { useContract } from "../../../context/ContractContext";
 import { formatDate } from "../../../utils/FormatDate";
 import { NFTMetaData, NFTProps } from "../../../types";
-import { setNFTPrice } from "../../../services/nftService";
+import { setNFTPriceDB } from "../../../services/nftService";
 
 interface NFTViewModalProps {
     nftMetaData: NFTMetaData | null,
@@ -20,129 +20,89 @@ interface NFTViewModalProps {
 }
 
 interface DurationProp {
-    date: number,
-    hour: number,
-    minute: number
+    date: number | null,
+    hour: number | null,
+    minute: number | null
 }
 
 export const NFTViewModal = ({ nftMetaData, nftProps, isOpen, onClose }: NFTViewModalProps) => {
     const [priceType, setPriceType] = useState<"fixed" | "auction">("fixed");
     const [price, setPrice] = useState<number>(0);
     const [duration, setDuration] = useState<DurationProp>({
-        date: 0,
-        hour: 0,
-        minute: 0
+        date: null,
+        hour: null,
+        minute: null
     });
     const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
     const { signer, wsProvider } = useContract();
     const [collectionContract, setCollectionContract] = useState<ethers.Contract | null>(null);
     const [wsCollectionContract, setWsCollectionContract] = useState<ethers.Contract | null>(null);
-
-    const handleChangePrice = (evt: any) => {
-        const { value } = evt.target;
-        const _price = Number(value);
-        if (isNaN(_price)) {
-            notify("Please input number as price", "warning");
+    
+    useEffect(() => {
+        if (!isOpen) return;
+        if (!nftProps.collection?.contractAddress) {
+            notify("Invalid Collection", "error");
             return;
         }
-        setPrice(_price);
-    }
+        
+        const contractInstance = new ethers.Contract(nftProps.collection.contractAddress, ContractCollectionABI, signer);
+        setCollectionContract(contractInstance);
 
-    const handleChangeDuration = (evt:any) => {
-        const { name, value } = evt.target;
-        setDuration((prev: DurationProp) => ({
-            ...prev,
-            [name]: value
-        }))
-    }
+        const wsContractInstance = new ethers.Contract(nftProps.collection.contractAddress, ContractCollectionABI, wsProvider);
+        setWsCollectionContract(wsContractInstance);
+    }, [signer, wsProvider, nftProps.collection?.contractAddress, isOpen]);
+
+
+    useEffect(() => {
+        if (!wsCollectionContract || !isOpen) return;
+
+        const handleNFTPriceSetDB = async (_tokenId: number, _price: number) => {
+            try {
+                await setNFTPriceDB({ _id: nftProps._id, tokenId: Number(_tokenId), price: Number(_price) });
+            } catch (error) {
+                console.error("Error setting NFT Price in DB", error);
+            }
+        };
+
+        wsCollectionContract.on("NFTPriceSet", handleNFTPriceSetDB);
+        return () => {
+            wsCollectionContract.off("NFTPriceSet", handleNFTPriceSetDB);
+        }
+    }, [wsCollectionContract, nftProps._id, isOpen]);
+
+    const handleChangePrice = (evt: ChangeEvent<HTMLInputElement>) => {
+        const _price = Number(evt.target.value);
+        if (isNaN(_price)) return notify("Please input a valid number for price", "warning");
+        setPrice(_price);
+    };
+
+    const handleChangeDuration = (evt: ChangeEvent<HTMLInputElement>) => {
+        setDuration((prev) => ({ ...prev, [evt.target.name]: Number(evt.target.value) }));
+    };
 
     const confirmPrice = async () => {
-        //
-        setIsProcessing(true);
+        if (!collectionContract) return notify("Please check wallet connection");
 
+        setIsProcessing(true);
         try {
             if ( priceType === "auction" ) {
-                const auctionDuration = (new Date(0, 0, duration.date, duration.hour, duration.minute).getTime()) / 1000;
+                // const auctionDuration = (new Date(0, 0, duration.date, duration.hour, duration.minute).getTime()) / 1000;
             }
-            //
+            
             if ( priceType === "fixed") {
-                if (!collectionContract) {
-                    notify("Please check wallet connection");
-                    return;
-                }
-                const tokenId = nftProps.tokenId;
-
-                const gasEstimate = await collectionContract.setTokenPrice.estimateGas(
-                    tokenId,
-                    price
-                )
-
-                const tx = await collectionContract.setTokenPrice(tokenId, price, { 
-                    gasLimit: gasEstimate 
-                });
-
+                const gasEstimate = await collectionContract.setTokenPrice.estimateGas(nftProps.tokenId, price);
+                const tx = await collectionContract.setTokenPrice(nftProps.tokenId, price, { gasLimit: gasEstimate });
                 await tx.wait();
-                notify("Set price successfully", "success");
+                notify("Price set successfully", "success");
                 onClose();
             }   
         } catch (error: any) {
-            if (error.code === "ACTION_REJECTED") {
-              notify("Transaction rejected.", "warning");
-            } else {
-              console.error("Error mint NFT:", error);
-              notify("Error occured on mint NFT", "error");
-            }
+            notify(error.code === "ACTION_REJECTED" ? "Transaction rejected." : "Error occurred while setting NFT price", "error");
           } finally {
             setIsProcessing(false);
           }
     }
-
-    useEffect(() => {
-        const collectionAddress = nftProps.collection?.contractAddress;
-        if (!collectionAddress) {
-            notify("Invalid Collection", "error");
-            return;
-        }
-
-        const contractInstance = new ethers.Contract(collectionAddress, ContractCollectionABI, signer);
-        setCollectionContract(contractInstance);
-
-        const _wsContractInstance =  new ethers.Contract(collectionAddress, ContractCollectionABI, wsProvider);
-        setWsCollectionContract(_wsContractInstance);
-    }, [signer, wsProvider]);
-
-    useEffect(() => {
-        if (!wsCollectionContract) {
-            console.log("ws not ready")
-            return
-        };
-
-        const handleMintNFTDB = async (
-            _tokenId: number,
-            _price: number
-        ) => {
-            console.log("Try on DB")
-            try {
-                const price = Number(_price);
-                const tokenId = Number(_tokenId);
-                const _id = nftProps._id;
-                const _nftData = { _id, tokenId, price };
-                
-                await setNFTPrice(_nftData);
-            } catch (error) {
-                console.log("Set NFT Price occur error", error)
-            }
-        }
-  
-        try {
-            // Attach event listener to the contract
-            console.log("ws listener")
-            wsCollectionContract.on("NFTPriceSet", handleMintNFTDB);
-        } catch (error) {
-            console.error("Error setting up event listener:", error);
-        }
-    }, [wsCollectionContract])
 
     return (
         <Modal
@@ -155,42 +115,36 @@ export const NFTViewModal = ({ nftMetaData, nftProps, isOpen, onClose }: NFTView
             btnProcessing={isProcessing}
         >
             <ToastContainer />
-            
             <div className="text-white text-sm">
                 <span className="font-bold">Address :</span> {nftProps.collection?._id}
             </div>
-
-            <div className="mt-4 bg-black p-3 rounded-md">
-                <span className="text-white font-semibold text-md mb-2">
+            <div className="mt-4 bg-black p-3 rounded-md text-white">
+                <span className="font-semibold text-md mb-2">
                     Name : 
                 </span>
-                <span className="text-white ps-3">{nftMetaData?.name}</span>
+                <span className="ps-3">{nftMetaData?.name}</span>
             </div>
             <div className="py-4">
                 <img src={nftMetaData?.image} alt={`${nftMetaData?.name} NFT image`} className="rounded-lg"/>
             </div>
-            {/* symbol */}
-            <div className="mt-4 bg-black p-3 rounded-md">
-                <p className="text-white font-semibold text-md mb-2">
+            <div className="mt-4 bg-black p-3 rounded-md text-white">
+                <p className="font-semibold text-md mb-2">
                     Description : 
                 </p>
-                <p className="text-white ps-3">{nftMetaData?.description}</p>
+                <p className="ps-3">{nftMetaData?.description}</p>
             </div>
             {
                 nftProps.createdAt && (
-                    <div className="mt-4 p-3 bg-black rounded-md">
-                        <span className="text-white font-semibold text-md mb-2">
+                    <div className="mt-4 p-3 bg-black rounded-md text-white">
+                        <span className="font-semibold text-md mb-2">
                             Created : 
                         </span>
-                        <span className="text-white ps-3">{formatDate(nftProps?.createdAt)}</span>
+                        <span className="ps-3">{formatDate(nftProps?.createdAt)}</span>
                     </div>
                 )
             }
             <form className="max-w-sm mx-auto mt-5 bg-black p-3 rounded-md">
-              <label
-                htmlFor="priceType"
-                className="block mb-2 text-md font-semibold text-white"
-              >
+              <label htmlFor="priceType" className="block mb-2 text-md font-semibold text-white">
                 Select Price Type
               </label>
               <select
@@ -204,7 +158,7 @@ export const NFTViewModal = ({ nftMetaData, nftProps, isOpen, onClose }: NFTView
               </select>
               <div className="mb-4">
               {
-                priceType === "fixed" && (
+                priceType === "fixed" ? (
                     <div className="mt-3">
                         <div className="text-white mb-1 font-medium">Price</div>
                         <InputField 
@@ -215,10 +169,7 @@ export const NFTViewModal = ({ nftMetaData, nftProps, isOpen, onClose }: NFTView
                             onChange={handleChangePrice}
                         />
                     </div>
-                )
-              }
-              {
-                priceType === "auction" && (
+                ) : (
                     <>
                         <div className="my-3">
                             <div className="text-white mb-1 font-medium">Start Bidding Price</div>
@@ -232,11 +183,10 @@ export const NFTViewModal = ({ nftMetaData, nftProps, isOpen, onClose }: NFTView
                         </div>
                         <div className="text-white mb-1 font-medium">Auction Duration</div>
                         <div className="flex space-x-2 border-[#1F1F21] bg-[#1F1F21] text-white rounded-lg justify-between">
-                            {/* Day Input */}
                             <input
                                 type="number"
                                 name="date"
-                                value={duration.date}
+                                value={duration.date ?? ""}
                                 onChange={handleChangeDuration}
                                 placeholder="DD"
                                 className="border rounded-l-lg p-2 text-sm text-center w-16 border-[#1F1F21] bg-[#1F1F21] text-white focus:ring-blue-500 "
@@ -244,11 +194,10 @@ export const NFTViewModal = ({ nftMetaData, nftProps, isOpen, onClose }: NFTView
                                 min={1}
                                 max={31}
                             />
-                            {/* Hour Input */}
                             <input
                                 type="number"
                                 name="hour"
-                                value={duration.hour}
+                                value={duration.hour ?? ""}
                                 onChange={handleChangeDuration}
                                 placeholder="HH"
                                 className="border-t border-b text-sm text-center w-16 border-[#1F1F21] bg-[#1F1F21] text-white focus:ring-blue-500 "
@@ -256,11 +205,10 @@ export const NFTViewModal = ({ nftMetaData, nftProps, isOpen, onClose }: NFTView
                                 min={0}
                                 max={23}
                             />
-                            {/* Minute Input */}
                             <input
                                 type="number"
                                 name="minute"
-                                value={duration.minute}
+                                value={duration.minute ?? ""}
                                 onChange={handleChangeDuration}
                                 placeholder="MM"
                                 className="border rounded-r-lg p-2 text-sm text-center w-16 border-[#1F1F21] bg-[#1F1F21] text-white focus:ring-blue-500 "
