@@ -43,4 +43,21 @@ const fetchOwnerCollection = async (owner: string) => {
   }
 }
 
-export {createCollectionDB, fetchOwnerCollection}
+const fetchAllCollection = async () => {
+  try {
+    const response = await axios.post("/api/collection/", {
+      headers: { "Content-Type": "application/json" }
+    })
+    return response.data;
+  } catch (error:any) {
+    if (isAxiosError(error)) {
+      error.response?.data.msg.map((str: string) => {
+        notify(str, "error");
+      });
+    }
+    else
+      notify("Error occured. Please try again", "error");
+  }
+}
+
+export {createCollectionDB, fetchOwnerCollection, fetchAllCollection}
