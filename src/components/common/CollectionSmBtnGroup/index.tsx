@@ -86,7 +86,7 @@ const CollectionBtn: React.FC<CollectionBtnProps> = (props) => {
                           {
                               collection.contractAddress !== confirmedCollectionAddress && (
                                   <span className="absolute inset-0 flex items-center justify-center text-white text-lg font-bold opacity-0 transition duration-300 group-hover:opacity-100">
-                                      {collection.name}
+                                      Click
                                   </span>
                               )
                           }
