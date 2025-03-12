@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { ethers, BrowserProvider, formatEther } from "ethers";
+import { useNavigate } from "react-router";
 import {
   type Provider,
   useAppKitAccount,
@@ -60,6 +61,9 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [signer, setSigner] = useState<ethers.JsonRpcSigner | null>(null);
   const [wsProvider, setWsProvider] = useState<ethers.WebSocketProvider | null>(null);
 
+  const [loading, setLoading] = useState(true); // State to track loading
+  const navigator = useNavigate();
+
   const { address, isConnected } = useAppKitAccount();
   const { walletProvider } = useAppKitProvider<Provider>("eip155");
 
@@ -85,6 +89,8 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {   
     const _initContract = async (_address: string) => {
       try {
+        setLoading(true); // Set loading to true before initializing
+  
         // Convert AppKit's provider to a BrowserProvider (Ethers v6 requirement)
         const browserProvider = new BrowserProvider(walletProvider);
         const _signer = await browserProvider.getSigner(); // Get signer for transactions
@@ -102,18 +108,22 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setWsProvider(_wsProvider);
         const wsContractInstance = new ethers.Contract(CONTRACT_ADDRESS, ContractFactoryABI, _wsProvider);
         setWsContract(wsContractInstance);
+        
+        setIsWalletConnected(true);
+        setWalletAddress(_address);
       }
       catch (error) {
         notify("Error initializing contract", "error");
         console.log(error);
       }
+      finally {
+        setLoading(false); // Mark as loaded
+      }
     }
 
     if (isConnected && address) {
       _initContract(address);
-      setIsWalletConnected(true);
-      setWalletAddress(address);
-    } else {
+    } else if (!loading) {  // Only reset state when loading is false
       // initialize state
       setContract(null);
       setWsContract(null);
@@ -123,7 +133,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setIsWalletConnected(false);
 
       // navigate home page
-      // navigator("/");
+      navigator("/");
     }
   }, [isConnected, address, walletProvider])
 
