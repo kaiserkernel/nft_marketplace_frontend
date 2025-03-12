@@ -26,10 +26,7 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
   const [LogoImage, setLogoImage] = useState<string | null>(null);
   const [logoImageFile, setLogoImageFile] = useState<FileObject | null>(null);
   const [description, setDescription] = useState<string>("");
-  const [collectionData, setCollectionData] = useState<CollectionData>({
-    name: "",
-    tokenSymbol: ""
-  })
+  const [collectionData, setCollectionData] = useState<CollectionData>({ name: "", tokenSymbol: "" });
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
   const { contract, wsContract } = useContract();
@@ -46,10 +43,10 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
   // Handle input changes
   const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
     const {name, value}  = evt.target;
-
     setCollectionData(prev => ({ ...prev, [name]: value }));
   }
 
+  // Create collection logic
   const handleCreateCollection = async () => {
     if (!contract) {
       notify("Please check wallet connection", "error");
@@ -65,7 +62,6 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
       
     setIsProcessing(true);
 
-    // Create Collection
     try {
       // upload images to IPFS
       const uploadLogoImage = await pinata.upload.public.file(logoImageFile);
@@ -83,7 +79,6 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
         metadataURI
       );
 
-      // Call smart contract to create collection
       const tx = await contract.createCollection( collectionData.name, collectionData.tokenSymbol, metadataURI, { 
         gasLimit: gasEstimate 
       });
@@ -91,26 +86,21 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
       await tx.wait();
       notify("Collection created successfully", "success");
     } catch (error: any) {
-      if (error.code === "ACTION_REJECTED") {
-        notify("Transaction rejected.", "warning");
-      } else {
-        console.error("Error creating collection:", error);
-        notify("Error occured on creating collection", "error");
-      }
+      notify(error.code === "ACTION_REJECTED" ? "Transaction rejected." : "Error occured on creating collection.", "error");
     } finally {
       setIsProcessing(false);
     }
   }
 
+  // Reset form when modal is closed or opened
   useEffect(() => {
-    // initialize all state
     if (!isOpen) return;
-    
     setLogoImage(null);
     setDescription("");
     setCollectionData({ name: "", tokenSymbol: ""});
   } , [isOpen])
 
+  // Handle contract event for collection creation
   useEffect(() => {
     if (!wsContract) return;
   
@@ -121,7 +111,7 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
       symbol: string,
       metadataURI: string
     ) => {
-      console.log("event fetch collectioncreated")
+      console.log("create on db")
       const _collectionData = { name, symbol, metadataURI, owner, contractAddress: collectionAddress };
       try {
         await createCollectionDB(_collectionData);
@@ -132,12 +122,9 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
       }
     };
   
-    try {
-      // Attach event listener to the contract
-      wsContract.on("CollectionCreated", handleCollectionCreated);
-    } catch (error) {
-      console.error("Error setting up event listener:", error);
-    }
+    console.log("listener ready")
+    // Attach event listener to the contract
+    wsContract.on("CollectionCreated", handleCollectionCreated);
 
     // Cleanup function to remove the listener when component unmounts or contract changes
     return () => {

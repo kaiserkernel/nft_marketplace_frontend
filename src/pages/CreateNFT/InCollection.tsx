@@ -154,7 +154,7 @@ const CreateInCollection = () => {
 
     const _wsContractInstance =  new ethers.Contract(confirmedCollectionAddress, ContractCollectionABI, wsProvider);
     setWsCollectionContract(_wsContractInstance);
-  }, [confirmedCollectionAddress, wsProvider])
+  }, [confirmedCollectionAddress, wsProvider, signer, ContractCollectionABI])
 
   // Fetch user's collections when wallet address changes
   useEffect(() => {
