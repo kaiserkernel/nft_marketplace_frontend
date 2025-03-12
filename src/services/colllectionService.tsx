@@ -43,21 +43,4 @@ const fetchOwnerCollection = async (owner: string) => {
   }
 }
 
-const fetchMetaData = async (uri: string) => {
-  try {
-    const response = await axios.post(`/api/collection/metadata`, { uri }, {
-      headers: { "Content-Type": "application/json" }
-    });
-    return response.data;
-  } catch (error: any) {
-    if (isAxiosError(error)) {
-      error.response?.data.msg.map((str: string) => {
-        notify(str, "error");
-      });
-    }
-    else
-      notify("Error occured. Please try again", "error");
-  }
-}
-
-export {createCollectionDB, fetchOwnerCollection, fetchMetaData}
+export {createCollectionDB, fetchOwnerCollection}

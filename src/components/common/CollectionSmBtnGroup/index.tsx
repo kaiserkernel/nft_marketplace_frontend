@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { CollectionProps } from '../../../types';
-import { fetchMetaData } from '../../../services/colllectionService';
+import { fetchMetaData } from '../../../services/metaDataService';
 
 interface CollectionBtnProps {
   collections: CollectionProps[];
