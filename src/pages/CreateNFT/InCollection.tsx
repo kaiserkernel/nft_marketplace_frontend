@@ -244,7 +244,7 @@ const CreateInCollection = () => {
         {/* Collection Modal Trigger */}
           <div className="mt-4">
             <h3 className="text-white font-semibold text-md">Collection</h3>
-            <div className="mt-2 flex space-x-4">
+            <div className="mt-2 flex flex-wrap gap-4">
             {
               isCollectionProcessing && <OrbitProgress color="#fff" size="medium" />
             }
