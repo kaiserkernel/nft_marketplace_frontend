@@ -136,12 +136,30 @@ const CreateInCollection = () => {
         gasLimit: gasEstimate 
       });
 
-      await tx.wait();
+      const log = await tx.wait();
+
+      // log.logs[0].address -> contractAddress 
+      // log.from -> owner address
       notify("NFT minted successfully", "success");
     } catch (error: any) {
       notify(error.code === "ACTION_REJECTED" ? "Transaction rejected." : "Error occured on mint NFT", "error");
     } finally {
       setIsNFTProcessing(false);
+    }
+  }
+
+  const handleMintNFTDB = async (
+    owner: string,
+    _tokenId: number,
+    tokenURI: string,
+    _royalty: number,
+    collection: string
+  ) => {
+    try {
+      const _nftData = { owner, tokenId: Number(_tokenId), tokenURI, royalty: Number(_royalty), collection };
+      await mintNFTDB(_nftData);
+    } catch (error) {
+      console.log("Create NFTDB data occur error", error)
     }
   }
 
@@ -182,21 +200,6 @@ const CreateInCollection = () => {
   useEffect(() => {
     if (!wsCollectionContract) return;
     
-    const handleMintNFTDB = async (
-      owner: string,
-      _tokenId: number,
-      tokenURI: string,
-      _royalty: number,
-      collection: string
-    ) => {
-      try {
-        const _nftData = { owner, tokenId: Number(_tokenId), tokenURI, royalty: Number(_royalty), collection };
-        await mintNFTDB(_nftData);
-      } catch (error) {
-        console.log("Create NFTDB data occur error", error)
-      }
-    }
-
     // Attach event listener to the contract
     wsCollectionContract.on("NFTMinted", handleMintNFTDB);
 

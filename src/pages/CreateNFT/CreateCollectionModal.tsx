@@ -83,7 +83,11 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
         gasLimit: gasEstimate 
       });
 
-      await tx.wait();
+      const log = await tx.wait();
+      
+      // log.logs[0].address -> contractAddress 
+      // log.from -> owner address
+
       notify("Collection created successfully", "success");
     } catch (error: any) {
       notify(error.code === "ACTION_REJECTED" ? "Transaction rejected." : "Error occured on creating collection.", "error");
@@ -91,6 +95,24 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
       setIsProcessing(false);
     }
   }
+
+  // Create collection on DB - off chain
+  const handleCollectionCreated = async (
+    owner: string,
+    collectionAddress: string,
+    name: string,
+    symbol: string,
+    metadataURI: string
+  ) => {
+    const _collectionData = { name, symbol, metadataURI, owner, contractAddress: collectionAddress };
+    try {
+      await createCollectionDB(_collectionData);
+      setCreated(prev => !prev);
+      onClose();
+    } catch (error) {
+      notify("Failed to create collection", "error");
+    }
+  };
 
   // Reset form when modal is closed or opened
   useEffect(() => {
@@ -104,25 +126,6 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
   useEffect(() => {
     if (!wsContract) return;
   
-    const handleCollectionCreated = async (
-      owner: string,
-      collectionAddress: string,
-      name: string,
-      symbol: string,
-      metadataURI: string
-    ) => {
-      console.log("create on db")
-      const _collectionData = { name, symbol, metadataURI, owner, contractAddress: collectionAddress };
-      try {
-        await createCollectionDB(_collectionData);
-        setCreated(prev => !prev);
-        onClose();
-      } catch (error) {
-        notify("Failed to create collection", "error");
-      }
-    };
-  
-    console.log("listener ready")
     // Attach event listener to the contract
     wsContract.on("CollectionCreated", handleCollectionCreated);
 

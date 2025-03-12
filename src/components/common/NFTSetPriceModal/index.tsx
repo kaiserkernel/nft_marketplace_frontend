@@ -58,29 +58,29 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
     useEffect(() => {
         if (!wsCollectionContract || !isOpen) return;
 
-        const handleNFTPriceSetDB = async (_tokenId: number, _price: number) => {
-            try {
-                await setNFTPriceDB({ _id: nftProps._id, tokenId: Number(_tokenId), price: Number(_price) });
-
-                 // After price is set, update the NFT in the list
-                setNFTList((prevNFTList) => {
-                    return prevNFTList.map((nft) => {
-                        if (nft.tokenId === nftProps.tokenId) {
-                            return { ...nft, price }; // Update the price of the matched NFT
-                        }
-                        return nft;
-                    });
-                });
-            } catch (error) {
-                console.error("Error setting NFT Price in DB", error);
-            }
-        };
-
         wsCollectionContract.on("NFTPriceSet", handleNFTPriceSetDB);
         return () => {
             wsCollectionContract.off("NFTPriceSet", handleNFTPriceSetDB);
         }
     }, [wsCollectionContract, nftProps._id, isOpen]);
+
+    const handleNFTPriceSetDB = async (_tokenId: number, _price: number) => {
+        try {
+            await setNFTPriceDB({ _id: nftProps._id, tokenId: Number(_tokenId), price: Number(_price) });
+
+                // After price is set, update the NFT in the list
+            setNFTList((prevNFTList) => {
+                return prevNFTList.map((nft) => {
+                    if (nft.tokenId === nftProps.tokenId) {
+                        return { ...nft, price }; // Update the price of the matched NFT
+                    }
+                    return nft;
+                });
+            });
+        } catch (error) {
+            console.error("Error setting NFT Price in DB", error);
+        }
+    };
 
     const handleChangePrice = (evt: ChangeEvent<HTMLInputElement>) => {
         const _price = Number(evt.target.value);
@@ -104,7 +104,10 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
             if ( priceType === "fixed") {
                 const gasEstimate = await collectionContract.setTokenPrice.estimateGas(nftProps.tokenId, price);
                 const tx = await collectionContract.setTokenPrice(nftProps.tokenId, price, { gasLimit: gasEstimate });
-                await tx.wait();
+                const log = await tx.wait();
+
+                // log.logs[0].address -> contractAddress 
+                // log.from -> owner address
                 notify("Price set successfully", "success");
                 onClose();
             }   
