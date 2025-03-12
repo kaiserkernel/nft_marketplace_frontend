@@ -1,11 +1,10 @@
 import axios, { isAxiosError } from "axios";
 import { notify } from "../components/common/Notify";
 
-import { NFTData } from "../types";
+import { NFTProps } from "../types";
 
-const mintNFTDB = async (_data: NFTData) => {
+const mintNFTDB = async (_data: any) => {
     try {
-      console.log(_data, 'data')
         const response = await axios.post("/api/nft/mint", _data, {
           headers: { "Content-Type": "application/json" }
         });
@@ -21,4 +20,22 @@ const mintNFTDB = async (_data: NFTData) => {
     }
 }
 
-export { mintNFTDB }
+const fetchOwnedNFT =  async (_data: string) => {
+  try {
+    const response = await axios.post("/api/nft/own", { address: _data }, {
+      headers: { "Content-Type": "application/json" }
+    })
+    return response.data;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      error.response?.data.msg.map((str: string) => {
+        notify(str, "error");
+      });
+    }
+    else
+      notify("Error occured. Please try again", "error");
+  }
+}
+
+
+export { mintNFTDB, fetchOwnedNFT }

@@ -19,7 +19,7 @@ import Alert from "../../components/common/Alert";
 import { notify } from "../../components/common/Notify";
 
 import { useContract } from "../../context/ContractContext";
-import { CollectionProps, NFTData } from "../../types";
+import { CollectionProps } from "../../types";
 import { fetchOwnerCollection } from "../../services/colllectionService";
 import { mintNFTDB } from "../../services/nftService";
 import { pinata } from "../../config/pinata";
@@ -35,8 +35,6 @@ interface Metadata {
   image: string;
   attributes?: Attribute[];
 }
-
-const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS ?? "";
 
 const CreateInCollection = () => {
   const [displayName, setDisplayName] = useState<string>("");
@@ -205,12 +203,12 @@ const CreateInCollection = () => {
       _tokenId: number,
       tokenURI: string,
       _royalty: number,
-      collectionAddress: string
+      collection: string
     ) => {
       try {
         const tokenId = Number(_tokenId);
         const royalty = Number(_royalty);
-        const _nftData = { owner, tokenId, tokenURI, royalty, collectionAddress };
+        const _nftData = { owner, tokenId, tokenURI, royalty, collection };
         await mintNFTDB(_nftData);
       } catch (error) {
         console.log("Create NFTDB data occur error", error)

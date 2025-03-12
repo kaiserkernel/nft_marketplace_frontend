@@ -1,10 +1,18 @@
-import React, { useState } from "react";
-import Button from "../../components/common/Button";
+import { useEffect, useState } from "react";
 import { FaAngleDown, FaAngleLeft, FaSearch, FaSort } from "react-icons/fa";
+
+import Button from "../../components/common/Button";
 import InputField from "../../components/common/InputField";
 import Accordian from "../../components/common/Accordian";
 import RadioGroup from "../../components/common/RadioGroup";
 import type { RadioGroupItemType } from "../../components/common/RadioGroup";
+import { notify } from "../../components/common/Notify";
+
+import { NFTProps, CollectionProps } from "../../types";
+
+import { useContract } from "../../context/ContractContext";
+
+import { fetchOwnedNFT } from "../../services/nftService";
 
 const initialSaleTypeRadios: RadioGroupItemType[] = [
   { label: "All Types", checked: true },
@@ -22,6 +30,11 @@ const Collected = () => {
     initialSaleTypeRadios
   );
 
+  const [nftList, setNFTList] = useState<NFTProps[]>([]);
+  const [collectionList, setCollectionList] = useState<CollectionProps[]>([]);
+
+  const { walletAddress } = useContract();
+
   const handleSaleTypeSelect = (index: number) => {
     setSaleTypeRadios((prev) =>
       prev.map((item, idx) => ({ ...item, checked: idx === index }))
@@ -33,6 +46,31 @@ const Collected = () => {
   const handleAddNFTClick = () => {};
 
   const handleApplyClick = () => {};
+
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      if (!walletAddress) {
+        notify("Please check out wallet connection", "warning");
+        return;
+      }
+      const { nfts } = await fetchOwnedNFT(walletAddress);
+
+      // Use a Map to store unique collections by their _id
+      const collectionMap = new Map();
+
+      // Loop through the NFTs and extract the collection
+      nfts.forEach((nft: NFTProps) => {
+          collectionMap.set(nft?.collection?._id, nft.collection); // _id as the key
+      });
+
+      // Convert Map values to an array of unique collections
+      const uniqueCollections = Array.from(collectionMap.values());
+
+      console.log('Unique Collections:', uniqueCollections);
+
+    }
+    fetchInitialData();
+  }, [walletAddress])
 
   return (
     <div className="w-full py-4">

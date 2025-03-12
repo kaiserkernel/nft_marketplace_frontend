@@ -11,12 +11,12 @@ export interface CollectionProps {
     __v: number
 }
 
-export interface NFTData {
+export interface NFTProps {
     _id?: string,
     owner: string
     tokenId: number,
     tokenURI: string,
     royalty: number,
     createdAt?: string,
-    collectionAddress?: string
+    collection?: CollectionProps
 }
