@@ -16,7 +16,8 @@ interface NFTViewModalProps {
     nftMetaData: NFTMetaData | null,
     nftProps: NFTProps,
     isOpen: boolean,
-    onClose: () => void
+    onClose: () => void,
+    setNFTList: React.Dispatch<React.SetStateAction<NFTProps[]>>
 }
 
 interface DurationProp {
@@ -25,7 +26,7 @@ interface DurationProp {
     minute: number | null
 }
 
-export const NFTViewModal = ({ nftMetaData, nftProps, isOpen, onClose }: NFTViewModalProps) => {
+export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNFTList }: NFTViewModalProps) => {
     const [priceType, setPriceType] = useState<"fixed" | "auction">("fixed");
     const [price, setPrice] = useState<number>(0);
     const [duration, setDuration] = useState<DurationProp>({
@@ -60,6 +61,16 @@ export const NFTViewModal = ({ nftMetaData, nftProps, isOpen, onClose }: NFTView
         const handleNFTPriceSetDB = async (_tokenId: number, _price: number) => {
             try {
                 await setNFTPriceDB({ _id: nftProps._id, tokenId: Number(_tokenId), price: Number(_price) });
+
+                 // After price is set, update the NFT in the list
+                setNFTList((prevNFTList) => {
+                    return prevNFTList.map((nft) => {
+                        if (nft.tokenId === nftProps.tokenId) {
+                            return { ...nft, price }; // Update the price of the matched NFT
+                        }
+                        return nft;
+                    });
+                });
             } catch (error) {
                 console.error("Error setting NFT Price in DB", error);
             }
@@ -143,8 +154,18 @@ export const NFTViewModal = ({ nftMetaData, nftProps, isOpen, onClose }: NFTView
                     </div>
                 )
             }
-            <form className="max-w-sm mx-auto mt-5 bg-black p-3 rounded-md">
-              <label htmlFor="priceType" className="block mb-2 text-md font-semibold text-white">
+            {
+                nftProps.price && (
+                    <div className="mt-4 p-3 bg-black rounded-md text-white">
+                        <span className="font-semibold text-md mb-2">
+                            Current Price : 
+                        </span>
+                        <span className="ps-3">{nftProps.price}</span>
+                    </div>
+                )
+            }
+            <form className="mx-auto mt-5 bg-black p-3 rounded-md">
+              <label htmlFor="priceType" className="block mb-2 text-md font-semibold text-white mt-2">
                 Select Price Type
               </label>
               <select

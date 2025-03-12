@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react";
 
-import { NFTViewModal } from "../NFTViewModal";
+import { NFTSetPriceModal } from "../NFTSetPriceModal";
 
 import { fetchMetaData } from "../../../services/metaDataService";
 import { NFTProps, NFTMetaData } from "../../../types";
 
 interface NFTBtnProps {
     NFTProp: NFTProps;
+    setNFTList: React.Dispatch<React.SetStateAction<NFTProps[]>>
 }
 
 
-export const NFTBtn = ({ NFTProp }: NFTBtnProps) => {
+export const NFTBtn = ({ NFTProp, setNFTList }: NFTBtnProps) => {
     const { tokenURI } = NFTProp;
 
     const [nftData, setNftData] = useState<NFTMetaData | null>(null);
@@ -61,7 +62,7 @@ export const NFTBtn = ({ NFTProp }: NFTBtnProps) => {
                     )
                 }
             </button>
-            <NFTViewModal nftMetaData={nftData} nftProps={NFTProp} isOpen={viewNFT} onClose={handleCloseNFT}/>
+            <NFTSetPriceModal nftMetaData={nftData} nftProps={NFTProp} isOpen={viewNFT} onClose={handleCloseNFT} setNFTList={setNFTList}/>
           </>
     );
 };

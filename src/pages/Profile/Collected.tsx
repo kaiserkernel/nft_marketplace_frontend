@@ -168,7 +168,7 @@ const Collected = () => {
             /> */}
             {
               nftList.map((log: NFTProps, idx) => (
-                <NFTBtn NFTProp={log} key={idx}/>
+                <NFTBtn key={idx} NFTProp={log} setNFTList={setNFTList}/>
               ))
             }
           </div>
