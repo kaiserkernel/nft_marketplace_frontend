@@ -13,6 +13,7 @@ import { NFTProps, CollectionProps } from "../../types";
 import { useContract } from "../../context/ContractContext";
 
 import { fetchOwnedNFT } from "../../services/nftService";
+import { NFTBtn } from "../../components/common/NFTBtn";
 
 const initialSaleTypeRadios: RadioGroupItemType[] = [
   { label: "All Types", checked: true },
@@ -62,12 +63,14 @@ const Collected = () => {
       nfts.forEach((nft: NFTProps) => {
           collectionMap.set(nft?.collection?._id, nft.collection); // _id as the key
       });
+      setNFTList(nfts);
+      console.log(nfts, 'nfts')
 
       // Convert Map values to an array of unique collections
       const uniqueCollections = Array.from(collectionMap.values());
+      setCollectionList(uniqueCollections);
 
       console.log('Unique Collections:', uniqueCollections);
-
     }
     fetchInitialData();
   }, [walletAddress])
@@ -157,12 +160,17 @@ const Collected = () => {
           <div className="h-4"></div>
         </div>
         <div className="basis-5/6 rounded-xl">
-          <div className="h-[800px] overflow-x-hidden overflow-y-scroll p-4">
-            <img
+          <div className="h-[800px] overflow-x-hidden overflow-y-scroll p-4 flex justify-start gap-4">
+            {/* <img
               className="w-[200px] h-[200px]"
               src="./assets/logo.png"
               alt="Logo"
-            />
+            /> */}
+            {
+              nftList.map((log: NFTProps, idx) => (
+                <NFTBtn NFTProp={log} key={idx}/>
+              ))
+            }
           </div>
         </div>
       </div>

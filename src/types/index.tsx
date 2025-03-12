@@ -18,5 +18,18 @@ export interface NFTProps {
     tokenURI: string,
     royalty: number,
     createdAt?: string,
-    collection?: CollectionProps
+    collection?: CollectionProps,
+    price?: number
+}
+
+interface Attribute {
+    trait: string;
+    value: string | number;
+}
+
+export interface NFTMetaData {
+    name: string;
+    description: string;
+    image: string;
+    attributes?: Attribute[];
 }

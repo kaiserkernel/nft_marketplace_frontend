@@ -63,7 +63,7 @@ const InputField: FC<InputFieldProps> = ({
   }
   return (
     <div
-      className={`flex flex-row items-center gap-4 px-4 py-3  border hover:border-blue-500 transition-all duration-300 ease-in-out rounded-xl overflow-hidden ${
+      className={`flex flex-row items-center gap-4 px-4 py-3 border hover:border-blue-500 transition-all duration-300 ease-in-out rounded-xl overflow-hidden ${
         isFocused
           ? "border-blue-500 bg-black/80"
           : `${bordered ? "border-[#3D3D3F]" : "border-[#1F1F21]"} bg-[#1F1F21]`

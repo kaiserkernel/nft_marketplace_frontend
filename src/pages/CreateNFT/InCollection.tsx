@@ -19,22 +19,10 @@ import Alert from "../../components/common/Alert";
 import { notify } from "../../components/common/Notify";
 
 import { useContract } from "../../context/ContractContext";
-import { CollectionProps } from "../../types";
+import { CollectionProps, NFTMetaData } from "../../types";
 import { fetchOwnerCollection } from "../../services/colllectionService";
 import { mintNFTDB } from "../../services/nftService";
 import { pinata } from "../../config/pinata";
-
-interface Attribute {
-  trait: string;
-  value: string | number;
-}
-
-interface Metadata {
-  name: string;
-  description: string;
-  image: string;
-  attributes?: Attribute[];
-}
 
 const CreateInCollection = () => {
   const [displayName, setDisplayName] = useState<string>("");
@@ -128,7 +116,7 @@ const CreateInCollection = () => {
       const imageURL = await pinata.gateways.public.convert(uploadLogoImage.cid);
   
       // Create metadata JSON and upload to IPFS
-      const metadata: Metadata = { name: displayName, description: displayDescription, image: imageURL };
+      const metadata: NFTMetaData = { name: displayName, description: displayDescription, image: imageURL };
       if (attributes.length > 0) {
         metadata.attributes = _attributes;
       }
@@ -172,7 +160,7 @@ const CreateInCollection = () => {
     const _wsContractInstance =  new ethers.Contract(confirmedCollectionAddress, ContractCollectionABI, wsProvider);
     setWsCollectionContract(_wsContractInstance);
 
-  }, [confirmedCollectionAddress])
+  }, [confirmedCollectionAddress, wsProvider])
 
   useEffect(() => {
     if (!walletAddress) return;

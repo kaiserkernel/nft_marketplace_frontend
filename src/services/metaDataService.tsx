@@ -6,7 +6,7 @@ const fetchMetaData = async (uri: string) => {
       const response = await axios.post(`/api/metaData`, { uri }, {
         headers: { "Content-Type": "application/json" }
       });
-      console.log(response, 'response')
+      
       return response.data;
     } catch (error: any) {
       if (isAxiosError(error)) {

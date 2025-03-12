@@ -37,5 +37,22 @@ const fetchOwnedNFT =  async (_data: string) => {
   }
 }
 
+const setNFTPrice = async (_data: any) => {
+  try {
+    const response = await axios.post("/api/nft/price", _data, {
+      headers: { "Content-Type": "application/json" }
+    });
+    return response.data;
+  } catch (error) {
+    console.log(error, 'cone')
+    if (isAxiosError(error)) {
+      error.response?.data.msg.map((str: string) => {
+        notify(str, "error");
+      });
+    }
+    else
+      notify("Error occured. Please try again", "error");
+  }
+}
 
-export { mintNFTDB, fetchOwnedNFT }
+export { mintNFTDB, fetchOwnedNFT, setNFTPrice }
