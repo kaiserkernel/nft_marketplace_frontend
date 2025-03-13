@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { ethers } from "ethers";
+import { ThreeDot } from "react-loading-indicators";
 
 import { NFTMetaData, NFTProps } from "../../../types"
 import { fetchMetaData } from "../../../services/metaDataService";
@@ -15,7 +16,6 @@ interface NFTViewBtnProps {
 }
 
 export const NFTViewBtn = ({nftData, setNFTList}: NFTViewBtnProps) => {
-    console.log(nftData, 'nftdata')
     const { price, tokenURI, lastPrice } = nftData;
     const [nftMetaData, setNFTMetaData] = useState<NFTMetaData | null>(null);
     const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -145,13 +145,19 @@ export const NFTViewBtn = ({nftData, setNFTList}: NFTViewBtnProps) => {
                         className={`absolute bottom-0 left-0 w-full h-[2.5rem] flex justify-center items-center bg-blue-600 text-white text-sm font-medium rounded-b-md opacity-0 ${price !== 0 ? 'group-hover:opacity-100 group-hover:translate-y-0 group-hover:h-[2.5rem] transition-all duration-300' : ''} rounded-b-xl grid grid-cols-9`} 
                         onClick={handleBuyNft}
                     >
-                        <span className="col-span-6 mx-auto font-bold">Buy Now</span>
-                        
-                        {/* <!-- Vertical white divider --> */}
-                        <div className="h-6 border-r-2 border-white mx-2"></div>
-                        
-                        {/* <!-- Image aligned to the right --> */}
-                        <img className="col-span-2 h-6 w-6 mx-auto" src="/buy.webp" />
+                        {
+                            isProcessing ? <ThreeDot color="#fff" size="small"/> :  (
+                                <>
+                                    <span className="col-span-6 mx-auto font-bold">Buy Now</span>
+                                    
+                                    {/* <!-- Vertical white divider --> */}
+                                    <div className="h-6 border-r-2 border-white mx-2"></div>
+                                    
+                                    {/* <!-- Image aligned to the right --> */}
+                                    <img className="col-span-2 h-6 w-6 mx-auto" src="/buy.webp" />
+                                </>
+                            )
+                        }
                     </div>
 
 
