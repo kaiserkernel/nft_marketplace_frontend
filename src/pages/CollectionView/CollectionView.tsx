@@ -41,15 +41,17 @@ const CollectionView = () => {
     }
 
     return (
-        <div className="flex flex-wrap gap-4">
-           {
-                nftList && nftList.map((nft: NFTProps, idx) => (
-                    <NFTViewBtn
-                        data={nft}
-                        key={idx}
-                    />
-                ))
-           }
+        <div className="w-full">
+            <div className="flex flex-wrap gap-4">
+            {
+                    nftList && nftList.map((nft: NFTProps, idx) => (
+                        <NFTViewBtn
+                            data={nft}
+                            key={idx}
+                        />
+                    ))
+            }
+            </div>
         </div>
     )
 }
