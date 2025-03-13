@@ -12,69 +12,48 @@ import { ContractCollectionABI } from "../../../contracts";
 
 interface NFTViewBtnProps {
     nftData: NFTProps,
-    setNFTList: React.Dispatch<React.SetStateAction<NFTProps[]>>
+    isProcessing: number | null,
+    handleBuyNft: (price: number, tokenId: number) => Promise<void>
 }
 
-export const NFTViewBtn = ({nftData, setNFTList}: NFTViewBtnProps) => {
-    const { price, tokenURI, lastPrice } = nftData;
+export const NFTViewBtn = ({nftData, isProcessing, handleBuyNft}: NFTViewBtnProps) => {
+    const { price, tokenURI, lastPrice, tokenId } = nftData;
     const [nftMetaData, setNFTMetaData] = useState<NFTMetaData | null>(null);
-    const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-    const { walletAddress, signer, wsProvider } = useContract();
     const [collectionContract, setCollectionContract] = useState<ethers.Contract | null>(null);
-    const [wsCollectionContract, setWsCollectionContract] = useState<ethers.Contract | null>(null);
 
-    const handleBuyNft = async () => {
+    const handleClickBuyNft = async () => {
         if (!price) return;
-        if (!collectionContract) {
-            notify("Please check out wallect connection", "error")
-            return;
-        }
-
-        setIsProcessing(true);
-        try {
-            // Estimate the gas required for the transaction
-            const gasEstimate = await collectionContract.mintNFT.estimateGas( nftData.tokenId );
-            
-            // Mint the NFT on the blockchain
-            const tx = await collectionContract.mintNFT( nftData.tokenId, { 
-                gasLimit: gasEstimate 
-            });
-        
-            const log = await tx.wait();
-        
-            // log.logs[0].address -> contractAddress 
-            // log.from -> owner address
-            notify("Buy NFT successfully", "success");
-        } catch (error: any) {
-            notify(error.code === "ACTION_REJECTED" ? "Transaction rejected." : "Error occured on mint NFT", "error");
-        } finally {
-            setIsProcessing(false);
-        }
+        await handleBuyNft(price, tokenId);
     }
 
-    const handleSavebuyNFTDB = async (
-        owner: string,
-        _tokenId: number,
-        _price: number
-    ) => {
-        try {
-            const _buyData = { _id: nftData._id, owner, tokenId: Number(_tokenId), price: Number(_price)};
-            await buyNFT(_buyData);
+    // const handleBuyNft = async () => {
+    //     if (!price || !nftData.tokenId || isProcessing) return;
+    //     if (!collectionContract) {
+    //         notify("Please check out wallect connection", "error")
+    //         return;
+    //     }
+    //     setIsProcessing(true);
+    //     try {
+    //         // Estimate the gas required for the transaction
+    //         const gasEstimate = await collectionContract.buyNFT.estimateGas( nftData.tokenId );
             
-            // Update nft list
-            setNFTList((prevNFTList) => {
-                return prevNFTList.map((nft) => {
-                    if (nft.tokenId === _tokenId) {
-                        return { ...nft, price: 0, lastPrice: _price }; // Update the price of the matched NFT
-                    }
-                    return nft;
-                });
-            });
-        } catch (error) {
-            console.log("Log NFT Buy data occur error", error)
-        }
-    }
+    //         // Mint the NFT on the blockchain
+    //         const tx = await collectionContract.buyNFT( nftData.tokenId, { 
+    //             gasLimit: gasEstimate 
+    //         });
+        
+    //         const log = await tx.wait();
+        
+    //         // log.logs[0].address -> contractAddress 
+    //         // log.from -> owner address
+    //         notify("Buy NFT successfully", "success");
+    //     } catch (error: any) {
+    //         notify(error.code === "ACTION_REJECTED" ? "Transaction rejected." : "Error occured on mint NFT", "warning");
+    //     } finally {
+    //         setIsProcessing(false);
+    //     }
+    // }
 
     useEffect(() => {
         const fetchNFTData = async () => {
@@ -87,31 +66,6 @@ export const NFTViewBtn = ({nftData, setNFTList}: NFTViewBtnProps) => {
         }
         fetchNFTData();
     }, [tokenURI])
-
-    // Fetch and setup contract instances when the collection address is confirmed
-    useEffect(() => {
-        if (!walletAddress) {
-            notify("Please check out wallet connection", "error");
-            return;
-        }
-
-        const contractInstance = new ethers.Contract(walletAddress, ContractCollectionABI, signer);
-        setCollectionContract(contractInstance);
-
-        const _wsContractInstance =  new ethers.Contract(walletAddress, ContractCollectionABI, wsProvider);
-        setWsCollectionContract(_wsContractInstance);
-    }, [walletAddress, wsProvider, signer, ContractCollectionABI])
-
-    useEffect(() => {
-        if (!wsCollectionContract) return;
-        
-        // Attach event listener to the contract
-        wsCollectionContract.on("NFTMinted", handleSavebuyNFTDB);
-
-        return () => {
-            wsCollectionContract.off("NFTMinted", handleSavebuyNFTDB);
-        }
-    }, [wsCollectionContract])
 
     return (
         <button
@@ -141,18 +95,18 @@ export const NFTViewBtn = ({nftData, setNFTList}: NFTViewBtnProps) => {
 
                     {/* Button appears when hovering the entire component */}
                     <div 
-                        className={`absolute bottom-0 left-0 w-full h-[2.5rem] flex justify-center items-center bg-blue-600 text-white text-sm font-medium rounded-b-md opacity-0 ${price !== 0 ? 'group-hover:opacity-100 group-hover:translate-y-0 group-hover:h-[2.5rem] transition-all duration-300' : ''} rounded-b-xl grid grid-cols-9`} 
-                        onClick={handleBuyNft}
+                        className={`absolute bottom-0 left-0 w-full h-[2.5rem] flex justify-center items-center bg-blue-600 text-white text-sm font-medium rounded-b-md opacity-0 group-hover:opacity-100 group-hover:translate-y-0 group-hover:h-[2.5rem] transition-all duration-300 rounded-b-xl grid grid-cols-9 ${isProcessing === tokenId ? "opacity-100" : ""}`} 
+                        onClick={handleClickBuyNft}
                     >
                         {
-                            isProcessing ? <ThreeDot color="#fff" size="small"/> :  (
+                            isProcessing === tokenId ? (
+                                <div className="col-span-8">
+                                    <ThreeDot color="#fff" size="small"/>
+                                </div>
+                            ) :  (
                                 <>
                                     <span className="col-span-6 mx-auto font-bold">Buy Now</span>
-                                    
-                                    {/* <!-- Vertical white divider --> */}
                                     <div className="h-6 border-r-2 border-white mx-2"></div>
-                                    
-                                    {/* <!-- Image aligned to the right --> */}
                                     <img className="col-span-2 h-6 w-6 mx-auto" src="/buy.webp" />
                                 </>
                             )

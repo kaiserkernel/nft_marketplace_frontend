@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router";
 import { ThreeDot } from "react-loading-indicators";
+import { ToastContainer } from "react-toastify";
+import { ethers } from "ethers";
 
 import { notify } from "../../components/common/Notify";
 import { NFTViewBtn } from "../../components/common/NFTViewBtn";
@@ -9,7 +11,9 @@ import CheckboxGroup from "../../components/common/CheckboxGroup";
 import FilterPanel from "../../components/common/FilterPanel";
 
 import { CollectionProps, NFTProps } from "../../types";
-import { fetchNFTListOfCollection } from "../../services/nftService";
+import { fetchNFTListOfCollection, buyNFT } from "../../services/nftService";
+import { ContractCollectionABI } from "../../contracts";
+import { useContract } from "../../context/ContractContext";
 
 interface FilterProps {
     maxPrice: number | null,
@@ -39,8 +43,13 @@ const CollectionView = () => {
         maxPrice: null,
         minPrice: null
     });
-    const [statusList, setStatusList] = useState<StatusProps[]>(STATUSLIST)
+    const [statusList, setStatusList] = useState<StatusProps[]>(STATUSLIST);
     const [openedFilterPanel, setOpenedFilterPanel] = useState<string>("");
+    const [isProcessing, setIsProcessing] = useState<number | null>(null);
+
+    const { walletAddress, signer, wsProvider } = useContract();
+    const [collectionContract, setCollectionContract] = useState<ethers.Contract | null>(null);
+    const [wsCollectionContract, setWsCollectionContract] = useState<ethers.Contract | null>(null);
 
     const fetchNFTList = async () => {
         setIsLoading(true);
@@ -57,6 +66,32 @@ const CollectionView = () => {
     useEffect(() => {
         if (collection?._id) fetchNFTList();
     }, [collection]);
+ 
+    // Fetch and setup contract instances when the collection address is confirmed
+    useEffect(() => {
+        if (!walletAddress) {
+            // notify("Please check out wallet connection", "error");
+            return;
+        }
+
+        const contractInstance = new ethers.Contract(walletAddress, ContractCollectionABI, signer);
+        setCollectionContract(contractInstance);
+
+        const _wsContractInstance =  new ethers.Contract(walletAddress, ContractCollectionABI, wsProvider);
+        setWsCollectionContract(_wsContractInstance);
+    }, [walletAddress, wsProvider, signer, ContractCollectionABI])
+
+    useEffect(() => {
+        if (!wsCollectionContract) return;
+        
+        // Attach event listener to the contract
+        console.log("listener ready")
+        wsCollectionContract.on("NFTMinted", handleSavebuyNFTDB);
+
+        return () => {
+            wsCollectionContract.off("NFTMinted", handleSavebuyNFTDB);
+        }
+    }, [wsCollectionContract])
 
     const handleSearchValueChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
         setSearchValue(evt.target.value);
@@ -89,6 +124,57 @@ const CollectionView = () => {
         }
     }
 
+    const handleSavebuyNFTDB = async (
+        owner: string,
+        _tokenId: number,
+        _price: number
+    ) => {
+        try {
+            const _buyData = { collection: collection._id, owner, tokenId: Number(_tokenId), price: Number(_price)};
+            await buyNFT(_buyData);
+            
+            // Update nft list
+            setNftList((prevNFTList) => {
+                return prevNFTList.map((nft) => {
+                    if (nft.tokenId === _tokenId) {
+                        return { ...nft, price: 0, lastPrice: _price }; // Update the price of the matched NFT
+                    }
+                    return nft;
+                });
+            });
+        } catch (error) {
+            console.log("Log NFT Buy data occur error", error)
+        }
+    }
+
+    const handleBuyNft = async (price: number, tokenId: number) => {
+        if (price || tokenId) return;
+        if (!collectionContract) {
+            notify("Please check out wallect connection", "error")
+            return;
+        }
+        setIsProcessing(tokenId);
+        try {
+            // Estimate the gas required for the transaction
+            const gasEstimate = await collectionContract.buyNFT.estimateGas( tokenId );
+            
+            // Mint the NFT on the blockchain
+            const tx = await collectionContract.buyNFT( tokenId, { 
+                gasLimit: gasEstimate 
+            });
+        
+            const log = await tx.wait();
+        
+            // log.logs[0].address -> contractAddress 
+            // log.from -> owner address
+            notify("Buy NFT successfully", "success");
+        } catch (error: any) {
+            notify(error.code === "ACTION_REJECTED" ? "Transaction rejected." : "Error occured on mint NFT", "warning");
+        } finally {
+            setIsProcessing(null);
+        }
+    }
+
     if (isLoading) {
         return ( 
             <div className="flex justify-center content-center">
@@ -99,6 +185,7 @@ const CollectionView = () => {
 
     return (
         <div className="w-full md:mb-10 mb-4">
+            <ToastContainer />
             {collection && (
                 <div className="relative w-full md:h-[75vh] h-[40vh]">
                     <img src={collection.image} className="w-full object-top object-cover md:h-[75vh] h-[40vh] rounded-2xl"/>
@@ -168,9 +255,10 @@ const CollectionView = () => {
                     {
                             nftList && nftList.map((nft: NFTProps, idx) => (
                                 <NFTViewBtn
-                                    setNFTList={setNftList}
+                                    handleBuyNft={handleBuyNft}
                                     nftData={nft}
                                     key={idx}
+                                    isProcessing={isProcessing}
                                 />
                             ))
                     }
