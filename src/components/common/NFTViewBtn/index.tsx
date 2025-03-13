@@ -32,7 +32,6 @@ export const NFTViewBtn = ({nftData, setNFTList}: NFTViewBtnProps) => {
         }
 
         setIsProcessing(true);
-
         try {
             // Estimate the gas required for the transaction
             const gasEstimate = await collectionContract.mintNFT.estimateGas( nftData.tokenId );
