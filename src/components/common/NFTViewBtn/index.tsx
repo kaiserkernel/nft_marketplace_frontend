@@ -1,14 +1,8 @@
-import React, { useEffect, useState } from "react"
-import { ethers } from "ethers";
+import { useEffect, useState } from "react"
 import { ThreeDot } from "react-loading-indicators";
 
 import { NFTMetaData, NFTProps } from "../../../types"
 import { fetchMetaData } from "../../../services/metaDataService";
-import { notify } from "../Notify";
-
-import { useContract } from "../../../context/ContractContext";
-import { buyNFT } from "../../../services/nftService";
-import { ContractCollectionABI } from "../../../contracts";
 
 interface NFTViewBtnProps {
     nftData: NFTProps,
@@ -20,40 +14,10 @@ export const NFTViewBtn = ({nftData, isProcessing, handleBuyNft}: NFTViewBtnProp
     const { price, tokenURI, lastPrice, tokenId } = nftData;
     const [nftMetaData, setNFTMetaData] = useState<NFTMetaData | null>(null);
 
-    const [collectionContract, setCollectionContract] = useState<ethers.Contract | null>(null);
-
     const handleClickBuyNft = async () => {
         if (!price) return;
         await handleBuyNft(price, tokenId);
     }
-
-    // const handleBuyNft = async () => {
-    //     if (!price || !nftData.tokenId || isProcessing) return;
-    //     if (!collectionContract) {
-    //         notify("Please check out wallect connection", "error")
-    //         return;
-    //     }
-    //     setIsProcessing(true);
-    //     try {
-    //         // Estimate the gas required for the transaction
-    //         const gasEstimate = await collectionContract.buyNFT.estimateGas( nftData.tokenId );
-            
-    //         // Mint the NFT on the blockchain
-    //         const tx = await collectionContract.buyNFT( nftData.tokenId, { 
-    //             gasLimit: gasEstimate 
-    //         });
-        
-    //         const log = await tx.wait();
-        
-    //         // log.logs[0].address -> contractAddress 
-    //         // log.from -> owner address
-    //         notify("Buy NFT successfully", "success");
-    //     } catch (error: any) {
-    //         notify(error.code === "ACTION_REJECTED" ? "Transaction rejected." : "Error occured on mint NFT", "warning");
-    //     } finally {
-    //         setIsProcessing(false);
-    //     }
-    // }
 
     useEffect(() => {
         const fetchNFTData = async () => {
