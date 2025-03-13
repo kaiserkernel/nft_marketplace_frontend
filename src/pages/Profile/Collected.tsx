@@ -13,7 +13,7 @@ import { NFTProps, CollectionProps } from "../../types";
 import { useContract } from "../../context/ContractContext";
 
 import { fetchOwnedNFT } from "../../services/nftService";
-import { NFTBtn } from "../../components/common/NFTBtn";
+import { NFTCollectedBtn } from "../../components/common/NFTCollectedBtn";
 
 const initialSaleTypeRadios: RadioGroupItemType[] = [
   { label: "All Types", checked: true },
@@ -168,7 +168,7 @@ const Collected = () => {
             /> */}
             {
               nftList.map((log: NFTProps, idx) => (
-                <NFTBtn key={idx} NFTProp={log} setNFTList={setNFTList}/>
+                <NFTCollectedBtn key={idx} NFTProp={log} setNFTList={setNFTList}/>
               ))
             }
           </div>

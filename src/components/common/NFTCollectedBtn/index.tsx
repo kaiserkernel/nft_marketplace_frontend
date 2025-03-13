@@ -5,13 +5,13 @@ import { NFTSetPriceModal } from "../NFTSetPriceModal";
 import { fetchMetaData } from "../../../services/metaDataService";
 import { NFTProps, NFTMetaData } from "../../../types";
 
-interface NFTBtnProps {
+interface NFTCollectedBtnProps {
     NFTProp: NFTProps;
     setNFTList: React.Dispatch<React.SetStateAction<NFTProps[]>>
 }
 
 
-export const NFTBtn = ({ NFTProp, setNFTList }: NFTBtnProps) => {
+export const NFTCollectedBtn = ({ NFTProp, setNFTList }: NFTCollectedBtnProps) => {
     const { tokenURI } = NFTProp;
 
     const [nftData, setNftData] = useState<NFTMetaData | null>(null);

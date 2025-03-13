@@ -4,10 +4,12 @@ import Container from "./components/layouts/Container";
 import { createAppKit } from "@reown/appkit/react";
 import { EthersAdapter } from "@reown/appkit-adapter-ethers";
 import { bsc, mainnet, bscTestnet } from "@reown/appkit/networks";
+
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import SingleNFT from "./pages/CreateNFT/SingleNFT";
 import CreateInCollection from "./pages/CreateNFT/InCollection";
+import CollectionView from "./pages/CollectionView/CollectionView";
 
 // 1. Get projectId
 const projectId = "2107c00a7b77ee5371a8e43b5c13a4e6";
@@ -41,6 +43,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/create-single" element={<SingleNFT />} />
         <Route path="/create-in-collection" element={<CreateInCollection />} />
+        <Route path="/collection-view" element={<CollectionView />} />
       </Routes>
     </Container>
   );
