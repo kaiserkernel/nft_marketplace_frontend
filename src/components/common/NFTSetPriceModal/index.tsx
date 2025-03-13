@@ -68,7 +68,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
         try {
             await setNFTPriceDB({ _id: nftProps._id, tokenId: Number(_tokenId), price: Number(_price) });
 
-                // After price is set, update the NFT in the list
+            // After price is set, update the NFT in the list
             setNFTList((prevNFTList) => {
                 return prevNFTList.map((nft) => {
                     if (nft.tokenId === nftProps.tokenId) {

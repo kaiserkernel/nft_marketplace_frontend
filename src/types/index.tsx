@@ -19,7 +19,8 @@ export interface NFTProps {
     royalty: number,
     createdAt?: string,
     collection?: CollectionProps,
-    price?: number
+    price?: number,
+    lastPrice?: number
 }
 
 interface Attribute {

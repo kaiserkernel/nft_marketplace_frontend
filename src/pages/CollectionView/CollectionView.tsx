@@ -168,7 +168,8 @@ const CollectionView = () => {
                     {
                             nftList && nftList.map((nft: NFTProps, idx) => (
                                 <NFTViewBtn
-                                    data={nft}
+                                    setNFTList={setNftList}
+                                    nftData={nft}
                                     key={idx}
                                 />
                             ))
