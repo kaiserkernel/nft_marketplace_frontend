@@ -22,7 +22,7 @@ export const NFTViewBtn = ({data}: {data: NFTProps}) => {
     return (
         <button
             // onClick={() => handleBtnClick(collection)}
-            className="relative w-64 h-64 group"
+            className="relative md:w-64 md:h-64 group w-[40vw] h-[40vw]"
         >
           {
               nftData?.image && (
@@ -36,7 +36,7 @@ export const NFTViewBtn = ({data}: {data: NFTProps}) => {
 
                     {/* Text Fades in on Hover if not confirmed*/}
                     <span className="absolute inset-0 flex items-center justify-center text-white text-lg font-bold opacity-0 transition duration-300 group-hover:opacity-100">
-                        Click
+                        Buy
                     </span>
                   </div>
               )
