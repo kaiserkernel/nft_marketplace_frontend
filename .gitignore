@@ -4,7 +4,7 @@ dist/
 build/
 
 # sensitive environment variable
-.env.local
+# .env.local
 
 # Logs
 npm-debug.log*
