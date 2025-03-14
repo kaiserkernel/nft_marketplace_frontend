@@ -4,13 +4,13 @@ import { ThreeDot } from "react-loading-indicators";
 import CardBtn from "../../components/common/CardBtn";
 import ManipulateSlider from "../../components/common/ManipulateSlider";
 
-import { CollectionProps, NFTMetaData } from "../../types";
+import { CollectionProps, NFTProps } from "../../types";
 import { fetchAllCollection } from "../../services/colllectionService";
 import { fetchTopAuctions } from "../../services/nftService";
 
 const Dashboard:FC = () => {
   const [ collectionList, setCollectionList ] = useState<CollectionProps[]>([]);
-  const [ topAuctionList, setTopAuctionList ] = useState<NFTMetaData[]>([]);
+  const [ topAuctionList, setTopAuctionList ] = useState<NFTProps[]>([]);
   const [ isCollectionLoading, setIsCollectionLoading ] = useState<boolean>(false);
   const [ isTopAuctionLoading, setIsTopAuctionLoading ] = useState<boolean>(false);
 
@@ -46,7 +46,7 @@ const Dashboard:FC = () => {
     ));
   };
 
-  const renderNFTCards = (itemList: NFTMetaData[]): ReactNode[] => {
+  const renderNFTCards = (itemList: NFTProps[]): ReactNode[] => {
     return itemList.map((item, idx) => (
       <CardBtn key={idx} nft={item} cardType="NFT"/>
     ));

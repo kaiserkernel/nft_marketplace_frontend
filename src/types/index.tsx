@@ -27,7 +27,11 @@ export interface NFTProps {
         price: number,
         date: string
     }],
-    bidEndDate?: string
+    bidEndDate?: string,
+    name?: string,
+    description?: string;
+    image?: string;
+    attributes?: Attribute[];
 }
 
 interface Attribute {
@@ -36,7 +40,6 @@ interface Attribute {
 }
 
 export interface NFTMetaData {
-    _id?: string;
     name: string;
     description: string;
     image: string;

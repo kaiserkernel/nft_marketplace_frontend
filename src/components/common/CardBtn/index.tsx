@@ -1,49 +1,49 @@
-import { FC, useState } from "react";
+import { FC, useState, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router";
 
 import Button from "../Button";
 
-import { CollectionProps, NFTMetaData } from "../../../types";
-import { fetchMetaData } from "../../../services/metaDataService";
+import { CollectionProps, NFTProps } from "../../../types";
 
 import "./style.css";
 
 interface CardBtnProps {
   collection?: CollectionProps,
-  nft?: NFTMetaData,
+  nft?: NFTProps,
   cardType: "Collection" | "NFT"
 }
 
-const CardBtn: FC<CardBtnProps> = (props) => {
-  const { collection, nft, cardType } = props;
-
-  let name: string | null = null;
-  let description: string | undefined = undefined;
-  let symbol: string | null = null;
-  let image: string | undefined = undefined;
-
-  if ( cardType === "Collection" && collection) {
-    name = collection.name;
-    description = collection.description;
-    symbol = collection.symbol;
-    image = collection.image;
-  }
-
-  if ( cardType === "NFT" && nft ) {
-    name = nft.name;
-    description = nft.description;
-    image = nft.image;
-  }
-  // const { name, description, symbol, image } = collection;
-
+const CardBtn: FC<CardBtnProps> = ({ collection, nft, cardType }) => {
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const navigate = useNavigate();
+  
+  // Memoize card data based on the card type
+  const cardData = useMemo(() => {
+    if (cardType === "Collection" && collection) {
+      return {
+        name: collection.name || null,
+        description: collection.description || null,
+        symbol: collection.symbol || null,
+        image: collection.image || null,
+      };
+    }
 
+    if (cardType === "NFT" && nft) {
+      return {
+        name: nft.name || null,
+        description: nft.description || null,
+        image: nft.image || null,
+      };
+    }
+
+    return {};
+  }, [cardType, collection, nft]);
   const handleViewCardClick = () => {
     if ( cardType === "Collection" )
       navigate("/collection-view", { state: collection })
-    // if (cardType === "NFT")
+    if (cardType === "NFT")
+      navigate("/auction-view", { state: nft })
   }
 
   return (
@@ -59,7 +59,7 @@ const CardBtn: FC<CardBtnProps> = (props) => {
       onMouseLeave={() => setIsFocused(false)}
       onTouchStart={() => setIsFocused(true)}
       onTouchEnd={() => setIsFocused(false)}
-      style={{ backgroundImage: `url(${image})` }}
+      style={{ backgroundImage: `url(${cardData.image})` }}
     >
       {/* Dark overlay */}
       <AnimatePresence>
@@ -69,8 +69,8 @@ const CardBtn: FC<CardBtnProps> = (props) => {
           animate={{ height: "auto", opacity: 1 }}
           className="absolute left-[1px] right-[1px] bottom-[1px] p-4 rounded-b-3xl bg-black/5 backdrop-blur-md z-20 h-auto"
         >
-          { name && <h3 className="text-white font-semibold text-md">{name}</h3> }
-          { description && <p className="text-white text-sm mt-2">{description}</p>}
+          { cardData.name && <h3 className="text-white font-semibold text-md">{cardData.name}</h3> }
+          { cardData.description && <p className="text-white text-sm mt-2">{cardData.description}</p>}
           <AnimatePresence>
             {isFocused && (
               <motion.div
@@ -81,7 +81,7 @@ const CardBtn: FC<CardBtnProps> = (props) => {
                 transition={{ duration: 0.3, ease: "easeInOut" }}
               >
                 <div className="mt-4">
-                  {symbol && <p className="text-white text-sm font-bold">{symbol}</p>}
+                  {cardData.symbol && <p className="text-white text-sm font-bold">{cardData.symbol}</p>}
                   <div className="flex items-center justify-center mt-4">
                     <Button
                       label="Explore Collection"
