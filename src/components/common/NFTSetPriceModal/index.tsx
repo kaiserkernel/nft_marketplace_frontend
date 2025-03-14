@@ -125,7 +125,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                     notify("Please set start bid price", "warning");
                     return
                 }
-                if (!duration.date || !duration.hour || !duration.minute ) {
+                if (duration.date === null || duration.hour === null || duration.minute === null || ( duration.date === 0 && duration.hour === 0 && duration.minute === 0 ) ) {
                     notify("Please complete duration field", "warning");
                     return
                 }
