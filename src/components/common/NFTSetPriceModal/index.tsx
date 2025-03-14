@@ -121,8 +121,8 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
         setIsProcessing(true);
         try {
             if ( priceType === "auction" ) {
-                if (!price) {
-                    notify("Please set start bid price", "warning");
+                if (!price || price <= 0) {
+                    notify("Please set start bid price correctly", "warning");
                     return
                 }
                 if ( duration.date === null || duration.hour === null || duration.minute === null ) {
@@ -148,7 +148,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
             }
             
             if ( priceType === "fixed") {
-                if (!price) {
+                if (!price || price <= 0) {
                     notify("Please set price", "warning");
                     return
                 }
