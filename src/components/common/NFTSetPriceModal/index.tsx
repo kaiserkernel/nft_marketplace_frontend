@@ -101,12 +101,12 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
         setIsProcessing(true);
         try {
             if ( priceType === "auction" ) {
-                if (!duration.date || !duration.hour || !duration.minute ) {
-                    notify("Please complete duration field", "warning");
-                    return
-                }
                 if (!price) {
                     notify("Please set start bid price", "warning");
+                    return
+                }
+                if (!duration.date || !duration.hour || !duration.minute ) {
+                    notify("Please complete duration field", "warning");
                     return
                 }
                 const tokenId = nftProps.tokenId;
