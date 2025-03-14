@@ -88,11 +88,6 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
     const handleChangePrice = (evt: ChangeEvent<HTMLInputElement>) => {
         const value = evt.target.value;
 
-        // // Allow only valid numbers and a single decimal point
-        // if (!/^\d*\.?\d*$/.test(value)) {
-        //     return notify("Please input a valid number for price", "warning");
-        // }
-
         setPrice(Number(value)); // Convert to number, allow empty input
     };
 
