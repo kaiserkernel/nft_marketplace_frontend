@@ -142,7 +142,10 @@ const CreateInCollection = () => {
       // log.from -> owner address
       notify("NFT minted successfully", "success");
     } catch (error: any) {
-      notify(error.code === "ACTION_REJECTED" ? "Transaction rejected." : "Error occured on mint NFT", "error");
+      if (error.code !== "ACTION_REJECTED") {
+        notify("Error occured on mint NFT", "error");
+        console.log(error, "mint nft")
+      }
     } finally {
       setIsNFTProcessing(false);
     }

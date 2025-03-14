@@ -155,15 +155,16 @@ const CollectionView = () => {
         }
         setIsProcessing(tokenId);
         try {
+            const _price = BigInt(price * 10 ** 18); // Convert to BigInt and wei currency
             // Estimate the gas required for the transaction
             const gasEstimate = await collectionContract.buyNFT.estimateGas( tokenId, {
-                value: price
+                value: _price
             } );
             
             // Mint the NFT on the blockchain
             const tx = await collectionContract.buyNFT( tokenId, { 
                 gasLimit: gasEstimate,
-                value: price
+                value: _price
             });
         
             const log = await tx.wait();
@@ -172,7 +173,10 @@ const CollectionView = () => {
             // log.from -> owner address
             notify("Buy NFT successfully", "success");
         } catch (error: any) {
-            notify(error.code === "ACTION_REJECTED" ? "Transaction rejected." : "Error occured on mint NFT", "warning");
+            if (error.code !== "ACTION_REJECTED") {
+                notify("Error occured on Buy NFT", "warning");
+                console.log(error, 'error buy')
+            }
         } finally {
             setIsProcessing(null);
         }

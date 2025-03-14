@@ -116,8 +116,10 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                 onClose();
             }   
         } catch (error: any) {
-            console.log(error, 'error')
-            notify(error.code === "ACTION_REJECTED" ? "Transaction rejected." : "Error occurred while setting NFT price", "warning");
+            if (error.code !== "ACTION_REJECTED") {
+                notify("Error occurred while setting NFT price", "warning");
+                console.log(error, 'nft set price')
+            }
           } finally {
             setIsProcessing(false);
           }
