@@ -80,9 +80,9 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
             _id: nftProps._id,
             tokenId: formattedTokenId,
             startBid: formattedBid,
-            bidEndTime: formattedEndTime
+            bidEndDate: formattedEndTime
         };
-
+        
         await setNFTAuctionPriceDB(requestBody);
     }
 
