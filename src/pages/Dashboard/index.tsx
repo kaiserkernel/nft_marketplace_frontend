@@ -1,26 +1,40 @@
 import { FC, ReactNode, useEffect, useState } from "react";
 import { ThreeDot } from "react-loading-indicators";
 
-import CollectionCard from "../../components/common/CollectionCard";
+import CardBtn from "../../components/common/CardBtn";
 import ManipulateSlider from "../../components/common/ManipulateSlider";
 
-import { CollectionProps } from "../../types";
+import { CollectionProps, NFTMetaData } from "../../types";
 import { fetchAllCollection } from "../../services/colllectionService";
+import { fetchTopAuctions } from "../../services/nftService";
 
 const Dashboard:FC = () => {
   const [ collectionList, setCollectionList ] = useState<CollectionProps[]>([]);
-  const [ isLoading, setIsLoading ] = useState<boolean>(false);
+  const [ topAuctionList, setTopAuctionList ] = useState<NFTMetaData[]>([]);
+  const [ isCollectionLoading, setIsCollectionLoading ] = useState<boolean>(false);
+  const [ isTopAuctionLoading, setIsTopAuctionLoading ] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchInitialData = async () => {
-      setIsLoading(true);
+      setIsCollectionLoading(true);
       try {
         const { data } = await fetchAllCollection();
         setCollectionList(data);
       } catch (error) {
         console.log(error, "Error occur fetch Collecions")
       } finally {
-        setIsLoading(false);
+        setIsCollectionLoading(false);
+      }
+
+      setIsTopAuctionLoading(true);
+      try {
+        const { data } = await fetchTopAuctions();
+        console.log(data, "top aution")
+        setTopAuctionList(data);
+      } catch (error) {
+        console.log(error, "Error occur fetch Collecions")
+      } finally {
+        setIsTopAuctionLoading(false);
       }
     };
     fetchInitialData();
@@ -28,7 +42,13 @@ const Dashboard:FC = () => {
 
   const renderCollectionCards = (itemList: CollectionProps[]): ReactNode[] => {
     return itemList.map((item, idx) => (
-      <CollectionCard collection={item} key={idx}/>
+      <CardBtn key={idx} collection={item} cardType="Collection"/>
+    ));
+  };
+
+  const renderNFTCards = (itemList: NFTMetaData[]): ReactNode[] => {
+    return itemList.map((item, idx) => (
+      <CardBtn key={idx} nft={item} cardType="NFT"/>
     ));
   };
 
@@ -36,8 +56,9 @@ const Dashboard:FC = () => {
     <>
       {/* Intro Collections */}
       <div className="w-full">
+        <h2 className="text-white text-3xl font-semibold md:pb-8 pb-4">Collections</h2>
         {
-          !!isLoading ? (
+          !!isCollectionLoading ? (
             <div className="flex justify-center content-center">
               <ThreeDot color="#ffffff" size="large" />
             </div>
@@ -45,15 +66,22 @@ const Dashboard:FC = () => {
               <ManipulateSlider itemList={renderCollectionCards(collectionList)} />
           )
         }
-        {/* <ManipulateSlider itemList={renderCollectionCards(collectionList)} /> */}
       </div>
 
       {/* Top Auctions Section */}
       <div className="w-full py-32">
-        <h2 className="text-white text-3xl font-semibold">Top Auctions</h2>
-        <div className="mt-8">
-          {/* <ManipulateSlider items={renderCollectionCards(introCollectionCardGroup)} /> */}
-        </div>
+        <h2 className="text-white text-3xl font-semibold md:pb-8 pb-4">Top Auctions</h2>
+        {
+          !!isTopAuctionLoading ? (
+            <div className="flex justify-center content-center">
+              <ThreeDot color="#ffffff" size="large" />
+            </div>
+          ) : (
+              <div className="mt-8">
+                <ManipulateSlider itemList={renderNFTCards(topAuctionList)} />
+              </div>
+          )
+        }
       </div>
     </>
   );

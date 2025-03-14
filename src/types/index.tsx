@@ -36,6 +36,7 @@ interface Attribute {
 }
 
 export interface NFTMetaData {
+    _id?: string;
     name: string;
     description: string;
     image: string;
