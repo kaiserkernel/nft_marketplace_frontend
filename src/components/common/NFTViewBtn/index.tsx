@@ -15,7 +15,7 @@ export const NFTViewBtn = ({nftData, isProcessing, handleBuyNft}: NFTViewBtnProp
     const [nftMetaData, setNFTMetaData] = useState<NFTMetaData | null>(null);
 
     const handleClickBuyNft = async () => {
-        if (!price) return;
+        if (!price || isProcessing) return;
         await handleBuyNft(price, tokenId);
     }
 
