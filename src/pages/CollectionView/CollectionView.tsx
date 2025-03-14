@@ -148,7 +148,7 @@ const CollectionView = () => {
     }
 
     const handleBuyNft = async (price: number, tokenId: number) => {
-        if (price || tokenId) return;
+        if (!price || !tokenId) return;
         if (!collectionContract) {
             notify("Please check out wallect connection", "error")
             return;
@@ -156,15 +156,18 @@ const CollectionView = () => {
         setIsProcessing(tokenId);
         try {
             // Estimate the gas required for the transaction
-            const gasEstimate = await collectionContract.buyNFT.estimateGas( tokenId );
+            const gasEstimate = await collectionContract.buyNFT.estimateGas( tokenId, {
+                value: price
+            } );
             
             // Mint the NFT on the blockchain
             const tx = await collectionContract.buyNFT( tokenId, { 
-                gasLimit: gasEstimate 
+                gasLimit: gasEstimate,
+                value: price
             });
         
             const log = await tx.wait();
-        
+            console.log(log, 'log')
             // log.logs[0].address -> contractAddress 
             // log.from -> owner address
             notify("Buy NFT successfully", "success");

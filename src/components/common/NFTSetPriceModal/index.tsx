@@ -158,7 +158,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                 )
             }
             {
-                nftProps.price && (
+                !!nftProps.price && (
                     <div className="mt-4 p-3 bg-black rounded-md text-white">
                         <span className="font-semibold text-md mb-2">
                             Current Price : 
