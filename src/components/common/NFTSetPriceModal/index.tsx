@@ -125,12 +125,18 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                     notify("Please set start bid price", "warning");
                     return
                 }
-                if (duration.date === null || duration.hour === null || duration.minute === null || ( duration.date === 0 && duration.hour === 0 && duration.minute === 0 ) ) {
+                if ( duration.date === null || duration.hour === null || duration.minute === null ) {
                     notify("Please complete duration field", "warning");
                     return
                 }
+                const totalSeconds = (duration.date * 24 * 60 * 60) + (duration.hour * 60 * 60) + (duration.minute * 60);
+                if (totalSeconds <= 0) {
+                    notify("Invalid auction duration", "warning");
+                    return;
+                }
+
+                const auctionDuration = BigInt(totalSeconds);
                 const tokenId = nftProps.tokenId;
-                const auctionDuration = (new Date(0, 0, duration.date, duration.hour, duration.minute).getTime()) / 1000;
                 const startingBid = BigInt(price * 10 ** 18); // Convert to wei
 
                 const gasEstimate = await collectionContract.startAuction.estimateGas(tokenId, startingBid, auctionDuration);
