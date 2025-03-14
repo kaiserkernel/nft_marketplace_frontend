@@ -1,4 +1,5 @@
 import { FC, ReactNode, useEffect, useState } from "react";
+import { ThreeDot } from "react-loading-indicators";
 
 import CollectionCard from "../../components/common/CollectionCard";
 import ManipulateSlider from "../../components/common/ManipulateSlider";
@@ -8,11 +9,20 @@ import { fetchAllCollection } from "../../services/colllectionService";
 
 const Dashboard:FC = () => {
   const [ collectionList, setCollectionList ] = useState<CollectionProps[]>([]);
+  const [ isLoading, setIsLoading ] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchInitialData = async () => {
-      const { data } = await fetchAllCollection();
-      setCollectionList(data);
+      setIsLoading(true);
+      try {
+        const { data } = await fetchAllCollection();
+        setCollectionList(data);
+        console.log(data, "data")
+      } catch (error) {
+        console.log(error, "Error occur fetch Collecions")
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchInitialData();
   }, [])
@@ -27,6 +37,15 @@ const Dashboard:FC = () => {
     <>
       {/* Intro Collections */}
       <div className="w-full">
+        {/* {
+          !!isLoading ? (
+            <>
+              <ThreeDot color="#ffffff" size="large" />
+            </>
+          ) : (
+              <ManipulateSlider itemList={renderCollectionCards(collectionList)} />
+          )
+        } */}
         <ManipulateSlider itemList={renderCollectionCards(collectionList)} />
       </div>
 
