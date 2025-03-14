@@ -10,7 +10,7 @@ import { notify } from "../Notify";
 import { useContract } from "../../../context/ContractContext";
 import { formatDate } from "../../../utils/FormatDate";
 import { NFTMetaData, NFTProps } from "../../../types";
-import { setNFTFixedPriceDB } from "../../../services/nftService";
+import { setNFTAuctionPriceDB, setNFTFixedPriceDB } from "../../../services/nftService";
 
 interface NFTViewModalProps {
     nftMetaData: NFTMetaData | null,
@@ -59,12 +59,32 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
         if (!wsCollectionContract || !isOpen) return;
 
         wsCollectionContract.on("NFTPriceSet", handleNFTPriceSetDB);
+        wsCollectionContract.on("AuctionStarted", handleNFTAuctionStartedDB);
         if (!isOpen) {
             return () => {
                 wsCollectionContract.off("NFTPriceSet", handleNFTPriceSetDB);
+                wsCollectionContract.off("AuctionStarted", handleNFTAuctionStartedDB);
             }
         }
     }, [wsCollectionContract, nftProps._id, isOpen]);
+
+    const handleNFTAuctionStartedDB = async (tokenId: bigint, startingBid: bigint, auctionEndTime: bigint) => {
+        
+        // Convert values to readable format
+        const formattedTokenId = Number(tokenId); // Convert BigInt to string
+        const formattedBid = Number(startingBid) / (10 ** 18); // Convert BigInt to string (wei)
+        const formattedEndTime = Number(auctionEndTime) * 1000; // Convert timestamp to ISO format
+
+        // Define the request body
+        const requestBody = {
+            _id: nftProps._id,
+            tokenId: formattedTokenId,
+            startBid: formattedBid,
+            bidEndTime: formattedEndTime
+        };
+
+        await setNFTAuctionPriceDB(requestBody);
+    }
 
     const handleNFTPriceSetDB = async (_tokenId: number, _price: number) => {
         try {
