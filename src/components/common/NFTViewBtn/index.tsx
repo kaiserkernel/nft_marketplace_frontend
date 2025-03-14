@@ -76,8 +76,6 @@ export const NFTViewBtn = ({nftData, isProcessing, handleBuyNft}: NFTViewBtnProp
                             )
                         }
                     </div>
-
-
                 </div>
               )
           }
