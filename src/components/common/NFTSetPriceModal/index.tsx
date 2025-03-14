@@ -101,10 +101,32 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
         setIsProcessing(true);
         try {
             if ( priceType === "auction" ) {
-                // const auctionDuration = (new Date(0, 0, duration.date, duration.hour, duration.minute).getTime()) / 1000;
+                if (!duration.date || !duration.hour || !duration.minute ) {
+                    notify("Please complete duration field", "warning");
+                    return
+                }
+                if (!price) {
+                    notify("Please set start bid price", "warning");
+                    return
+                }
+                const tokenId = nftProps.tokenId;
+                const auctionDuration = (new Date(0, 0, duration.date, duration.hour, duration.minute).getTime()) / 1000;
+                const startingBid = BigInt(price * 10 ** 18); // Convert to wei
+
+                const gasEstimate = await collectionContract.startAuction.estimateGas(tokenId, startingBid, auctionDuration);
+                const tx = await collectionContract.startAuction(tokenId, startingBid, auctionDuration, { gasLimit: gasEstimate });
+                const log = await tx.wait();
+                
+                notify("Auction started successfully!", "success");
+                onClose();
             }
             
             if ( priceType === "fixed") {
+                if (!price) {
+                    notify("Please set price", "warning");
+                    return
+                }
+
                 const _price = BigInt(price * 10 ** 18); // Convert to BigInt and wei currency
                 const gasEstimate = await collectionContract.setTokenPrice.estimateGas(nftProps.tokenId, _price);
                 const tx = await collectionContract.setTokenPrice(nftProps.tokenId, _price, { gasLimit: gasEstimate });
@@ -130,7 +152,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
             title="View NFT Token"
             isOpen={isOpen}
             onClose={onClose}
-            btnLabel="Confirm"
+            btnLabel={priceType === "fixed" ? "Confirm" : "Start Auction"}
             btnType="blue"
             btnClick={confirmPrice}
             btnProcessing={isProcessing}

@@ -20,7 +20,14 @@ export interface NFTProps {
     createdAt?: string,
     collection?: CollectionProps,
     price?: number,
-    lastPrice?: number
+    lastPrice?: number,
+    priceType: string,
+    startBid?: number,
+    bidHistory?: [{
+        price: number,
+        date: string
+    }],
+    bidEndDate?: string
 }
 
 interface Attribute {
