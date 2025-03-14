@@ -103,5 +103,21 @@ const setNFTAuctionPriceDB = async (_data: any) => {
   }
 }
 
+const bidToAuctionDB = async (_data: any) => {
+  try {
+    const response = await axios.post("/api/nft/bid", _data, {
+      headers: { "Content-Type": "application/json" }
+    });
+    return response.data;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      error.response?.data.msg.map((str: string) => {
+        notify(str, "error");
+      });
+    }
+    else
+      notify("Error occured. Please try again", "error");
+  }
+}
 
-export { mintNFTDB, fetchOwnedNFT, setNFTFixedPriceDB, fetchNFTListOfCollection, buyNFT, setNFTAuctionPriceDB }
+export { mintNFTDB, fetchOwnedNFT, setNFTFixedPriceDB, fetchNFTListOfCollection, buyNFT, setNFTAuctionPriceDB, bidToAuctionDB }
