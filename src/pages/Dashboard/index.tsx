@@ -17,7 +17,6 @@ const Dashboard:FC = () => {
       try {
         const { data } = await fetchAllCollection();
         setCollectionList(data);
-        console.log(data, "data")
       } catch (error) {
         console.log(error, "Error occur fetch Collecions")
       } finally {
@@ -37,16 +36,16 @@ const Dashboard:FC = () => {
     <>
       {/* Intro Collections */}
       <div className="w-full">
-        {/* {
+        {
           !!isLoading ? (
-            <>
+            <div className="flex justify-center content-center">
               <ThreeDot color="#ffffff" size="large" />
-            </>
+            </div>
           ) : (
               <ManipulateSlider itemList={renderCollectionCards(collectionList)} />
           )
-        } */}
-        <ManipulateSlider itemList={renderCollectionCards(collectionList)} />
+        }
+        {/* <ManipulateSlider itemList={renderCollectionCards(collectionList)} /> */}
       </div>
 
       {/* Top Auctions Section */}

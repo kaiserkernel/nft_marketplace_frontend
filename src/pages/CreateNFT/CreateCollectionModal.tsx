@@ -127,13 +127,16 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
     if (!wsContract) return;
   
     // Attach event listener to the contract
-    wsContract.on("CollectionCreated", handleCollectionCreated);
+    if (isOpen)
+      wsContract.on("CollectionCreated", handleCollectionCreated);
 
     // Cleanup function to remove the listener when component unmounts or contract changes
-    return () => {
-      wsContract.off("CollectionCreated", handleCollectionCreated);
-    };
-  }, [wsContract]);  
+    if (!isOpen) {
+      return () => {
+        wsContract.off("CollectionCreated", handleCollectionCreated);
+      };
+    }
+  }, [wsContract, isOpen]);  
 
   return (
     <Modal

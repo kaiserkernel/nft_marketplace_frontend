@@ -59,14 +59,17 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
         if (!wsCollectionContract || !isOpen) return;
 
         wsCollectionContract.on("NFTPriceSet", handleNFTPriceSetDB);
-        return () => {
-            wsCollectionContract.off("NFTPriceSet", handleNFTPriceSetDB);
+        if (!isOpen) {
+            return () => {
+                wsCollectionContract.off("NFTPriceSet", handleNFTPriceSetDB);
+            }
         }
     }, [wsCollectionContract, nftProps._id, isOpen]);
 
     const handleNFTPriceSetDB = async (_tokenId: number, _price: number) => {
         try {
-            await setNFTPriceDB({ _id: nftProps._id, tokenId: Number(_tokenId), price: Number(_price) });
+            const realPrice = Number(_price) / (10 ** 18); // convert from wei currency
+            await setNFTPriceDB({ _id: nftProps._id, tokenId: Number(_tokenId), price: realPrice });
 
             // After price is set, update the NFT in the list
             setNFTList((prevNFTList) => {
@@ -83,9 +86,14 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
     };
 
     const handleChangePrice = (evt: ChangeEvent<HTMLInputElement>) => {
-        const _price = Number(evt.target.value);
-        if (isNaN(_price)) return notify("Please input a valid number for price", "warning");
-        setPrice(_price);
+        const value = evt.target.value;
+
+        // // Allow only valid numbers and a single decimal point
+        // if (!/^\d*\.?\d*$/.test(value)) {
+        //     return notify("Please input a valid number for price", "warning");
+        // }
+
+        setPrice(Number(value)); // Convert to number, allow empty input
     };
 
     const handleChangeDuration = (evt: ChangeEvent<HTMLInputElement>) => {
@@ -102,8 +110,9 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
             }
             
             if ( priceType === "fixed") {
-                const gasEstimate = await collectionContract.setTokenPrice.estimateGas(nftProps.tokenId, price);
-                const tx = await collectionContract.setTokenPrice(nftProps.tokenId, price, { gasLimit: gasEstimate });
+                const _price = BigInt(price * 10 ** 18); // Convert to BigInt and wei currency
+                const gasEstimate = await collectionContract.setTokenPrice.estimateGas(nftProps.tokenId, _price);
+                const tx = await collectionContract.setTokenPrice(nftProps.tokenId, _price, { gasLimit: gasEstimate });
                 const log = await tx.wait();
 
                 // log.logs[0].address -> contractAddress 
@@ -112,7 +121,8 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                 onClose();
             }   
         } catch (error: any) {
-            notify(error.code === "ACTION_REJECTED" ? "Transaction rejected." : "Error occurred while setting NFT price", "error");
+            console.log(error, 'error')
+            notify(error.code === "ACTION_REJECTED" ? "Transaction rejected." : "Error occurred while setting NFT price", "warning");
           } finally {
             setIsProcessing(false);
           }
@@ -187,7 +197,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                         <div className="text-white mb-1 font-medium">Price</div>
                         <InputField 
                             itemType="default"
-                            type="text"
+                            type="number"
                             name="price"
                             value={price}
                             onChange={handleChangePrice}
@@ -199,7 +209,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                             <div className="text-white mb-1 font-medium">Start Bidding Price</div>
                             <InputField 
                                 itemType="default"
-                                type="text"
+                                type="number"
                                 name="price"
                                 value={price}
                                 onChange={handleChangePrice}

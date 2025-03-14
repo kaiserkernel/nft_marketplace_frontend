@@ -170,8 +170,16 @@ const CreateInCollection = () => {
     const contractInstance = new ethers.Contract(confirmedCollectionAddress, ContractCollectionABI, signer);
     setCollectionContract(contractInstance);
 
+    // let prevWsContractInstance : ethers.Contract;
     const _wsContractInstance =  new ethers.Contract(confirmedCollectionAddress, ContractCollectionABI, wsProvider);
-    setWsCollectionContract(_wsContractInstance);
+    setWsCollectionContract(prev => {
+      if (prev){
+        // whenever change confirmcollectionaddress remove ws event listener
+        prev.off("NFTMinted", handleMintNFTDB);
+      }
+      return _wsContractInstance
+    });
+
   }, [confirmedCollectionAddress, wsProvider, signer, ContractCollectionABI])
 
   // Fetch user's collections when wallet address changes
@@ -202,10 +210,6 @@ const CreateInCollection = () => {
     
     // Attach event listener to the contract
     wsCollectionContract.on("NFTMinted", handleMintNFTDB);
-
-    return () => {
-      wsCollectionContract.off("NFTMinted", handleMintNFTDB);
-    }
   }, [wsCollectionContract])
 
   return (

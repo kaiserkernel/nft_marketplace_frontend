@@ -233,13 +233,13 @@ const CollectionView = () => {
                         <div className="text-white">
                             <p className="mb-2">Max Price</p>
                             <InputField 
-                                itemType="default" name="maxPrice" type="text"
+                                itemType="default" name="maxPrice" type="number"
                                 value={filterItems.maxPrice ?? ""} placeholder="Please input Max price"
                                 onChange={handleFilterItemChange}
                             />
                             <p className="mb-2 mt-3">Min Price</p>
                             <InputField 
-                                itemType="default" name="minPrice" type="text"
+                                itemType="default" name="minPrice" type="number"
                                 value={filterItems.minPrice ?? ""} placeholder="Please input Min price"
                                 onChange={handleFilterItemChange}
                             />
