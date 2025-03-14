@@ -59,7 +59,7 @@ export const NFTViewBtn = ({nftData, isProcessing, handleBuyNft}: NFTViewBtnProp
 
                     {/* Button appears when hovering the entire component */}
                     <div 
-                        className={`absolute bottom-0 left-0 w-full h-[2.5rem] flex justify-center items-center bg-blue-600 text-white text-sm font-medium rounded-b-md opacity-0 group-hover:opacity-100 group-hover:translate-y-0 group-hover:h-[2.5rem] transition-all duration-300 rounded-b-xl grid grid-cols-9 ${isProcessing === tokenId ? "opacity-100" : ""}`} 
+                        className={`absolute bottom-0 left-0 w-full h-[2.5rem] flex justify-center items-center bg-blue-600 text-white text-sm font-medium rounded-b-md opacity-0 ${price === 0 ? "" : "group-hover:opacity-100 group-hover:translate-y-0 group-hover:h-[2.5rem] transition-all duration-300"} rounded-b-xl grid grid-cols-9 ${isProcessing === tokenId ? "opacity-100" : ""}`} 
                         onClick={handleClickBuyNft}
                     >
                         {

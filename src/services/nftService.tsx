@@ -35,9 +35,9 @@ const fetchOwnedNFT =  async (_data: string) => {
   }
 }
 
-const setNFTPriceDB = async (_data: any) => {
+const setNFTFixedPriceDB = async (_data: any) => {
   try {
-    const response = await axios.post("/api/nft/price", _data, {
+    const response = await axios.post("/api/nft/fixed", _data, {
       headers: { "Content-Type": "application/json" }
     });
     return response.data;
@@ -86,4 +86,22 @@ const buyNFT = async (_data: any) => {
   }
 }
 
-export { mintNFTDB, fetchOwnedNFT, setNFTPriceDB, fetchNFTListOfCollection, buyNFT }
+const setNFTAuctionPriceDB = async (_data: any) => {
+  try {
+    const response = await axios.post("/api/nft/auction", _data, {
+      headers: { "Content-Type": "application/json" }
+    });
+    return response.data;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      error.response?.data.msg.map((str: string) => {
+        notify(str, "error");
+      });
+    }
+    else
+      notify("Error occured. Please try again", "error");
+  }
+}
+
+
+export { mintNFTDB, fetchOwnedNFT, setNFTFixedPriceDB, fetchNFTListOfCollection, buyNFT, setNFTAuctionPriceDB }

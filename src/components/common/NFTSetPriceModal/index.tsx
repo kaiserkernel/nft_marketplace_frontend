@@ -10,7 +10,7 @@ import { notify } from "../Notify";
 import { useContract } from "../../../context/ContractContext";
 import { formatDate } from "../../../utils/FormatDate";
 import { NFTMetaData, NFTProps } from "../../../types";
-import { setNFTPriceDB } from "../../../services/nftService";
+import { setNFTFixedPriceDB } from "../../../services/nftService";
 
 interface NFTViewModalProps {
     nftMetaData: NFTMetaData | null,
@@ -69,7 +69,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
     const handleNFTPriceSetDB = async (_tokenId: number, _price: number) => {
         try {
             const realPrice = Number(_price) / (10 ** 18); // convert from wei currency
-            await setNFTPriceDB({ _id: nftProps._id, tokenId: Number(_tokenId), price: realPrice });
+            await setNFTFixedPriceDB({ _id: nftProps._id, tokenId: Number(_tokenId), price: realPrice });
 
             // After price is set, update the NFT in the list
             setNFTList((prevNFTList) => {
@@ -114,7 +114,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                 // log.from -> owner address
                 notify("Price set successfully", "success");
                 onClose();
-            }   
+            }
         } catch (error: any) {
             if (error.code !== "ACTION_REJECTED") {
                 notify("Error occurred while setting NFT price", "warning");
