@@ -1,4 +1,5 @@
 import React from "react";
+import { FaAngleDown, FaAngleLeft, FaSearch, FaSort } from "react-icons/fa";
 
 interface FilterPanelProps {
     title: string;
@@ -16,7 +17,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ title, panelKey, isOpen, togg
         >
             <span className="text-lg font-semibold text-white">{title}</span>
             <span className={`transition-transform ${isOpen ? "rotate-180" : ""}`}>
-                <img src="/arrow-down.webp" alt="toggle-arrow" className="h-4 w-4" />
+                {/* <img src="/arrow-down.webp" alt="toggle-arrow" className="h-4 w-4" /> */}
+                <FaAngleDown className="text-white" />
             </span>
         </div>
         <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-96" : "max-h-0"}`}>
