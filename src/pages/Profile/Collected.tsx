@@ -64,13 +64,10 @@ const Collected = () => {
           collectionMap.set(nft?.collection?._id, nft.collection); // _id as the key
       });
       setNFTList(nfts);
-      console.log(nfts, 'nfts')
 
       // Convert Map values to an array of unique collections
       const uniqueCollections = Array.from(collectionMap.values());
       setCollectionList(uniqueCollections);
-
-      console.log('Unique Collections:', uniqueCollections);
     }
     fetchInitialData();
   }, [walletAddress])

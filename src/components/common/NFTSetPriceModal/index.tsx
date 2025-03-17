@@ -41,6 +41,14 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
     const [wsCollectionContract, setWsCollectionContract] = useState<ethers.Contract | null>(null);
     
     useEffect(() => {
+        if (!isOpen) {
+            setPrice(0);
+            setPriceType("fixed");
+            setDuration({date: null, hour: null, minute: null});
+        }
+    }, [isOpen])
+
+    useEffect(() => {
         if (!isOpen) return;
         if (!nftProps.collection?.contractAddress) {
             notify("Invalid Collection", "error");
@@ -53,7 +61,6 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
         const wsContractInstance = new ethers.Contract(nftProps.collection.contractAddress, ContractCollectionABI, wsProvider);
         setWsCollectionContract(wsContractInstance);
     }, [signer, wsProvider, nftProps.collection?.contractAddress, isOpen]);
-
 
     useEffect(() => {
         if (!wsCollectionContract || !isOpen) return;
@@ -69,33 +76,45 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
     }, [wsCollectionContract, nftProps._id, isOpen]);
 
     const handleNFTAuctionStartedDB = async (tokenId: bigint, startingBid: bigint, auctionEndTime: bigint) => {
-        
-        // Convert values to readable format
-        const formattedTokenId = Number(tokenId); // Convert BigInt to string
-        const formattedBid = Number(startingBid) / (10 ** 18); // Convert BigInt to string (wei)
-        const formattedEndTime = Number(auctionEndTime) * 1000; // Convert timestamp to ISO format
-
-        // Define the request body
-        const requestBody = {
-            _id: nftProps._id,
-            tokenId: formattedTokenId,
-            startBid: formattedBid,
-            bidEndDate: formattedEndTime
-        };
-        
-        await setNFTAuctionPriceDB(requestBody);
+        try {
+            // Convert values to readable format
+            const formattedTokenId = Number(tokenId); // Convert BigInt to string
+            const formattedBid = Number(startingBid) / (10 ** 18); // Convert BigInt to string (wei)
+            const formattedEndTime = Number(auctionEndTime); // Convert timestamp to ISO format
+    
+            // Define the request body
+            const requestBody = {
+                _id: nftProps._id,
+                tokenId: formattedTokenId,
+                startBid: formattedBid,
+                bidEndDate: formattedEndTime
+            };
+            
+            const {data} = await setNFTAuctionPriceDB(requestBody);
+            // After price is set, update the NFT in the list
+            setNFTList((prevNFTList) => {
+                return prevNFTList.map((nft) => {
+                    if (nft._id === data._id) {
+                        return data; // Update the price of the matched NFT
+                    }
+                    return nft;
+                });
+            });
+        } catch (error) {
+            console.error("Error setting NFT Auction in DB", error);
+        }
     }
 
     const handleNFTPriceSetDB = async (_tokenId: number, _price: number) => {
         try {
             const realPrice = Number(_price) / (10 ** 18); // convert from wei currency
-            await setNFTFixedPriceDB({ _id: nftProps._id, tokenId: Number(_tokenId), price: realPrice });
-
+            const { data } = await setNFTFixedPriceDB({ _id: nftProps._id, tokenId: Number(_tokenId), price: realPrice });
+            
             // After price is set, update the NFT in the list
             setNFTList((prevNFTList) => {
                 return prevNFTList.map((nft) => {
-                    if (nft.tokenId === nftProps.tokenId) {
-                        return { ...nft, price }; // Update the price of the matched NFT
+                    if (nft._id === data._id) {
+                        return data; // Update the price of the matched NFT
                     }
                     return nft;
                 });
@@ -130,6 +149,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                     return
                 }
                 const totalSeconds = (duration.date * 24 * 60 * 60) + (duration.hour * 60 * 60) + (duration.minute * 60);
+                console.log(totalSeconds, 'total seconds')
                 if (totalSeconds <= 0) {
                     notify("Invalid auction duration", "warning");
                     return;
@@ -172,6 +192,46 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
             setIsProcessing(false);
           }
     }
+    
+    const NftPriceInfo:React.FC = () => (
+        nftProps.priceType === "auction" ? (
+            <>
+                <div className="mt-4 p-3 bg-black rounded-md text-white">
+                    <span className="font-semibold text-md mb-2">
+                        Price Type : 
+                    </span>
+                    <span className="ps-3">Auction</span>
+                </div>
+                <div className="mt-4 p-3 bg-black rounded-md text-white">
+                    <span className="font-semibold text-md mb-2">
+                        Start Bid Price
+                    </span>
+                    <span className="ps-3">{nftProps.startBid}</span>
+                </div>
+                <div className="mt-4 p-3 bg-black rounded-md text-white">
+                    <span className="font-semibold text-md mb-2">
+                        Bid End Time
+                    </span>
+                    <span className="ps-3">{nftProps.bidEndDate && formatDate(nftProps.bidEndDate)}</span>
+                </div>
+            </>
+        ) : nftProps.priceType === "fixed" ? (
+            <>
+                <div className="mt-4 p-3 bg-black rounded-md text-white">
+                    <span className="font-semibold text-md mb-2">
+                        Bid End Time : 
+                    </span>
+                    <span className="ps-3">{nftProps.bidEndDate}</span>
+                </div>
+                <div className="mt-4 p-3 bg-black rounded-md text-white">
+                    <span className="font-semibold text-md mb-2">
+                        Current Price : 
+                    </span>
+                    <span className="ps-3">{nftProps.price}</span>
+                </div>
+            </>
+        ) : (<></>)
+    )
 
     return (
         <Modal
@@ -212,16 +272,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                     </div>
                 )
             }
-            {
-                !!nftProps.price && (
-                    <div className="mt-4 p-3 bg-black rounded-md text-white">
-                        <span className="font-semibold text-md mb-2">
-                            Current Price : 
-                        </span>
-                        <span className="ps-3">{nftProps.price}</span>
-                    </div>
-                )
-            }
+            <NftPriceInfo />
             <form className="mx-auto mt-5 bg-black p-3 rounded-md">
               <label htmlFor="priceType" className="block mb-2 text-md font-semibold text-white mt-2">
                 Select Price Type

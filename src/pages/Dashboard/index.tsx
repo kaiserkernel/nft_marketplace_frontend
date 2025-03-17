@@ -11,8 +11,8 @@ import { fetchTopAuctions } from "../../services/nftService";
 const Dashboard:FC = () => {
   const [ collectionList, setCollectionList ] = useState<CollectionProps[]>([]);
   const [ topAuctionList, setTopAuctionList ] = useState<NFTProps[]>([]);
-  const [ isCollectionLoading, setIsCollectionLoading ] = useState<boolean>(false);
-  const [ isTopAuctionLoading, setIsTopAuctionLoading ] = useState<boolean>(false);
+  const [ isCollectionLoading, setIsCollectionLoading ] = useState<boolean>(true);
+  const [ isTopAuctionLoading, setIsTopAuctionLoading ] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchInitialData = async () => {
