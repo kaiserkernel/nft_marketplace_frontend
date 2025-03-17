@@ -21,7 +21,7 @@ export const NFTViewBtn = ({nftData, isProcessing, handleBuyNft}: NFTViewBtnProp
             navigate("/auction-view", { state: nftData });
             return;
         }
-        if (!price || isProcessing) return;
+        if (priceType === "not_for_sale" || !price || isProcessing) return;
         await handleBuyNft(price, tokenId);
     }
 
@@ -57,8 +57,8 @@ export const NFTViewBtn = ({nftData, isProcessing, handleBuyNft}: NFTViewBtnProp
                         <p className="md:text-sm text-xs font-light mt-3 ml-4">{nftMetaData.name}</p>
                         <p className={`md:text-base text-sm font-medium mt-2 ml-4 ${price === 0 ? 'text-blue-600' : ''}`}>
                             {
-                                priceType === "auction" ? "Auction" : 
-                                    !!price ? `${price}ETH` : "Not for sale"
+                                priceType === "auction" ? "Auction" : priceType === 'fixed' ? 
+                                    `${price}ETH` : "Not for sale"
                             }
                         </p>
                         <p className="md:text-base text-white text-sm font-medium mt-2 ml-4 mb-4 group-hover:hidden">

@@ -139,8 +139,9 @@ const AuctionView = () => {
                     btnLabel="Confirm"
                     btnType="blue"
                     btnClick={handlePlaceBidNft}
+                    size="small"
                 >
-
+                    
                 </Modal>
             </div>
         </div>

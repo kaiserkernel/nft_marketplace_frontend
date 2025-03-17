@@ -52,6 +52,23 @@ const setNFTFixedPriceDB = async (_data: any) => {
   }
 }
 
+const setNFTNotForSaleDB = async (_data: any) => {
+  try {
+    const response = await axios.post("/api/nft/not_for_sale", _data, {
+      headers: { "Content-Type": "application/json" }
+    });
+    return response.data;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      error.response?.data.msg.map((str: string) => {
+        notify(str, "error");
+      });
+    }
+    else
+      notify("Error occured. Please try again", "error");
+  }
+}
+
 const fetchNFTListOfCollection = async (_data: any) => {
   try {
     const response = await axios.post("/api/nft/collection", _data, {
@@ -137,4 +154,4 @@ const fetchTopAuctions = async () => {
   }
 }
 
-export { mintNFTDB, fetchOwnedNFT, setNFTFixedPriceDB, fetchNFTListOfCollection, buyNFT, setNFTAuctionPriceDB, bidToAuctionDB, fetchTopAuctions }
+export { mintNFTDB, fetchOwnedNFT, setNFTFixedPriceDB, fetchNFTListOfCollection, buyNFT, setNFTAuctionPriceDB, bidToAuctionDB, fetchTopAuctions, setNFTNotForSaleDB }

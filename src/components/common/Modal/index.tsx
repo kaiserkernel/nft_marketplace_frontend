@@ -11,7 +11,8 @@ interface ModalProps {
   btnLabel: string,
   btnType: "colorful" | "primary" | "outline" | "blue" | "text",
   btnClick: () => void
-  btnProcessing?: boolean
+  btnProcessing?: boolean,
+  size?: "small"
 }
 
 const Modal: FC<ModalProps> = ({
@@ -22,7 +23,8 @@ const Modal: FC<ModalProps> = ({
   btnLabel,
   btnType,
   btnClick,
-  btnProcessing
+  btnProcessing,
+  size
 }) => {
   return (
     <AnimatePresence>
@@ -37,7 +39,7 @@ const Modal: FC<ModalProps> = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -50, scale: 1.1 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            className="relative w-5/12 md:w-[30%] h-1/2 md:h-[80%] bg-[#262629] rounded-3xl shadow-lg"
+            className={`relative w-5/12 md:w-[30%] h-1/2 ${size === "small" ? "md:h-[50%]" : "md:h-[80%]"} bg-[#262629] rounded-3xl shadow-lg`}
           >
             <div className="flex flex-row items-center justify-between px-4 py-3">
               {/* Header */}

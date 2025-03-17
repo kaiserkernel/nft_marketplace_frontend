@@ -10,7 +10,7 @@ import { notify } from "../Notify";
 import { useContract } from "../../../context/ContractContext";
 import { formatDate } from "../../../utils/FormatDate";
 import { NFTMetaData, NFTProps } from "../../../types";
-import { setNFTAuctionPriceDB, setNFTFixedPriceDB } from "../../../services/nftService";
+import { setNFTAuctionPriceDB, setNFTFixedPriceDB, setNFTNotForSaleDB } from "../../../services/nftService";
 
 interface NFTViewModalProps {
     nftMetaData: NFTMetaData | null,
@@ -27,7 +27,7 @@ interface DurationProp {
 }
 
 export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNFTList }: NFTViewModalProps) => {
-    const [priceType, setPriceType] = useState<"fixed" | "auction">("fixed");
+    const [priceType, setPriceType] = useState<"fixed" | "auction" | "not_for_sale">("fixed");
     const [price, setPrice] = useState<number>(0);
     const [duration, setDuration] = useState<DurationProp>({
         date: null,
@@ -109,7 +109,15 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
     const handleNFTPriceSetDB = async (_tokenId: number, _price: number) => {
         try {
             const realPrice = Number(_price) / (10 ** 18); // convert from wei currency
-            const { data } = await setNFTFixedPriceDB({ _id: nftProps._id, tokenId: Number(_tokenId), price: realPrice });
+
+            let data:NFTProps;
+            if (realPrice) {
+                const response = await setNFTFixedPriceDB({ _id: nftProps._id, tokenId: Number(_tokenId), price: realPrice });
+                data = response.data;
+            } else {
+                const response = await setNFTNotForSaleDB({ _id: nftProps._id, tokenId: Number(_tokenId) });
+                data = response.data;
+            }
             
             // After price is set, update the NFT in the list
             setNFTList((prevNFTList) => {
@@ -169,7 +177,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
             }
             
             if ( priceType === "fixed") {
-                if (price === null || price < 0) {
+                if (price === null || price <= 0) {
                     notify("Please set price", "warning");
                     return
                 }
@@ -177,6 +185,17 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                 const _price = BigInt(price * 10 ** 18); // Convert to BigInt and wei currency
                 const gasEstimate = await collectionContract.setTokenPrice.estimateGas(nftProps.tokenId, _price);
                 const tx = await collectionContract.setTokenPrice(nftProps.tokenId, _price, { gasLimit: gasEstimate });
+                const log = await tx.wait();
+
+                // log.logs[0].address -> contractAddress 
+                // log.from -> owner address
+                notify("Price set successfully", "success");
+                onClose();
+            }
+
+            if ( priceType === "not_for_sale") {
+                const gasEstimate = await collectionContract.setTokenPrice.estimateGas(nftProps.tokenId, 0);
+                const tx = await collectionContract.setTokenPrice(nftProps.tokenId, price, { gasLimit: gasEstimate });
                 const log = await tx.wait();
 
                 // log.logs[0].address -> contractAddress 
@@ -231,7 +250,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                     <span className="ps-3">{nftProps.price}</span>
                 </div>
             </>
-        ) : (
+        ) : (nftProps.priceType === "not_for_sale") ? (
             <>
                 <div className="mt-4 p-3 bg-black rounded-md text-white">
                     <span className="font-semibold text-md mb-2">
@@ -239,7 +258,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                     </span>
                 </div>
             </>
-        )
+        ) : null
     )
 
     return (
@@ -247,7 +266,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
             title="View NFT Token"
             isOpen={isOpen}
             onClose={onClose}
-            btnLabel={priceType === "fixed" ? "Confirm" : "Start Auction"}
+            btnLabel={priceType === "auction" ? "Start Auction" : "Confirm"}
             btnType="blue"
             btnClick={confirmPrice}
             btnProcessing={isProcessing}
@@ -289,11 +308,12 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
               <select
                 id="priceType"
                 value={priceType}
-                onChange={(e) => setPriceType(e.target.value as "fixed" | "auction" )}
+                onChange={(e) => setPriceType(e.target.value as "fixed" | "auction" | "not_for_sale")}
                 className="border text-sm rounded-lg block w-full p-2.5 border-[#1F1F21] bg-[#1F1F21] text-white focus:ring-blue-500"
               >
                 <option value="fixed">Fixed</option>
                 <option value="auction">Auction</option>
+                <option value="not_for_sale">Not for sale</option>
               </select>
               <div className="mb-4">
               {
@@ -308,7 +328,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                             onChange={handleChangePrice}
                         />
                     </div>
-                ) : (
+                ) : priceType === "auction" ? (
                     <>
                         <div className="my-3">
                             <div className="text-white mb-1 font-medium">Start Bidding Price</div>
@@ -357,7 +377,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                             />
                         </div>
                     </>
-                )
+                ) : null
               }
               </div>
             </form>
