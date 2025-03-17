@@ -90,7 +90,8 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                 bidEndDate: formattedEndTime
             };
             
-            const {data} = await setNFTAuctionPriceDB(requestBody);
+            const { data } = await setNFTAuctionPriceDB(requestBody);
+            
             // After price is set, update the NFT in the list
             setNFTList((prevNFTList) => {
                 return prevNFTList.map((nft) => {
@@ -149,7 +150,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                     return
                 }
                 const totalSeconds = (duration.date * 24 * 60 * 60) + (duration.hour * 60 * 60) + (duration.minute * 60);
-                console.log(totalSeconds, 'total seconds')
+                
                 if (totalSeconds <= 0) {
                     notify("Invalid auction duration", "warning");
                     return;
@@ -168,7 +169,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
             }
             
             if ( priceType === "fixed") {
-                if (!price || price <= 0) {
+                if (price === null || price < 0) {
                     notify("Please set price", "warning");
                     return
                 }
@@ -215,13 +216,13 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                     <span className="ps-3">{nftProps.bidEndDate && formatDate(nftProps.bidEndDate)}</span>
                 </div>
             </>
-        ) : nftProps.priceType === "fixed" ? (
+        ) : (nftProps.priceType === "fixed" && nftProps.price) ? (
             <>
                 <div className="mt-4 p-3 bg-black rounded-md text-white">
                     <span className="font-semibold text-md mb-2">
-                        Bid End Time : 
+                        Price Type : 
                     </span>
-                    <span className="ps-3">{nftProps.bidEndDate}</span>
+                    <span className="ps-3">Fixed</span>
                 </div>
                 <div className="mt-4 p-3 bg-black rounded-md text-white">
                     <span className="font-semibold text-md mb-2">
@@ -230,7 +231,15 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                     <span className="ps-3">{nftProps.price}</span>
                 </div>
             </>
-        ) : (<></>)
+        ) : (
+            <>
+                <div className="mt-4 p-3 bg-black rounded-md text-white">
+                    <span className="font-semibold text-md mb-2">
+                        Not For Sale
+                    </span>
+                </div>
+            </>
+        )
     )
 
     return (

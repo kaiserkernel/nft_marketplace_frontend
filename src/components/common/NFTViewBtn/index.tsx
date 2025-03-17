@@ -11,7 +11,7 @@ interface NFTViewBtnProps {
 }
 
 export const NFTViewBtn = ({nftData, isProcessing, handleBuyNft}: NFTViewBtnProps) => {
-    const { price, tokenURI, lastPrice, tokenId } = nftData;
+    const { price, tokenURI, lastPrice, tokenId, priceType, startBid } = nftData;
     const [nftMetaData, setNFTMetaData] = useState<NFTMetaData | null>(null);
 
     const handleClickBuyNft = async () => {
@@ -50,10 +50,17 @@ export const NFTViewBtn = ({nftData, isProcessing, handleBuyNft}: NFTViewBtnProp
                     <div className="w-[40vw] md:w-64 flex flex-col text-white items-start">
                         <p className="md:text-sm text-xs font-light mt-3 ml-4">{nftMetaData.name}</p>
                         <p className={`md:text-base text-sm font-medium mt-2 ml-4 ${price === 0 ? 'text-blue-600' : ''}`}>
-                            {price === 0 ? "Not for sale" : `${price}ETH`}
+                            {
+                                priceType === "auction" ? "Auction" : 
+                                    !!price ? `${price}ETH` : "Not for sale"
+                            }
                         </p>
                         <p className="md:text-base text-white text-sm font-medium mt-2 ml-4 mb-4 group-hover:hidden">
-                            Last Price: {lastPrice === 0 ? "" : `${lastPrice}ETH`}
+                            {/* Last Price: {lastPrice === 0 ? "" : `${lastPrice}ETH`} */}
+                            {
+                                priceType === "auction" ? `Start Bid: ${startBid}ETH` :
+                                    !!price ? `Last Price: ${lastPrice}` : ""
+                            }
                         </p>
                     </div>
 
@@ -69,7 +76,7 @@ export const NFTViewBtn = ({nftData, isProcessing, handleBuyNft}: NFTViewBtnProp
                                 </div>
                             ) :  (
                                 <>
-                                    <span className="col-span-6 mx-auto font-bold">Buy Now</span>
+                                    <span className="col-span-6 mx-auto font-bold">{nftData.priceType === "auction" ? "Place Bid" : "Buy Now"}</span>
                                     <div className="h-6 border-r-2 border-white mx-2"></div>
                                     <img className="col-span-2 h-6 w-6 mx-auto" src="/buy.webp" />
                                 </>
