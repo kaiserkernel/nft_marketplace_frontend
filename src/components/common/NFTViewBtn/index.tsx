@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { ThreeDot } from "react-loading-indicators";
+import { useNavigate } from "react-router";
 
 import { NFTMetaData, NFTProps } from "../../../types"
 import { fetchMetaData } from "../../../services/metaDataService";
@@ -13,8 +14,13 @@ interface NFTViewBtnProps {
 export const NFTViewBtn = ({nftData, isProcessing, handleBuyNft}: NFTViewBtnProps) => {
     const { price, tokenURI, lastPrice, tokenId, priceType, startBid } = nftData;
     const [nftMetaData, setNFTMetaData] = useState<NFTMetaData | null>(null);
+    const navigate = useNavigate();
 
     const handleClickBuyNft = async () => {
+        if (priceType === "auction") {
+            navigate("/auction-view", { state: nftData });
+            return;
+        }
         if (!price || isProcessing) return;
         await handleBuyNft(price, tokenId);
     }
@@ -66,7 +72,7 @@ export const NFTViewBtn = ({nftData, isProcessing, handleBuyNft}: NFTViewBtnProp
 
                     {/* Button appears when hovering the entire component */}
                     <div 
-                        className={`absolute bottom-0 left-0 w-full h-[2.5rem] flex justify-center items-center bg-blue-600 text-white text-sm font-medium rounded-b-md opacity-0 ${price === 0 ? "" : "group-hover:opacity-100 group-hover:translate-y-0 group-hover:h-[2.5rem] transition-all duration-300"} rounded-b-xl grid grid-cols-9 ${isProcessing === tokenId ? "opacity-100" : ""}`} 
+                        className={`absolute bottom-0 left-0 w-full h-[2.5rem] flex justify-center items-center bg-blue-600 text-white text-sm font-medium rounded-b-md opacity-0 ${(priceType !== "auction" && price === null) ? "" : "group-hover:opacity-100 group-hover:translate-y-0 group-hover:h-[2.5rem] transition-all duration-300"} rounded-b-xl grid grid-cols-9 ${isProcessing === tokenId ? "opacity-100" : ""}`} 
                         onClick={handleClickBuyNft}
                     >
                         {
@@ -76,9 +82,22 @@ export const NFTViewBtn = ({nftData, isProcessing, handleBuyNft}: NFTViewBtnProp
                                 </div>
                             ) :  (
                                 <>
-                                    <span className="col-span-6 mx-auto font-bold">{nftData.priceType === "auction" ? "Place Bid" : "Buy Now"}</span>
-                                    <div className="h-6 border-r-2 border-white mx-2"></div>
-                                    <img className="col-span-2 h-6 w-6 mx-auto" src="/buy.webp" />
+                                    {
+                                        nftData.priceType === "auction" && (
+                                            <span className="col-span-8 font-bold">
+                                                Place Bid
+                                            </span>        
+                                        )
+                                    }
+                                    {
+                                        nftData.priceType === "fixed" && (
+                                            <>
+                                                <span className="col-span-6 mx-auto font-bold">Buy Now</span>
+                                                <div className="h-6 border-r-2 border-white mx-2"></div>
+                                                <img className="col-span-2 h-6 w-6 mx-auto" src="/buy.webp" />
+                                            </>
+                                        )
+                                    }
                                 </>
                             )
                         }

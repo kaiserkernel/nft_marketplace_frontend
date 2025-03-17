@@ -55,6 +55,7 @@ const CollectionView = () => {
         setIsLoading(true);
         try {
             const { data } = await fetchNFTListOfCollection({collection: collection._id});
+            console.log(data, "data")
             setNftList(data);
         } catch (error) {
             notify("Fetch nfts of collection occur error", "error")
