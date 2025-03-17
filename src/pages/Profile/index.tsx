@@ -18,7 +18,7 @@ import InputField from "../../components/common/InputField";
 import TextArea from "../../components/common/TextArea";
 
 import { useContract } from "../../context/ContractContext";
-import { walletAddressFormat } from "../../utils/WalletAddressFormator";
+import { FormatAddress } from "../../utils/FormatAddress";
 import Collected from "./Collected";
 import History from "./History";
 
@@ -31,7 +31,7 @@ const Profile = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const { walletAddress } = useContract();
   const [displayName, setDisplayName] = useState<string>(
-    walletAddressFormat(walletAddress)
+    FormatAddress(walletAddress)
   );
 
   const handleEditClick = () => {
@@ -49,12 +49,12 @@ const Profile = () => {
       {/* Profile detail section */}
       <div className="w-full px-8 py-14">
         <h3 className="text-white font-semibold text-3xl">
-          {walletAddressFormat(walletAddress)}
+          {FormatAddress(walletAddress)}
         </h3>
         <div className="flex flex-row items-center gap-2 mt-2">
           <span className="text-slate-500 text-md">address: </span>
           <span className="text-white text-md font-semibold">
-            {walletAddressFormat(walletAddress)}
+            {FormatAddress(walletAddress)}
           </span>
         </div>
         <div className="flex flex-row items-center gap-4 mt-8">

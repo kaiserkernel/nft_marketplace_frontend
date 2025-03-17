@@ -24,6 +24,7 @@ export interface NFTProps {
     priceType?: string,
     startBid?: number,
     bidHistory?: [{
+        bidder: string,
         price: number,
         date: string
     }],
