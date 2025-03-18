@@ -108,7 +108,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
         }
     }
 
-    const handleNFTPriceSetDB = async (_tokenId: number, _price: number) => {
+    const handleNFTPriceSetDB = async (_tokenId: number, _price: BigInt) => {
         try {
             const realPrice = FormatToRealCurrency(Number(_price)); // convert from wei currency
 
@@ -174,6 +174,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                 const tx = await collectionContract.startAuction(tokenId, startingBid, auctionDuration, { gasLimit: gasEstimate });
                 const log = await tx.wait();
                 
+                // await handleNFTAuctionStartedDB(nftProps.tokenId, startingBid, )
                 notify("Auction started successfully!", "success");
                 onClose();
             }
@@ -189,6 +190,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                 const tx = await collectionContract.setTokenPrice(nftProps.tokenId, _price, { gasLimit: gasEstimate });
                 const log = await tx.wait();
 
+                // await handleNFTPriceSetDB(nftProps.tokenId, _price);
                 // log.logs[0].address -> contractAddress 
                 // log.from -> owner address
                 notify("Price set successfully", "success");
@@ -200,16 +202,13 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                 const tx = await collectionContract.setTokenPrice(nftProps.tokenId, price, { gasLimit: gasEstimate });
                 const log = await tx.wait();
 
+                // await handleNFTPriceSetDB(nftProps.tokenId, 0);
                 // log.logs[0].address -> contractAddress 
                 // log.from -> owner address
                 notify("Price set successfully", "success");
                 onClose();
             }
         } catch (error: any) {
-            // if (error.code !== "ACTION_REJECTED") {
-            //     notify("Error occurred while setting NFT price", "warning");
-            //     console.log(error, 'nft set price')
-            // }
             TransactionErrorhandle(error);
           } finally {
             setIsProcessing(false);
