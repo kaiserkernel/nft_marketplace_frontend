@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { FaAngleDown, FaAngleLeft, FaSearch, FaSort, FaPlus } from "react-icons/fa";
 import { useNavigate } from "react-router";
 import { ThreeDot } from "react-loading-indicators"; 
@@ -16,6 +16,7 @@ import { NFTProps, CollectionProps, ItemGroupList } from "../../types";
 import { useContract } from "../../context/ContractContext";
 import { fetchOwnedNFT } from "../../services/nftService";
 
+// Constants
 const initialSaleType: ItemGroupList[] = [
   { label: "All Types", checked: true, value: "all" },
   { label: "For Sale", checked: false, value: "fixed" },
@@ -23,7 +24,6 @@ const initialSaleType: ItemGroupList[] = [
   { label: "Not For Sale", checked: false, value: "not_for_sale" },
 ];
 
-// Define the dropdown items
 const initialShowList: ItemGroupList[] = [
   { label: "Recently Created", checked: true, value: "created" },
   { label: "Highest last sale", checked: false, value: "last_sale" },
@@ -33,136 +33,29 @@ const initialShowList: ItemGroupList[] = [
 
 const Collected = () => {
   const [isShowList, setIsShowList] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const [selListItem, setSelListItem] = useState<string>("Recently Created");
-
   const [searchInput, setSearchInput] = useState<string>("");
   const [fromPrice, setFromPrice] = useState<number | null>(null);
   const [toPrice, setToPrice] = useState<number | null>(null);
   const [applyPriceFilter, setApplyPriceFilter] = useState<boolean>(false);
   const [isShowSearchPanel, setIsShowSearchPanel] = useState<boolean>(true);
-  const [saleTypeRadios, setSaleTypeRadios] = useState<ItemGroupList[]>(
-    initialSaleType
-  );
+  const [saleTypeRadios, setSaleTypeRadios] = useState<ItemGroupList[]>(initialSaleType);
   const [nftList, setNFTList] = useState<NFTProps[]>([]);
   const [collectionList, setCollectionList] = useState<CollectionProps[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const navigate = useNavigate();
-
-  
   const { walletAddress } = useContract();
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const handleSaleTypeSelect = (index: number) => {
-    setSaleTypeRadios((prev) =>
-      prev.map((item, idx) => ({ ...item, checked: idx === index }))
-    );
-  };
-
-  const hanldeSetShowListItem = (item: string) => {
-    setSelListItem(item);
-    setIsShowList(false);
-  };
-
-  const handleCloseSearchPanel = () => {
-    setIsShowSearchPanel(false);
-  }
-
-  const handleCloseShowList = () => {
-    setIsShowList(false);
-  }
-
-  const handleShowlistClick = () => {
-    setIsShowList(!isShowList);
-  };
-
-  const handleAddNFTClick = () => {
-    navigate("/create-in-collection");
-  };
-
-  const handleApplyClick = () => {
-    setApplyPriceFilter(true);
-  };
-
-  const viewNftList:NFTProps[] = useMemo(() => {
-    setIsLoading(true);
-    let _resList:NFTProps[] = nftList;
-    // filter
-    // 1 - sale type
-    const selectedType = saleTypeRadios.find(log => log.checked);
-    if (selectedType && selectedType.value !== "all") {
-      _resList = _resList.filter(log => log.priceType === selectedType.value);
-    }
-    
-    // 2 - sale price
-    if (applyPriceFilter) {
-      if (fromPrice !== null) {
-        _resList = _resList.filter(log => log.price ? log.price > fromPrice : false);
-      }
-      if (toPrice !== null) {
-        _resList = _resList.filter(log => log.price ? log.price < toPrice : false);
-      }
-    }
-    
-    // 3 - searh input
-    if (searchInput) {
-      _resList = _resList.filter(log => {
-        if (log.name?.includes(searchInput) || log.description?.includes(searchInput)) {
-          return true
-        }
-        return false
-      })
-    }
-
-    // sort
-    if (selListItem) {
-      switch (selListItem) {
-        case "Recently Created":
-          _resList = _resList.sort((a, b) => {
-            const _aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-            const _bData = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-            return _aDate - _bData
-          })
-          break;
-        case "Highest last sale":
-          _resList = _resList.sort((a, b) => {
-            const _aLastPrice = a.lastPrice ? a.lastPrice : 0;
-            const _bLastPrice = b.lastPrice ? b.lastPrice : 0;
-            return _aLastPrice - _bLastPrice
-          })
-          break;
-        case "Price high to low":
-          _resList = _resList.sort((a, b) => {
-            const _aPrice = a.price ? a.price : 0;
-            const _bPrice = b.price ? b.price : 0;
-            return _bPrice - _aPrice
-          })
-          break;
-        case "Price low to high":
-          _resList = _resList.sort((a, b) => {
-            const _aPrice = a.price ? a.price : 0;
-            const _bPrice = b.price ? b.price : 0;
-            return _aPrice - _bPrice
-          })
-          break;
-        default:
-          break;
-      }
-    }
-    setIsLoading(false);
-    return _resList
-  }, [nftList, saleTypeRadios, applyPriceFilter, fromPrice, toPrice, searchInput, selListItem])
-  
   useEffect(() => {
     const fetchInitialData = async () => {
-      if (!walletAddress) {
-        notify("Please check out wallet connection", "warning");
-        return;
-      }
+      if (!walletAddress) return;
 
       setIsLoading(true);
       try {
         const { nfts } = await fetchOwnedNFT(walletAddress);
+        setNFTList(nfts);
   
         // Use a Map to store unique collections by their _id
         const collectionMap = new Map();
@@ -171,7 +64,6 @@ const Collected = () => {
         nfts.forEach((nft: NFTProps) => {
             collectionMap.set(nft?.collection?._id, nft.collection); // _id as the key
         });
-        setNFTList(nfts);
   
         // Convert Map values to an array of unique collections
         const uniqueCollections = Array.from(collectionMap.values());
@@ -181,10 +73,60 @@ const Collected = () => {
       } finally {
         setIsLoading(false);
       }
-    }
+    };
+    
     fetchInitialData();
   }, [walletAddress])
 
+  const handleSaleTypeSelect = useCallback(
+    (index: number) => setSaleTypeRadios((prev) => prev.map((item, idx) => ({ ...item, checked: idx === index }))),
+    []
+  );
+
+  const handleApplyClick = useCallback(() => setApplyPriceFilter(true), []);
+
+  const handleShowlistClick = () => setIsShowList((prev) => !prev);
+
+  const filteredNfts:NFTProps[] = useMemo(() => {
+    let result:NFTProps[] = [...nftList];
+    
+    // Sale Type Filter
+    const selectedType = saleTypeRadios.find(log => log.checked);
+    if (selectedType && selectedType.value !== "all") {
+      result = result.filter(log => log.priceType === selectedType.value);
+    }
+    
+    // Price Filter
+    if (applyPriceFilter) {
+      result = result.filter((nft) => {
+        if (fromPrice !== null && (!nft.price || nft.price < fromPrice)) return false;
+        if (toPrice !== null && (!nft.price || nft.price > toPrice)) return false;
+        return true;
+      });
+    }
+    
+    // Search Filter
+    if (searchInput) {
+      result = result.filter((nft) => nft.name?.includes(searchInput) || nft.description?.includes(searchInput));
+    }
+
+    // Sorting
+    // Sorting
+    const sortStrategies: Record<string, (a: NFTProps, b: NFTProps) => number> = {
+      "Recently Created": (a, b) => (new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()),
+      "Highest last sale": (a, b) => (b.lastPrice || 0) - (a.lastPrice || 0),
+      "Price high to low": (a, b) => (b.price || 0) - (a.price || 0),
+      "Price low to high": (a, b) => (a.price || 0) - (b.price || 0),
+    };
+
+    return selListItem in sortStrategies ? result.sort(sortStrategies[selListItem]) : result;
+  }, [nftList, saleTypeRadios, applyPriceFilter, fromPrice, toPrice, searchInput, selListItem])
+  
+  const hanldeSetShowListItem = (item: string) => {
+    setSelListItem(item);
+    setIsShowList(false);
+  };
+  
   const PriceRangeSearchBar:React.FC = () => (
     <div>
       <div className="w-full flex flex-row items-center justify-between gap-4 mt-2">
@@ -246,7 +188,7 @@ const Collected = () => {
           onClick={() => setIsShowSearchPanel(!isShowSearchPanel)}
           mobileHideLabel={true}
         />
-        <p className="text-base font-bold text-[#8F95A0] md:block hidden">{viewNftList.length} items</p>
+        <p className="text-base font-bold text-[#8F95A0] md:block hidden">{filteredNfts.length} items</p>
         <div className="flex-1">
           <InputField
             itemType="default"
@@ -278,7 +220,7 @@ const Collected = () => {
         <Button 
           label="Add NFT" 
           type="blue" 
-          onClick={handleAddNFTClick} 
+          onClick={() => navigate("/create-in-collection")} 
           iconPosition="right"
           icon={<FaPlus className="text-white"/>}
           mobileHideLabel={true}
@@ -300,11 +242,8 @@ const Collected = () => {
         <div className={`${isShowSearchPanel ? "xl:col-span-8 md:col-span-7" : "col-span-10"} col-span-10 rounded-xl`}>
           <div className="p-4 flex gap-4 flex-wrap">
             {
-              isLoading && <ThreeDot color="#fff" size="large"/>
-            }
-            {
-              !isLoading && (
-                viewNftList.map((log: NFTProps, idx) => (
+              isLoading ? <ThreeDot color="#fff" size="large"/> : (
+                filteredNfts.map((log: NFTProps, idx) => (
                   <NFTCollectedBtn key={idx} NFTProp={log} setNFTList={setNFTList}/>
                 ))
               )
@@ -315,7 +254,7 @@ const Collected = () => {
       {/* Mobile Search Panel */}
       <MobilePanel
         isOpen={isShowSearchPanel}
-        onClose={handleCloseSearchPanel}
+        onClose={() => setIsShowSearchPanel(false)}
       >
         <div className="grid px-4">
           <p className="text-base font-bold">Sale Type</p>
@@ -330,7 +269,7 @@ const Collected = () => {
       </MobilePanel>
       <MobilePanel
         isOpen={isShowList}
-        onClose={handleCloseShowList}
+        onClose={() => setIsShowList(false)}
       >
         <div className="gap-4 flex flex-col w-full">
         {
