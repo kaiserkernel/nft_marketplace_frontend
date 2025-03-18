@@ -189,17 +189,21 @@ const AuctionView:React.FC = () => {
                     </div>
                 </div>
                 <div className="text-white md:mt-0 mt-5">
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                         <h1 className="text-2xl font-semibold md:mt-0 mt-4 mb-2">{nftData.name} #{nftData.tokenId}</h1>
-                        {(nftData.owner.toLowerCase() === walletAddress) && <Button label="End Auction" type="blue" onClick={handleClickEndAuction}/>}
+                        <div className="p-2">
+                            {(nftData.owner.toLowerCase() === walletAddress) && <Button label="End Auction" type="blue" onClick={handleClickEndAuction}/>}
+                        </div>
                     </div>
-                    <div className="bg-[#1B1B1B] rounded-lg border border-gray-900 md:mt-4 md:py-5 py-3">
+                    <div className="bg-[#1B1B1B] rounded-lg border border-gray-900 md:py-5 py-3">
                         <p className="pb-3 md:ps-8 ps-4 font-medium">{nftData.bidEndDate && `Sale ends ${formatDate(nftData.bidEndDate)}`}</p>
                         <hr className="border-gray-600 py-2"/>
-                        <div className="md:ps-8 ps-4">
-                            <p className="text-sm text-gray-300 font-medium py-2">Start bid</p>
-                            <p className="text-white text-2xl font-bold pb-2">{nftData.startBid}ETH</p>
-                            <Button type="blue" label="Place Bid" onClick={handleOpenBidNftModal}/>
+                        <div>
+                            <p className="md:ps-8 ps-4 text-sm text-gray-300 font-medium py-2">Start bid</p>
+                            <p className="md:ps-8 ps-4 text-white text-2xl font-bold pb-2">{nftData.startBid}ETH</p>
+                            <div className="md:px-8 px-2">
+                                <Button width="full" type="blue" label="Place Bid" onClick={handleOpenBidNftModal}/>
+                            </div>
                         </div>
                     </div>
                     <div className="md:mt-10 mt-4 bg-[#1B1B1B] rounded-lg border border-gray-900 md:mt-4 md:py-5 py-3">
