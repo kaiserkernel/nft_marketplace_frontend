@@ -117,22 +117,23 @@ const ProfileDropdown = () => {
 
               {/* Create Button with Animated Dropdown */}
               <li className="py-2 px-4 mt-4 cursor-pointer hover:bg-[#1c1c1c] transition-all rounded-lg">
-                <button
+                <Link
                   className="flex flex-row items-center justify-between w-full"
-                  onClick={() => setIsCreateOpen(!isCreateOpen)}
+                  // onClick={() => setIsCreateOpen(!isCreateOpen)}
+                  to="/create-in-collection"
                 >
                   <div className="flex flex-row items-center gap-4">
                     <FaPlusCircle className="text-white w-6 h-6" />
-                    <span className="text-white text-md">Create</span>
+                    <span className="text-white text-md">Create NFT</span>
                   </div>
-                  <motion.div animate={{ rotate: isCreateOpen ? 90 : 0 }}>
+                  {/* <motion.div animate={{ rotate: isCreateOpen ? 90 : 0 }}>
                     <FaAngleRight className="text-white w-4 h-4 transition" />
-                  </motion.div>
-                </button>
+                  </motion.div> */}
+                </Link>
               </li>
 
               {/* Smooth Expanding Child Dropdown */}
-              <AnimatePresence>
+              {/* <AnimatePresence>
                 {isCreateOpen && (
                   <motion.ul
                     initial={{ height: 0, opacity: 0 }}
@@ -164,7 +165,7 @@ const ProfileDropdown = () => {
                     ))}
                   </motion.ul>
                 )}
-              </AnimatePresence>
+              </AnimatePresence> */}
 
               <li className="py-2 px-4 mt-1 cursor-pointer hover:bg-[#1c1c1c] transition rounded-lg">
                 <button
