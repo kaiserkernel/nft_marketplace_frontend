@@ -5,11 +5,10 @@ import Button from "../Button";
 import { FileObject } from "pinata";
 
 interface NFTBannerProps {
-  height: number;
   setImage: React.Dispatch<React.SetStateAction<FileObject | null>>;
 }
 
-const NFTBanner: React.FC<NFTBannerProps> = ({ height, setImage }) => {
+const NFTBanner: React.FC<NFTBannerProps> = ({ setImage }) => {
   const [mediaType, setMediaType] = useState<"image" | "video" | null>(null);
   const [isHovered, setIsHovered] = useState<boolean>(false);
   const [imageURL, setImageURL] = useState<string | null>(null);
@@ -44,8 +43,7 @@ const NFTBanner: React.FC<NFTBannerProps> = ({ height, setImage }) => {
 
   return (
     <div
-      className="w-full bg-gradient rounded-3xl relative overflow-hidden shadow-2xl shadow-black"
-      style={{ height }}
+      className="w-full bg-gradient rounded-3xl relative overflow-hidden shadow-2xl shadow-black xl:h-[90vh] md:h-[80vh] h-[50vh]"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >

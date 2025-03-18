@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { CollectionProps } from '../../../types';
 import { fetchMetaData } from '../../../services/metaDataService';
 
-interface CollectionBtnProps {
+interface CollectionBtnGroupProps {
   collections: CollectionProps[];
   setSelectedCollection: React.Dispatch<React.SetStateAction<CollectionProps | null>>;
   setIsProcessing: React.Dispatch<React.SetStateAction<boolean>>;
@@ -11,7 +11,7 @@ interface CollectionBtnProps {
   confirmedCollectionAddress: string | null
 }
 
-const CollectionBtn: React.FC<CollectionBtnProps> = (props) => {
+const CollectionBtnGroup: React.FC<CollectionBtnGroupProps> = (props) => {
   const { collections, setSelectedCollection, setIsProcessing, setIsSelectCollectionModalOpen, confirmedCollectionAddress } = props;
   const [collectionList, setCollectionList] = useState<CollectionProps[]>([]);
   
@@ -102,4 +102,4 @@ const CollectionBtn: React.FC<CollectionBtnProps> = (props) => {
   );
 };
 
-export default CollectionBtn;
+export default CollectionBtnGroup;

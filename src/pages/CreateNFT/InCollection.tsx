@@ -3,12 +3,13 @@ import { ToastContainer } from "react-toastify";
 import { FileObject } from "pinata";
 import { ThreeDot } from "react-loading-indicators"
 import { ethers } from "ethers";
+import { FaAngleDown } from "react-icons/fa";
 
 import { ContractCollectionABI } from "../../contracts";
 import CreateCollectionModal from "./CreateCollectionModal";
 import CollectionSelectModal from "./CollectionSelectModal"
 
-import CollectionBtnGroup from "../../components/common/CollectionSmBtnGroup";
+import CollectionBtnGroup from "../../components/common/CollectionBtnGroup";
 import NFTBanner from "../../components/common/NFTBanner";
 import InputField from "../../components/common/InputField";
 import TextArea from "../../components/common/TextArea";
@@ -30,6 +31,7 @@ const CreateInCollection = () => {
   const [attributes, setAttributes] = useState<{ trait: string; value: string }[]>([]);
   const [royaltyNFT, setRoyaltyNFT] = useState<number>(0);
   const [image, setImage] = useState<FileObject | null>(null);
+  const [isShowAll, setIsShowAll] = useState<boolean>(false);
 
   const [collections, setCollections] = useState<CollectionProps[] | null>(null);
   const [selectedCollection, setSelectedCollection] = useState<CollectionProps | null>(null);
@@ -164,6 +166,36 @@ const CreateInCollection = () => {
     }
   }
 
+  const InitialCollectionInfo:React.FC = () => (
+    <>
+      <h2 className="text-white md:text-2xl text-xl font-semibold">Create an NFT in a Collection</h2>
+
+      {/* Display Name */}
+      <div className="mt-4">
+        <h3 className="text-white font-semibold text-base md:text-lg mb-2">Display Name</h3>
+        <InputField
+          itemType="default"
+          type="text"
+          name="displayName"
+          placeholder="Name your NFT"
+          bordered
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+        />
+      </div>
+
+      {/* Description */}
+      <div className="mt-4">
+        <TextArea
+          label="Description"
+          placeholder="Describe the idea behind your NFT and explain how it stands out from the rest."
+          value={displayDescription}
+          onChange={(_value) => setDisplayDescription(_value)}
+        />
+      </div>
+    </>
+  )
+
   // Fetch and setup contract instances when the collection address is confirmed
   useEffect(() => {
     if (!confirmedCollectionAddress) return;
@@ -214,157 +246,147 @@ const CreateInCollection = () => {
   }, [wsCollectionContract])
 
   return (
-    <div className="w-full flex gap-10">
+    <>
       <ToastContainer/>
-      {/* Left section for NFT Banner */}
-      <div className="basis-1/2">
-        <NFTBanner height={800} setImage={setImage} />
-      </div>
+      <div className="w-full grid md:grid-cols-2 grid-cols-1 md:gap-10 gap-4">
+          <div className="md:hidden block">
+            <InitialCollectionInfo/>
+          </div>
+        {/* Left section for NFT Banner */}
+        <NFTBanner setImage={setImage} />
 
-      {/* Right section for NFT Creation Form */}
-      <div className="basis-1/2 flex flex-col justify-between">
-        <h2 className="text-white text-2xl font-semibold">Create an NFT in a Collection</h2>
+        {/* Right section for NFT Creation Form */}
+        <div className=" basis-1/2 flex flex-col justify-between">
+          <div className="md:block hidden">
+            <InitialCollectionInfo/>
+          </div>
 
-        {/* Display Name */}
-        <div className="mt-4">
-          <h3 className="text-white font-semibold text-md mb-2">Display Name</h3>
-          <InputField
-            itemType="default"
-            type="text"
-            name="displayName"
-            placeholder="Name your NFT"
-            bordered
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-          />
-        </div>
+          {/* Collection Modal Trigger */}
+            <div className="mt-4 p-4 rounded-xl bg-[#1F1F21]">
+              <div className="flex justify-between">
+                <h3 className="text-white font-semibold text-base md:text-lg">Collection</h3>
+                <div className="text-white text-xs font-bold flex items-center cursor-pointer" onClick={(_) => setIsShowAll(!isShowAll)}>
+                  <p>{!isShowAll ? "Show All" : "View less"}</p>
+                  <FaAngleDown
+                    className={`ms-2 transition-transform duration-300 ease-in-out ${
+                      isShowAll ? "rotate-180" : ""
+                    }`}
+                  />
+                </div>
+              </div>
+              <div className={`mt-2 gap-4 flex flex-wrap max-w-full overflow-hidden ${isShowAll ? "" : "h-32"}`}>
+              {
+                isCollectionProcessing && <ThreeDot color="#fff" size="medium" />
+              }
+              {
+                collections && (
+                  <CollectionBtnGroup 
+                    collections={collections} 
+                    setSelectedCollection={setSelectedCollection} 
+                    setIsProcessing={setIsCollectionProcessing} 
+                    setIsSelectCollectionModalOpen={setIsSelectCollectionModalOpen}
+                    confirmedCollectionAddress={confirmedCollectionAddress}
+                  />
+                )
+              }
+              </div>
+              {/* Button Group in Horizontal Row */}
+              {
+                !isCollectionProcessing && (
+                  <button 
+                    onClick={handleOpenCollectionModal} 
+                    className="mt-4 relative w-32 h-32 bg-white text-black font-bold border-4 rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:bg-gray-100"
+                  >
+                    {/* Plus Sign that Grows on Hover */}
+                    <span className="absolute inset-0 flex items-center justify-center text-7xl font-extrabold text-black group-hover:scale-125 transition-all duration-300 transform">
+                      +
+                    </span>
 
-        {/* Description */}
-        <div className="mt-4">
-          <TextArea
-            label="Description"
-            placeholder="Describe the idea behind your NFT and explain how it stands out from the rest."
-            value={displayDescription}
-            onChange={(_value) => setDisplayDescription(_value)}
-          />
-        </div>
+                    {/* Border */}
+                    <span className="absolute inset-0 border-8 border-transparent rounded-lg"></span>
+                  </button>
+                )
+              }
+          </div>
 
-        {/* Collection Modal Trigger */}
+          {/* Royalties */}
           <div className="mt-4">
-            <h3 className="text-white font-semibold text-md">Collection</h3>
-            <div className="mt-2 flex flex-wrap gap-4">
-            {
-              isCollectionProcessing && <ThreeDot color="#fff" size="medium" />
-            }
-            {
-              collections && (
-                <CollectionBtnGroup 
-                  collections={collections} 
-                  setSelectedCollection={setSelectedCollection} 
-                  setIsProcessing={setIsCollectionProcessing} 
-                  setIsSelectCollectionModalOpen={setIsSelectCollectionModalOpen}
-                  confirmedCollectionAddress={confirmedCollectionAddress}
+            <h3 className="text-white font-semibold text-base md:text-lg mb-2">Royalties for the Creator</h3>
+            <InputField
+              itemType="default"
+              type="text"
+              name="royalty"
+              placeholder="0%"
+              bordered
+              value={royaltyNFT}
+              onChange={(e) => handleRoyaltyChange(e.target.value)}
+            />
+            <div className="flex flex-row items-center gap-2 mt-2">
+              {["0", "10", "20", "30"].map((percent) => (
+                <Button
+                  key={percent}
+                  type="primary"
+                  label={percent + "%"}
+                  onClick={() => handleRoyaltyChange(percent)}
                 />
-              )
-            }
-            
-            {/* Button Group in Horizontal Row */}
-            {
-              !isCollectionProcessing && (
-                <button 
-                  onClick={handleOpenCollectionModal} 
-                  className="relative w-32 h-32 bg-white text-black font-bold border-4 rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:bg-gray-100"
-                >
-                  {/* Plus Sign that Grows on Hover */}
-                  <span className="absolute inset-0 flex items-center justify-center text-7xl font-extrabold text-black group-hover:scale-125 transition-all duration-300 transform">
-                    +
-                  </span>
-
-                  {/* Border */}
-                  <span className="absolute inset-0 border-8 border-transparent rounded-lg"></span>
-                </button>
-              )
-            }
+              ))}
+            </div>
+            <p className="text-white/70 text-sm mt-2">
+              Collect royalties every time your NFT is sold. The amount is
+              deducted from the final sale price and sent to your address.
+            </p>
           </div>
+
+          {/* Attributes */}
+          <div className="mt-4">
+            <h3 className="text-white font-semibold text-base md:text-lg">Attributes</h3>
+            <div className="grid grid-cols-2 gap-4">
+              {attributes.map((attr, index) => (
+                <AttributeInput
+                  key={index}
+                  trait={attr.trait}
+                  value={attr.value}
+                  onChangeTrait={(e) => handleAttributeChange(index, "trait", e.target.value)}
+                  onChangeValue={(e) => handleAttributeChange(index, "value", e.target.value)}
+                  onRemove={() => handleRemoveAttribute(index)}
+                />
+              ))}
+            </div>
+            <div className="mt-2">
+              <Button type="outline" label="Add attribute" onClick={handleAddAttribute} />
+            </div>
+          </div>
+
+          {/* Alert */}
+          <div className="my-4">
+            <Alert
+              title="It will be impossible to alter the NFT data."
+              message="Editing NFTs is currently unavailable."
+            />
+          </div>
+
+          {/* Create NFT Button */}
+          <Button type="blue" label="Create NFT" onClick={handleClickMint} disabled={isNFTProcessing}/>
         </div>
 
-        {/* Royalties */}
-        <div className="mt-4">
-          <h3 className="text-white font-semibold text-md mb-2">Royalties for the Creator</h3>
-          <InputField
-            itemType="default"
-            type="text"
-            name="royalty"
-            placeholder="0%"
-            bordered
-            value={royaltyNFT}
-            onChange={(e) => handleRoyaltyChange(e.target.value)}
-          />
-          <div className="flex flex-row items-center gap-2 mt-2">
-            {["0", "10", "20", "30"].map((percent) => (
-              <Button
-                key={percent}
-                type="primary"
-                label={percent + "%"}
-                onClick={() => handleRoyaltyChange(percent)}
-              />
-            ))}
-          </div>
-          <p className="text-white/70 text-sm mt-2">
-            Collect royalties every time your NFT is sold. The amount is
-            deducted from the final sale price and sent to your address.
-          </p>
-        </div>
-
-        {/* Attributes */}
-        <div className="mt-4">
-          <h3 className="text-white font-semibold text-md">Attributes</h3>
-          <div className="grid grid-cols-2 gap-4">
-            {attributes.map((attr, index) => (
-              <AttributeInput
-                key={index}
-                trait={attr.trait}
-                value={attr.value}
-                onChangeTrait={(e) => handleAttributeChange(index, "trait", e.target.value)}
-                onChangeValue={(e) => handleAttributeChange(index, "value", e.target.value)}
-                onRemove={() => handleRemoveAttribute(index)}
-              />
-            ))}
-          </div>
-          <div className="mt-2">
-            <Button type="outline" label="Add attribute" onClick={handleAddAttribute} />
-          </div>
-        </div>
-
-        {/* Alert */}
-        <div className="my-4">
-          <Alert
-            title="It will be impossible to alter the NFT data."
-            message="Editing NFTs is currently unavailable."
-          />
-        </div>
-
-        {/* Create NFT Button */}
-        <Button type="blue" label="Create NFT" onClick={handleClickMint} disabled={isNFTProcessing}/>
-      </div>
-
-      {/* Modal for Collection Creation */}
-      <CreateCollectionModal 
-        isOpen={isCreateCollectionModalOpen} 
-        onClose={() => setIsCreateCollectionModalOpen(false)}
-        setCreated={setCollectionCreatedFlag}
-      />
-
-      {/* Modal for Select Collection */}
-      { selectedCollection &&  (
-        <CollectionSelectModal 
-          isOpen={isSelectCollectionModalOpen} 
-          onClose={() => setIsSelectCollectionModalOpen(false)} 
-          collection={selectedCollection}
-          setConfirmedCollectionAddress={setConfirmedCollectionAddress}
+        {/* Modal for Collection Creation */}
+        <CreateCollectionModal 
+          isOpen={isCreateCollectionModalOpen} 
+          onClose={() => setIsCreateCollectionModalOpen(false)}
+          setCreated={setCollectionCreatedFlag}
         />
-      )}
-    </div>
+
+        {/* Modal for Select Collection */}
+        { selectedCollection &&  (
+          <CollectionSelectModal 
+            isOpen={isSelectCollectionModalOpen} 
+            onClose={() => setIsSelectCollectionModalOpen(false)} 
+            collection={selectedCollection}
+            setConfirmedCollectionAddress={setConfirmedCollectionAddress}
+          />
+        )}
+      </div>
+    </>
   );
 };
 
