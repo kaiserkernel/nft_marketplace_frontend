@@ -52,7 +52,7 @@ const Profile = () => {
           {FormatAddress(walletAddress)}
         </h3>
         <div className="flex flex-row items-center gap-2 mt-2">
-          <span className="text-slate-500 text-md">address: </span>
+          <span className="text-slate-400 text-md">address: </span>
           <span className="text-white text-md font-semibold">
             {FormatAddress(walletAddress)}
           </span>
