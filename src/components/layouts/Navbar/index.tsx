@@ -15,12 +15,12 @@ const Navbar = () => {
 
   return (
     <div className="w-full h-[120px] bg-[#111111] flex flex-row items-center justify-between px-4 border border-[#444444] z-50">
-      <div className="flex flex-row items-center gap-14">
-        <img src="./assets/logo.png" alt="Logo" className="w-24 h-24 cursor-pointer" onClick={handleClickLogo}/>
-        <h1 className="gradient-text text-2xl font-semibold cursor-pointer" onClick={handleClickLogo}>
+      <div className="flex flex-row items-center md:justify-between justify-start md:gap-14 gap-5">
+        <img src="./assets/logo.png" alt="Logo" className="md:w-24 w-20 md:h-24 h-20 cursor-pointer" onClick={handleClickLogo}/>
+        <h1 className="gradient-text sm:text-2xl text-xl font-semibold cursor-pointer md:pr-0 pr-5" onClick={handleClickLogo}>
           NFT Marketplace
         </h1>
-        <InputField
+        {/* <InputField
           itemType="colorful"
           type="text"
           name="search"
@@ -31,7 +31,7 @@ const Navbar = () => {
           onChange={(e) => {
             setSearch(e.target.value);
           }}
-        />
+        /> */}
       </div>
       <ProfileDropdown />
     </div>
