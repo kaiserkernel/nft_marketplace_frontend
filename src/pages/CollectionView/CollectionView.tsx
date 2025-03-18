@@ -14,6 +14,7 @@ import { CollectionProps, NFTProps } from "../../types";
 import { fetchNFTListOfCollection, buyNFT } from "../../services/nftService";
 import { ContractCollectionABI } from "../../contracts";
 import { useContract } from "../../context/ContractContext";
+import { FormatToWeiCurrency } from "../../utils/FormatToWeiCurrency";
 
 interface FilterProps {
     maxPrice: number | null,
@@ -156,7 +157,7 @@ const CollectionView = () => {
         }
         setIsProcessing(tokenId);
         try {
-            const _price = BigInt(price * 10 ** 18); // Convert to BigInt and wei currency
+            const _price = FormatToWeiCurrency(price); // Convert to BigInt and wei currency
             // Estimate the gas required for the transaction
             const gasEstimate = await collectionContract.buyNFT.estimateGas( tokenId, {
                 value: _price

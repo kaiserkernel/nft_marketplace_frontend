@@ -11,6 +11,7 @@ import { useContract } from "../../../context/ContractContext";
 import { formatDate } from "../../../utils/FormatDate";
 import { NFTMetaData, NFTProps } from "../../../types";
 import { setNFTAuctionPriceDB, setNFTFixedPriceDB, setNFTNotForSaleDB } from "../../../services/nftService";
+import { FormatToWeiCurrency } from "../../../utils/FormatToWeiCurrency";
 
 interface NFTViewModalProps {
     nftMetaData: NFTMetaData | null,
@@ -166,7 +167,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
 
                 const auctionDuration = BigInt(totalSeconds);
                 const tokenId = nftProps.tokenId;
-                const startingBid = BigInt(price * 10 ** 18); // Convert to wei
+                const startingBid = FormatToWeiCurrency(price); // Convert to wei
 
                 const gasEstimate = await collectionContract.startAuction.estimateGas(tokenId, startingBid, auctionDuration);
                 const tx = await collectionContract.startAuction(tokenId, startingBid, auctionDuration, { gasLimit: gasEstimate });
@@ -182,7 +183,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                     return
                 }
 
-                const _price = BigInt(price * 10 ** 18); // Convert to BigInt and wei currency
+                const _price = FormatToWeiCurrency(price); // Convert to BigInt and wei currency
                 const gasEstimate = await collectionContract.setTokenPrice.estimateGas(nftProps.tokenId, _price);
                 const tx = await collectionContract.setTokenPrice(nftProps.tokenId, _price, { gasLimit: gasEstimate });
                 const log = await tx.wait();

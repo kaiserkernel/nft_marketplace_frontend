@@ -10,6 +10,7 @@ import { formatDate } from "../../utils/FormatDate";
 import { NFTProps } from "../../types";
 import { auctionEnded, bidToAuctionDB, fetchNFTAuctionInfo } from "../../services/nftService";
 import { FormatAddress } from "../../utils/FormatAddress";
+import { FormatToWeiCurrency } from "../../utils/FormatToWeiCurrency";
 
 import Button from "../../components/common/Button";
 import Modal from "../../components/common/Modal";
@@ -49,7 +50,7 @@ const AuctionView:React.FC = () => {
         }
 
         setIsProcessing(true);
-        const _realPrice = bidPrice * (10 ** 18);
+        const _realPrice = FormatToWeiCurrency(bidPrice);
         try {
             const gasEstimate = await contractInstance.placeBid.estimateGas( nft.tokenId, {
                 value: _realPrice
@@ -68,8 +69,11 @@ const AuctionView:React.FC = () => {
             notify("Bid NFT successfully", "success");
             handleCloseBidNftModal();
         } catch (error: any) {
-            console.error("Place bid error:", error);
+            if (error.code === "ACTION_REJECTED") {
+                return;
+            }
         
+            console.log(error, 'error')
             // Extract error reason
             let errorMessage = "Transaction failed. Please try again.";
         
@@ -118,6 +122,9 @@ const AuctionView:React.FC = () => {
         
             const log = await tx.wait();
         } catch (error: any) {
+            if (error.code === "ACTION_REJECTED") {
+                return;
+            }
             console.error("Place bid error:", error);
         
             // Extract error reason
