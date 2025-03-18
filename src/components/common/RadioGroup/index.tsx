@@ -1,12 +1,8 @@
 import React, { FC } from "react";
-
-export type RadioGroupItemType = {
-  label: string;
-  checked: boolean;
-};
+import { ItemGroupList } from "../../../types";
 
 interface RadioGroupProps {
-  items: RadioGroupItemType[];
+  items: ItemGroupList[];
   onSelect: (val: number) => void;
 }
 

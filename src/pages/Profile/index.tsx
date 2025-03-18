@@ -47,7 +47,7 @@ const Profile = () => {
         <Banner />
       </div>
       {/* Profile detail section */}
-      <div className="w-full px-8 py-14">
+      <div className="w-full md:px-8 py-14 sm:px-3 px-2">
         <h3 className="text-white font-semibold text-3xl">
           {FormatAddress(walletAddress)}
         </h3>

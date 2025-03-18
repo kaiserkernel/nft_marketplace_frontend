@@ -256,7 +256,7 @@ const CreateInCollection = () => {
         <NFTBanner setImage={setImage} />
 
         {/* Right section for NFT Creation Form */}
-        <div className=" basis-1/2 flex flex-col justify-between">
+        <div className="flex flex-col justify-between">
           <div className="md:block hidden">
             <InitialCollectionInfo/>
           </div>

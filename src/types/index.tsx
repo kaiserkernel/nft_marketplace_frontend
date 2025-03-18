@@ -46,3 +46,9 @@ export interface NFTMetaData {
     image: string;
     attributes?: Attribute[];
 }
+
+export interface ItemGroupList {
+    label: string;
+    checked: boolean;
+    value: string
+};

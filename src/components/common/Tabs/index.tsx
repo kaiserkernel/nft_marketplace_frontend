@@ -56,7 +56,7 @@ const Tabs: FC<TabsProps> = ({ items }) => {
       </div>
 
       {/* Tab Content with Animation */}
-      <div className="py-4 overflow-hidden">
+      <div className="py-4">
         <AnimatePresence>
           <motion.div
             key={activeTabIndex} // Ensures a re-render on tab change

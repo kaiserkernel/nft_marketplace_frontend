@@ -9,7 +9,8 @@ interface ButtonProps {
   iconPosition?: "left" | "right";
   width?: "full" | number;
   onClick?: () => void;
-  disabled?: boolean
+  disabled?: boolean,
+  mobileHideLabel?: boolean
 }
 
 const Button: FC<ButtonProps> = ({
@@ -19,7 +20,8 @@ const Button: FC<ButtonProps> = ({
   iconPosition,
   width,
   onClick,
-  disabled
+  disabled,
+  mobileHideLabel
 }) => {
   const [isFocused, setIsFocused] = useState<boolean>(false);
 
@@ -92,7 +94,7 @@ const Button: FC<ButtonProps> = ({
         disabled ? <ThreeDot color="#ffffff" size="small" /> : (
           <>
             {iconPosition === "left" && icon}
-            {label}
+            <span className={`${mobileHideLabel ? "md:block hidden" : ""}`}>{label}</span>
             {iconPosition === "right" && icon}
           </>
         )
