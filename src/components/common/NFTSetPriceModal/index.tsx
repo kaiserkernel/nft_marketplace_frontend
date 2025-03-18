@@ -11,7 +11,7 @@ import { ContractCollectionABI } from "../../../contracts";
 import { formatDate } from "../../../utils/FormatDate";
 import { NFTMetaData, NFTProps } from "../../../types";
 import { setNFTAuctionPriceDB, setNFTFixedPriceDB, setNFTNotForSaleDB } from "../../../services/nftService";
-import { FormatToWeiCurrency } from "../../../utils/FormatToWeiCurrency";
+import { FormatToRealCurrency, FormatToWeiCurrency } from "../../../utils/FormatCurrency";
 import { TransactionErrorhandle } from "../../../utils/TransactionErrorhandle";
 
 interface NFTViewModalProps {
@@ -81,7 +81,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
         try {
             // Convert values to readable format
             const formattedTokenId = Number(tokenId); // Convert BigInt to string
-            const formattedBid = Number(startingBid) / (10 ** 18); // Convert BigInt to string (wei)
+            const formattedBid = FormatToRealCurrency(Number(startingBid)); // Convert BigInt to string (wei)
             const formattedEndTime = Number(auctionEndTime); // Convert timestamp to ISO format
     
             // Define the request body
@@ -110,7 +110,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
 
     const handleNFTPriceSetDB = async (_tokenId: number, _price: number) => {
         try {
-            const realPrice = Number(_price) / (10 ** 18); // convert from wei currency
+            const realPrice = FormatToRealCurrency(Number(_price)); // convert from wei currency
 
             let data:NFTProps;
             if (realPrice) {

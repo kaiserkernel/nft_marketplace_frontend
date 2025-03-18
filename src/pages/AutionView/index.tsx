@@ -15,7 +15,7 @@ import { formatDate } from "../../utils/FormatDate";
 import { NFTProps } from "../../types";
 import { auctionEnded, bidToAuctionDB, fetchNFTAuctionInfo } from "../../services/nftService";
 import { FormatAddress } from "../../utils/FormatAddress";
-import { FormatToWeiCurrency } from "../../utils/FormatToWeiCurrency";
+import { FormatToRealCurrency, FormatToWeiCurrency } from "../../utils/FormatCurrency";
 import { TransactionErrorhandle } from "../../utils/TransactionErrorhandle";
 
 const AuctionView:React.FC = () => {
@@ -78,7 +78,7 @@ const AuctionView:React.FC = () => {
 
     const handleAuctionEnded = async (winner: string, tokenId:bigint, winningBid: bigint) => {
         const _tokenId = Number(tokenId);
-        const _realWinningBid = Number(winningBid) / (10 ** 18);
+        const _realWinningBid = FormatToRealCurrency(Number(winningBid));
 
         try {
             const requestBody = {
@@ -114,7 +114,7 @@ const AuctionView:React.FC = () => {
     }
 
     const handleBidNFTDB = async (bidder: string, tokenId: bigint, bidAmount: bigint) => {
-        const _realPrice = Number(bidAmount) / (10 ** 18);
+        const _realPrice = FormatToRealCurrency(Number(bidAmount));
 
         try {
             await bidToAuctionDB({_id: nft._id, bidder, tokenId: Number(tokenId), bidAmount: _realPrice})

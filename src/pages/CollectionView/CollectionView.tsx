@@ -14,7 +14,7 @@ import { CollectionProps, NFTProps } from "../../types";
 import { fetchNFTListOfCollection, buyNFT } from "../../services/nftService";
 import { ContractCollectionABI } from "../../contracts";
 import { useContract } from "../../context/ContractContext";
-import { FormatToWeiCurrency } from "../../utils/FormatToWeiCurrency";
+import { FormatToWeiCurrency } from "../../utils/FormatCurrency";
 import { TransactionErrorhandle } from "../../utils/TransactionErrorhandle";
 
 interface FilterProps {
