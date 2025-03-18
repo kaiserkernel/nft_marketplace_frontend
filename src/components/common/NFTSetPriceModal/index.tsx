@@ -2,16 +2,17 @@ import { useState, useEffect, ChangeEvent } from "react";
 import { ToastContainer } from "react-toastify";
 import { ethers } from "ethers";
 
-import { ContractCollectionABI } from "../../../contracts";
 import Modal from "../Modal";
 import InputField from "../InputField";
 import { notify } from "../Notify";
 
 import { useContract } from "../../../context/ContractContext";
+import { ContractCollectionABI } from "../../../contracts";
 import { formatDate } from "../../../utils/FormatDate";
 import { NFTMetaData, NFTProps } from "../../../types";
 import { setNFTAuctionPriceDB, setNFTFixedPriceDB, setNFTNotForSaleDB } from "../../../services/nftService";
 import { FormatToWeiCurrency } from "../../../utils/FormatToWeiCurrency";
+import { TransactionErrorhandle } from "../../../utils/TransactionErrorhandle";
 
 interface NFTViewModalProps {
     nftMetaData: NFTMetaData | null,
@@ -205,10 +206,11 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                 onClose();
             }
         } catch (error: any) {
-            if (error.code !== "ACTION_REJECTED") {
-                notify("Error occurred while setting NFT price", "warning");
-                console.log(error, 'nft set price')
-            }
+            // if (error.code !== "ACTION_REJECTED") {
+            //     notify("Error occurred while setting NFT price", "warning");
+            //     console.log(error, 'nft set price')
+            // }
+            TransactionErrorhandle(error);
           } finally {
             setIsProcessing(false);
           }

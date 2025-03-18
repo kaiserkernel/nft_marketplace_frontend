@@ -22,6 +22,7 @@ import { CollectionProps, NFTMetaData } from "../../types";
 import { fetchOwnerCollection } from "../../services/colllectionService";
 import { mintNFTDB } from "../../services/nftService";
 import { pinata } from "../../config/pinata";
+import { TransactionErrorhandle } from "../../utils/TransactionErrorhandle";
 
 const CreateInCollection = () => {
   const [displayName, setDisplayName] = useState<string>("");
@@ -142,10 +143,7 @@ const CreateInCollection = () => {
       // log.from -> owner address
       notify("NFT minted successfully", "success");
     } catch (error: any) {
-      if (error.code !== "ACTION_REJECTED") {
-        notify("Error occured on mint NFT", "error");
-        console.log(error, "mint nft")
-      }
+      TransactionErrorhandle(error);
     } finally {
       setIsNFTProcessing(false);
     }

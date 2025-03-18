@@ -10,6 +10,7 @@ import Modal from "../../components/common/Modal";
 import { createCollectionDB } from "../../services/colllectionService";
 import { useContract } from "../../context/ContractContext";
 import { pinata } from "../../config/pinata";
+import { TransactionErrorhandle } from "../../utils/TransactionErrorhandle";
 
 interface CreateCollectionModalProps {
   isOpen: boolean,
@@ -90,10 +91,7 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
 
       notify("Collection created successfully", "success");
     } catch (error: any) {
-      if (error.code !== "ACTION_REJECTED") {
-        notify("Error occured on creating collection.", "error");
-        console.log(error, "create collection")
-      }
+      TransactionErrorhandle(error);
     } finally {
       setIsProcessing(false);
     }

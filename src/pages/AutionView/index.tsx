@@ -4,6 +4,11 @@ import { ethers } from "ethers";
 import { ToastContainer } from "react-toastify";
 import { ThreeDot } from "react-loading-indicators";
 
+import Button from "../../components/common/Button";
+import Modal from "../../components/common/Modal";
+import InputField from "../../components/common/InputField";
+import { notify } from "../../components/common/Notify";
+
 import { useContract } from "../../context/ContractContext";
 import { ContractCollectionABI } from "../../contracts";
 import { formatDate } from "../../utils/FormatDate";
@@ -11,11 +16,7 @@ import { NFTProps } from "../../types";
 import { auctionEnded, bidToAuctionDB, fetchNFTAuctionInfo } from "../../services/nftService";
 import { FormatAddress } from "../../utils/FormatAddress";
 import { FormatToWeiCurrency } from "../../utils/FormatToWeiCurrency";
-
-import Button from "../../components/common/Button";
-import Modal from "../../components/common/Modal";
-import InputField from "../../components/common/InputField";
-import { notify } from "../../components/common/Notify";
+import { TransactionErrorhandle } from "../../utils/TransactionErrorhandle";
 
 const AuctionView:React.FC = () => {
     const location = useLocation();
@@ -69,23 +70,7 @@ const AuctionView:React.FC = () => {
             notify("Bid NFT successfully", "success");
             handleCloseBidNftModal();
         } catch (error: any) {
-            if (error.code === "ACTION_REJECTED") {
-                return;
-            }
-        
-            console.log(error, 'error')
-            // Extract error reason
-            let errorMessage = "Transaction failed. Please try again.";
-        
-            if (error.reason) {
-                errorMessage = error.reason; // Standard Ethers.js error message
-            } else if (error.data && error.data.message) {
-                errorMessage = error.data.message; // Metamask error message
-            } else if (error.message) {
-                errorMessage = error.message;
-            }
-        
-            notify(errorMessage, "error");
+            TransactionErrorhandle(error);
         } finally {
             setIsProcessing(false);
         }
@@ -122,23 +107,7 @@ const AuctionView:React.FC = () => {
         
             const log = await tx.wait();
         } catch (error: any) {
-            if (error.code === "ACTION_REJECTED") {
-                return;
-            }
-            console.error("Place bid error:", error);
-        
-            // Extract error reason
-            let errorMessage = "Transaction failed. Please try again.";
-        
-            if (error.reason) {
-                errorMessage = error.reason; // Standard Ethers.js error message
-            } else if (error.data && error.data.message) {
-                errorMessage = error.data.message; // Metamask error message
-            } else if (error.message) {
-                errorMessage = error.message;
-            }
-        
-            notify(errorMessage, "error");
+            TransactionErrorhandle(error);
         } finally {
             setIsProcessing(false);
         }

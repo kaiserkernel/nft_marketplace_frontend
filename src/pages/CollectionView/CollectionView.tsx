@@ -15,6 +15,7 @@ import { fetchNFTListOfCollection, buyNFT } from "../../services/nftService";
 import { ContractCollectionABI } from "../../contracts";
 import { useContract } from "../../context/ContractContext";
 import { FormatToWeiCurrency } from "../../utils/FormatToWeiCurrency";
+import { TransactionErrorhandle } from "../../utils/TransactionErrorhandle";
 
 interface FilterProps {
     maxPrice: number | null,
@@ -175,10 +176,7 @@ const CollectionView = () => {
             // log.from -> owner address
             notify("Buy NFT successfully", "success");
         } catch (error: any) {
-            if (error.code !== "ACTION_REJECTED") {
-                notify("Error occured on Buy NFT", "warning");
-                console.log(error, 'error buy')
-            }
+            TransactionErrorhandle(error);
         } finally {
             setIsProcessing(null);
         }
