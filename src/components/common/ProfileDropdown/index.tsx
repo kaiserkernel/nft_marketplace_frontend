@@ -22,6 +22,7 @@ import IconButton from "../IconButton";
 import Button from "../Button";
 
 import { useContract } from "../../../context/ContractContext";
+import { FormatAddress } from "../../../utils/FormatAddress";
 
 const dropdownItems: DropdownItemType[] = [
   {
@@ -94,9 +95,7 @@ const ProfileDropdown = () => {
                   <Avatar size={70} />
                   <div>
                     <h2 className="font-semibold text-white text-md">
-                      {`${walletAddress?.slice(0, 4)}...${walletAddress?.slice(
-                        -4
-                      )}`}
+                      {FormatAddress(walletAddress)}
                     </h2>
                     <p className="text-slate-500 text-sm">Open Profile</p>
                   </div>

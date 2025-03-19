@@ -27,7 +27,7 @@ import { fetchUserInfo, register } from "../../services/userService";
 
 const tabItems = [
   { label: "Collected", content: <Collected /> },
-  { label: "History", content: <History /> },
+  // { label: "History", content: <History /> },
 ];
 
 interface SocialLinks {
@@ -79,6 +79,7 @@ const Profile = () => {
 
   const [avatarImage, setAvatarImage] = useState<string | null>(null);
   const [avatarImageFile, setAvatarImageFile] = useState<File | null>(null);
+  
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleEditClick = () => {
