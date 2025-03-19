@@ -39,7 +39,7 @@ const Modal: FC<ModalProps> = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -50, scale: 1.1 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            className={`relative w-5/12 md:w-[30%] h-1/2 ${size === "small" ? "md:h-[50%]" : "md:h-[80%]"} bg-[#262629] rounded-3xl shadow-lg`}
+            className={`relative w-[90%] md:w-[30%] h-3/4 ${size === "small" ? "md:h-[50%]" : "md:h-[80%]"} bg-[#262629] rounded-3xl shadow-lg`}
           >
             <div className="flex flex-row items-center justify-between px-4 py-3">
               {/* Header */}
@@ -56,7 +56,7 @@ const Modal: FC<ModalProps> = ({
             </div>
 
             {/* Body */}
-            <div className="w-full px-8 h-[75%] overflow-x-hidden overflow-y-scroll">
+            <div className="w-full px-8 h-[70%] overflow-x-hidden overflow-y-scroll">
               {children}
             </div>
 

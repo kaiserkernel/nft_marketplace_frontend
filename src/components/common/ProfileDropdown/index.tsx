@@ -79,7 +79,7 @@ const ProfileDropdown = () => {
             }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="absolute right-0 mt-2 w-[420px] z-50 bg-[#111111] border border-[#444444] rounded-3xl overflow-hidden shadow-lg"
+            className="absolute right-0 mt-2 xl:w-[33vw] lg:w-[40vw] md:w-[55vw] sm:w-[60vw] w-[80vw] z-50 bg-[#111111] border border-[#444444] rounded-3xl overflow-hidden shadow-lg"
           >
             <motion.ul
               layout
@@ -185,6 +185,7 @@ const ProfileDropdown = () => {
                     label="Channel"
                     icon={<FaTelegram className="text-white w-5 h-5" />}
                     iconPosition="left"
+                    mobileHideLabel={true}
                   />
                 </Link>
                 <Link to="">
@@ -193,6 +194,7 @@ const ProfileDropdown = () => {
                     label="Twitter"
                     icon={<FaTwitter className="text-white w-5 h-5" />}
                     iconPosition="left"
+                    mobileHideLabel={true}
                   />
                 </Link>
                 <Link to="">
@@ -201,6 +203,7 @@ const ProfileDropdown = () => {
                     label="Github"
                     icon={<FaGithub className="text-white w-5 h-5" />}
                     iconPosition="left"
+                    mobileHideLabel={true}
                   />
                 </Link>
               </div>
