@@ -49,7 +49,7 @@ export const NFTViewBtn = ({nftData, isProcessing, handleBuyNft}: NFTViewBtnProp
                     <img 
                         src={nftMetaData.image} 
                         alt={nftMetaData.name} 
-                        className="w-full h-full object-cover transition duration-300 group-hover:blur-sm w-[40vw] h-[40vw] md:w-64 md:h-64 rounded-t-xl"
+                        className="object-cover transition duration-300 group-hover:blur-sm w-[40vw] h-[40vw] md:w-64 md:h-64 rounded-t-xl"
                     />
 
                     {/* NFT Info */}
@@ -61,8 +61,7 @@ export const NFTViewBtn = ({nftData, isProcessing, handleBuyNft}: NFTViewBtnProp
                                     `${price}ETH` : "Not for sale"
                             }
                         </p>
-                        <p className="md:text-base text-white text-sm font-medium mt-2 ml-4 mb-4 group-hover:hidden">
-                            {/* Last Price: {lastPrice === 0 ? "" : `${lastPrice}ETH`} */}
+                        <p className="md:text-base text-white text-sm font-medium mt-2 ml-4 mb-4">
                             {
                                 priceType === "auction" ? `Start Bid: ${startBid}ETH` :
                                     !!price ? `Last Price: ${lastPrice}` : ""
@@ -72,7 +71,7 @@ export const NFTViewBtn = ({nftData, isProcessing, handleBuyNft}: NFTViewBtnProp
 
                     {/* Button appears when hovering the entire component */}
                     <div 
-                        className={`absolute bottom-0 left-0 w-full h-[2.5rem] flex justify-center items-center bg-blue-600 text-white text-sm font-medium rounded-b-md opacity-0 ${(priceType === "not_for_sale") ? "" : "group-hover:opacity-100 group-hover:translate-y-0 group-hover:h-[2.5rem] transition-all duration-300"} rounded-b-xl grid grid-cols-9 ${isProcessing === tokenId ? "opacity-100" : ""}`} 
+                        className={`absolute bottom-0 left-0 w-full h-[25] flex justify-center items-center bg-blue-600 text-white text-sm font-medium rounded-b-md opacity-0 ${(priceType === "not_for_sale") ? "" : "group-hover:opacity-100 group-hover:translate-y-0 group-hover:h-[2.5rem] transition-all duration-300"} rounded-b-xl grid grid-cols-9 ${isProcessing === tokenId ? "opacity-100" : ""}`} 
                         onClick={handleClickBuyNft}
                     >
                         {
