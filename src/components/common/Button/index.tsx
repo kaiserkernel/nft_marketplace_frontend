@@ -76,7 +76,7 @@ const Button: FC<ButtonProps> = ({
 
   return (
     <button
-      className={`flex flex-row items-center justify-center py-3 rounded-xl px-5 gap-2 text-white transition-all duration-300 ease-in-out text-sm font-semibold 
+      className={`flex flex-row items-center justify-center py-4 rounded-xl md:px-5 px-4 gap-2 text-white transition-all duration-300 ease-in-out text-sm font-semibold 
         ${widthClass} 
         ${type === "primary" ? "bg-[#1F1F21] hover:bg-[#353537]" : ""} 
         ${type === "blue" ? "bg-[#3069FF] hover:bg-[#4076FF]" : ""} 
