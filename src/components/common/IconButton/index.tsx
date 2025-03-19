@@ -14,9 +14,9 @@ const IconButton = ({
       whileTap={{ scale: 0.9 }}
       className="relative w-12 h-12 rounded-2xl bg-gradient"
     >
-      <div className="absolute rounded-2xl inset-[3px] bg-white">
+      <div className="absolute rounded-2xl inset-[3px] bg-black">
         <motion.button
-          className="absolute rounded-2xl inset-[1px] flex items-center justify-center bg-gradient"
+          className="absolute rounded-2xl inset-[1px] flex items-center justify-center"
           onClick={onClick}
           whileHover={{ backgroundColor: "#f0f0f0" }}
           whileTap={{ backgroundColor: "#e0e0e0" }}

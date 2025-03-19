@@ -172,7 +172,7 @@ const AuctionView:React.FC = () => {
 
     return (
         <>
-            <ToastContainer />
+            <ToastContainer  toastStyle={{ backgroundColor: "black" }}  />
             <div className="w-full grid md:grid-cols-2 grid-cols-1 mb-8 md:mb-16">
                 <div className="md:mr-8">
                     {

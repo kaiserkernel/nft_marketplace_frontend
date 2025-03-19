@@ -55,7 +55,7 @@ export const NFTViewBtn = ({nftData, isProcessing, handleBuyNft}: NFTViewBtnProp
                     {/* NFT Info */}
                     <div className="w-[40vw] md:w-64 flex flex-col text-white items-start">
                         <p className="md:text-sm text-xs font-light mt-3 md:ml-4 ml-2">{nftMetaData.name}</p>
-                        <p className={`md:text-base sm:text-sm text-xs font-medium mt-2 md:ml-4 ml-2 ${price === 0 ? 'text-blue-600' : ''}`}>
+                        <p className={`md:text-base sm:text-sm text-xs font-medium mt-2 md:ml-4 ml-2 ${priceType === "auction" ? 'text-blue-600' : ''}`}>
                             {
                                 priceType === "auction" ? "Auction" : priceType === 'fixed' ? 
                                     `${price}ETH` : "Not for sale"

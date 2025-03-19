@@ -56,7 +56,7 @@ const Modal: FC<ModalProps> = ({
             </div>
 
             {/* Body */}
-            <div className="w-full px-8 h-[70%] overflow-x-hidden overflow-y-scroll">
+            <div className="w-full px-8 h-[75%] overflow-x-hidden overflow-y-scroll">
               {children}
             </div>
 

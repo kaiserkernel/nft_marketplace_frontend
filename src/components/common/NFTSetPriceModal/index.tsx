@@ -47,11 +47,8 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
             setPrice(0);
             setPriceType("fixed");
             setDuration({date: null, hour: null, minute: null});
+            return;
         }
-    }, [isOpen])
-
-    useEffect(() => {
-        if (!isOpen) return;
         if (!nftProps.collection?.contractAddress) {
             notify("Invalid Collection", "error");
             return;
@@ -194,7 +191,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                 // log.logs[0].address -> contractAddress 
                 // log.from -> owner address
                 notify("Price set successfully", "success");
-                onClose();
+                setTimeout(() => onClose(), 1500)
             }
 
             if ( priceType === "not_for_sale") {
@@ -273,7 +270,7 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
             btnClick={confirmPrice}
             btnProcessing={isProcessing}
         >
-            <ToastContainer />
+            <ToastContainer  toastStyle={{ backgroundColor: "black" }}  />
             <div className="text-white text-sm">
                 <span className="font-bold">Address :</span> {nftProps.collection?._id}
             </div>

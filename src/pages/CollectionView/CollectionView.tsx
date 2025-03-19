@@ -257,7 +257,7 @@ const CollectionView = () => {
 
     return (
         <div className="w-full md:mb-10 mb-4">
-            <ToastContainer />
+            <ToastContainer  toastStyle={{ backgroundColor: "black" }}  />
             {collection && (
                 <div className="relative w-full md:h-[75vh] h-[40vh]">
                     <img src={collection.image} className="w-full object-top object-cover md:h-[75vh] h-[40vh] rounded-2xl"/>

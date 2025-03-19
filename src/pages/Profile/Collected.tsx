@@ -120,7 +120,7 @@ const Collected = () => {
       "Price high to low": (a, b) => (b.price || 0) - (a.price || 0),
       "Price low to high": (a, b) => (a.price || 0) - (b.price || 0),
     };
-
+    
     return selListItem in sortStrategies ? result.sort(sortStrategies[selListItem]) : result;
   }, [nftList, saleTypeRadios, applyPriceFilter, fromPrice, toPrice, searchInput, selListItem])
   

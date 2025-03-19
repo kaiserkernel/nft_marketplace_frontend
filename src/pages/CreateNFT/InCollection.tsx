@@ -247,7 +247,7 @@ const CreateInCollection = () => {
 
   return (
     <>
-      <ToastContainer/>
+      <ToastContainer  toastStyle={{ backgroundColor: "black" }} />
       <div className="w-full grid md:grid-cols-2 grid-cols-1 md:gap-10 gap-4">
           <div className="md:hidden block">
             <InitialCollectionInfo/>
