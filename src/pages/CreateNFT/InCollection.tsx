@@ -168,7 +168,7 @@ const CreateInCollection = () => {
 
   const InitialCollectionInfo:React.FC = () => (
     <>
-      <h2 className="text-white md:text-2xl text-xl font-semibold">Create an NFT in a Collection</h2>
+      <h2 className="text-white lg:text-2xl text-xl font-semibold">Create an NFT in a Collection</h2>
 
       {/* Display Name */}
       <div className="mt-4">
@@ -246,9 +246,9 @@ const CreateInCollection = () => {
   }, [wsCollectionContract])
 
   return (
-    <>
+    <div className="mb-8">
       <ToastContainer  toastStyle={{ backgroundColor: "black" }} />
-      <div className="w-full grid md:grid-cols-2 grid-cols-1 md:gap-10 gap-4">
+      <div className="w-full grid md:grid-cols-2 grid-cols-1 md:gap-10 gap-4 md:pb-0">
           <div className="md:hidden block">
             <InitialCollectionInfo/>
           </div>
@@ -386,7 +386,7 @@ const CreateInCollection = () => {
           />
         )}
       </div>
-    </>
+    </div>
   );
 };
 

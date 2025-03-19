@@ -343,7 +343,7 @@ const CollectionView = () => {
                 {/* price filter */}
 
                 <div className={`${isShowSearchPanel ? "xl:col-span-8 md:col-span-7" : "col-span-10"} col-span-10 rounded-xl`}>
-                    <div className="md:p-4 flex gap-4 flex-wrap">
+                    <div className="p-4 flex md:gap-4 gap-8 flex-wrap justify-between">
                         {
                                 filteredNfts && filteredNfts.map((nft: NFTProps, idx) => (
                                     <NFTViewBtn
