@@ -94,7 +94,7 @@ const Button: FC<ButtonProps> = ({
         disabled ? <ThreeDot color="#ffffff" size="small" /> : (
           <>
             {iconPosition === "left" && icon}
-            <span className={`${mobileHideLabel ? "md:block hidden" : ""}`}>{label}</span>
+            <span className={`whitespace-nowrap ${mobileHideLabel ? "md:block hidden" : ""}`}>{label}</span>
             {iconPosition === "right" && icon}
           </>
         )

@@ -54,7 +54,7 @@ const Footer = () => {
           </div>
         </div>
         <div className="basis-1/3">
-          <div className="grid grid-cols-2 gap-10 md:mt-0 mt-6">
+          <div className="grid grid-cols-2 md:gap-10 gap-5 md:mt-0 mt-6">
             <div className="flex flex-col items-start">
               <h3 className="text-white font-semibold px-4 mb-4">
                 Marketplace

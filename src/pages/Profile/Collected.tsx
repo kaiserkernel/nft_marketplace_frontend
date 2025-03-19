@@ -251,7 +251,7 @@ const Collected = () => {
       {/* Mobile Search Panel */}
       <MobilePanel
         isOpen={!isShowSearchPanel}
-        onClose={() => setIsShowSearchPanel(false)}
+        onClose={() => setIsShowSearchPanel(true)}
       >
         <div className="grid px-4">
           <p className="text-base font-bold">Sale Type</p>
