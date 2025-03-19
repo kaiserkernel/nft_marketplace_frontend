@@ -3,9 +3,16 @@ import { motion } from "framer-motion";
 import Avatar from "../Avatar";
 import { FaFileArchive } from "react-icons/fa";
 
-const Banner = () => {
+interface BannerProps {
+  setImageFile: React.Dispatch<React.SetStateAction<File | null>>,
+  image: string | null,
+  setImage: React.Dispatch<React.SetStateAction<string | null>>
+  className?: string
+}
+
+const Banner = (props: BannerProps) => {
+  const { setImageFile, image, setImage, className } = props
   const [isFocused, setIsFocused] = useState<boolean>(false);
-  const [image, setImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -13,16 +20,17 @@ const Banner = () => {
     if (file) {
       const imageUrl = URL.createObjectURL(file);
       setImage(imageUrl);
+      setImageFile(file);
     }
   };
 
   const triggerFileInput = () => {
     fileInputRef.current?.click();
   };
-
+  
   return (
     <div
-      className="relative w-full h-[250px] rounded-3xl bg-gradient"
+      className={`${className} relative w-full rounded-3xl bg-gradient`}
       onMouseEnter={() => setIsFocused(true)}
       onMouseLeave={() => setIsFocused(false)}
       onTouchStart={() => setIsFocused(true)}
