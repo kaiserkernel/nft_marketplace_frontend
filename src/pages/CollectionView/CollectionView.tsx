@@ -1,14 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useLocation } from "react-router";
 import { ThreeDot } from "react-loading-indicators";
 import { ToastContainer } from "react-toastify";
 import { ethers } from "ethers";
+import { FaAngleLeft, FaSort, FaSearch,FaAngleDown } from "react-icons/fa";
 
 import { notify } from "../../components/common/Notify";
 import { NFTViewBtn } from "../../components/common/NFTViewBtn";
 import InputField from "../../components/common/InputField";
-import CheckboxGroup from "../../components/common/CheckboxGroup";
-import FilterPanel from "../../components/common/FilterPanel";
+import Button from "../../components/common/Button";
+import Dropdown from "../../components/common/Dropdown";
+import { MobilePanel } from "../../components/common/MobilePanel";
+import RadioGroup from "../../components/common/RadioGroup";
+import Accordion from "../../components/common/Accordian";
 
 import { CollectionProps, NFTProps } from "../../types";
 import { fetchNFTListOfCollection, buyNFT } from "../../services/nftService";
@@ -16,23 +20,22 @@ import { ContractCollectionABI } from "../../contracts";
 import { useContract } from "../../context/ContractContext";
 import { FormatToWeiCurrency } from "../../utils/FormatCurrency";
 import { TransactionErrorhandle } from "../../utils/TransactionErrorhandle";
+import { ItemGroupList } from "../../types";
 
-interface FilterProps {
-    maxPrice: number | null,
-    minPrice: number | null
-}
-
-interface StatusProps {
-    label: string,
-    checked: boolean
-}
-
-const STATUSLIST: StatusProps[] = [
-    { label: "All", checked: false },
-    { label: "Fixed", checked: false },
-    { label: "Auction", checked: false },
-    { label: "Not for sale", checked: false },
+// Constants
+const initialSaleType: ItemGroupList[] = [
+    { label: "All Types", checked: true, value: "all" },
+    { label: "For Sale", checked: false, value: "fixed" },
+    { label: "For Auction", checked: false, value: "auction" },
+    { label: "Not For Sale", checked: false, value: "not_for_sale" },
 ];
+
+const initialShowList: ItemGroupList[] = [
+    { label: "Recently Created", checked: true, value: "created" },
+    { label: "Highest last sale", checked: false, value: "last_sale" },
+    { label: "Price high to low", checked: false, value: "high_low" },
+    { label: "Price low to high", checked: false, value: "low_high" },
+];  
 
 const CollectionView = () => {
     const location = useLocation();
@@ -40,18 +43,20 @@ const CollectionView = () => {
 
     const [nftList, setNftList] = useState<NFTProps[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [searchValue, setSearchValue] = useState<string>("");
-    const [filterItems, setFilterItems] = useState<FilterProps>({
-        maxPrice: null,
-        minPrice: null
-    });
-    const [statusList, setStatusList] = useState<StatusProps[]>(STATUSLIST);
-    const [openedFilterPanel, setOpenedFilterPanel] = useState<string>("");
     const [isProcessing, setIsProcessing] = useState<number | null>(null);
-
+    const [isShowList, setIsShowList] = useState(false);
+    const [selListItem, setSelListItem] = useState<string>("Recently Created");
+    const [searchInput, setSearchInput] = useState<string>("");
+    const [fromPrice, setFromPrice] = useState<number | null>(null);
+    const [toPrice, setToPrice] = useState<number | null>(null);
+    const [applyPriceFilter, setApplyPriceFilter] = useState<boolean>(false);
+    const [isShowSearchPanel, setIsShowSearchPanel] = useState<boolean>(true);
+    const [saleTypeRadios, setSaleTypeRadios] = useState<ItemGroupList[]>(initialSaleType);
+  
     const { walletAddress, signer, wsProvider } = useContract();
     const [collectionContract, setCollectionContract] = useState<ethers.Contract | null>(null);
     const [wsCollectionContract, setWsCollectionContract] = useState<ethers.Contract | null>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     const fetchNFTList = async () => {
         setIsLoading(true);
@@ -96,36 +101,53 @@ const CollectionView = () => {
         }
     }, [wsCollectionContract])
 
-    const handleSearchValueChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchValue(evt.target.value);
-    }
-
-    const handleSelectStatus = (_idx : number) => {
-        setStatusList((prevStatusList) =>
-          prevStatusList.map((status, idx) =>
-            idx === _idx ? { ...status, checked: !status.checked } : status
-          )
-        );
-    }
-
-    const handleFilterItemChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
-        const {name, value} = evt.target;
-        if (name === "maxPrice" || name === "minPrice") {
-            const parsedValue = Number(value);
-            if (!isNaN(parsedValue)) setFilterItems(prev => ({...prev, [name]: parsedValue}));
+    const filteredNfts:NFTProps[] = useMemo(() => {
+        let result:NFTProps[] = [...nftList];
+        
+        // Sale Type Filter
+        const selectedType = saleTypeRadios.find(log => log.checked);
+        if (selectedType && selectedType.value !== "all") {
+          result = result.filter(log => log.priceType === selectedType.value);
         }
-    } 
-
-    const handleOpenFilterPannel = (panel: string) => {
-        setOpenedFilterPanel((prev) => (prev === panel ? "" : panel));
-        // Reset filters when opening a new panel
-        if (openedFilterPanel !== panel) {
-          setFilterItems({
-            maxPrice: null,
-            minPrice: null,
+        
+        // Price Filter
+        if (applyPriceFilter) {
+          result = result.filter((nft) => {
+            if (fromPrice !== null && (!nft.price || nft.price < fromPrice)) return false;
+            if (toPrice !== null && (!nft.price || nft.price > toPrice)) return false;
+            return true;
           });
         }
-    }
+        
+        // Search Filter
+        if (searchInput) {
+          result = result.filter((nft) => nft.name?.includes(searchInput) || nft.description?.includes(searchInput));
+        }
+    
+        console.log(result, "resl")
+        // Sorting
+        const sortStrategies: Record<string, (a: NFTProps, b: NFTProps) => number> = {
+          "Recently Created": (a, b) => (new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()),
+          "Highest last sale": (a, b) => (b.lastPrice || 0) - (a.lastPrice || 0),
+          "Price high to low": (a, b) => (b.price || 0) - (a.price || 0),
+          "Price low to high": (a, b) => (a.price || 0) - (b.price || 0),
+        };
+    
+        return selListItem in sortStrategies ? result.sort(sortStrategies[selListItem]) : result;
+      }, [nftList, saleTypeRadios, applyPriceFilter, fromPrice, toPrice, searchInput, selListItem])    
+
+      const handleSaleTypeSelect = useCallback(
+        (index: number) => setSaleTypeRadios((prev) => prev.map((item, idx) => ({ ...item, checked: idx === index }))),
+        []
+      );
+    
+      const handleApplyClick = useCallback(() => setApplyPriceFilter(true), []);
+
+      const hanldeSetShowListItem = (item: string) => {
+        setSelListItem(item);
+        setIsShowList(false);
+      };
+      
 
     const handleSavebuyNFTDB = async (
         owner: string,
@@ -190,6 +212,49 @@ const CollectionView = () => {
         )
     }
 
+    const PriceRangeSearchBar:React.FC = () => (
+        <div>
+          <div className="w-full flex flex-row items-center justify-between gap-4 mt-2">
+            <InputField
+              itemType="default"
+              name="from"
+              type="number"
+              placeholder="From"
+              value={fromPrice ?? ""}
+              bordered
+              onChange={(evt) => {
+                const _value = Number(evt.target.value);
+                if (isNaN(_value)) return;
+                setApplyPriceFilter(false);
+                setFromPrice(_value);
+              }}
+            />
+            <InputField
+              itemType="default"
+              name="toPrice"
+              type="number"
+              placeholder="To"
+              value={toPrice ?? ""}
+              bordered
+              onChange={(evt) => {
+                const _value = Number(evt.target.value);
+                if (isNaN(_value)) return;
+                setApplyPriceFilter(false);
+                setToPrice(_value);
+              }}
+            />
+          </div>
+          <div className="w-full mt-4">
+            <Button
+              type="primary"
+              width="full"
+              label={applyPriceFilter ? "Applied" : "Apply"}
+              onClick={handleApplyClick}
+            />
+          </div>
+        </div>
+      )
+
     return (
         <div className="w-full md:mb-10 mb-4">
             <ToastContainer />
@@ -215,62 +280,117 @@ const CollectionView = () => {
                 </div>
             )}
             <hr className="border-t border-gray-700 my-4" />
-            <div className="grid grid-cols-9">
-                {/* filter pannel */}
-                {/* status - filter */}
-                <div className="col-span-2 md:mt-8 mt-4 md:pr-5">
-                    <FilterPanel 
-                        title="Status" 
-                        panelKey="status" 
-                        isOpen={openedFilterPanel === "status"} 
-                        togglePanel={handleOpenFilterPannel}
-                    >
-                        <CheckboxGroup items={statusList} onSelect={handleSelectStatus} />
-                    </FilterPanel>
-                    
-                    <FilterPanel 
-                        title="Price" 
-                        panelKey="price" 
-                        isOpen={openedFilterPanel === "price"} 
-                        togglePanel={handleOpenFilterPannel}
-                    >
-                        <div className="text-white">
-                            <p className="mb-2">Max Price</p>
-                            <InputField 
-                                itemType="default" name="maxPrice" type="number"
-                                value={filterItems.maxPrice ?? ""} placeholder="Please input Max price"
-                                onChange={handleFilterItemChange}
-                            />
-                            <p className="mb-2 mt-3">Min Price</p>
-                            <InputField 
-                                itemType="default" name="minPrice" type="number"
-                                value={filterItems.minPrice ?? ""} placeholder="Please input Min price"
-                                onChange={handleFilterItemChange}
-                            />
-                        </div>
-                    </FilterPanel>
+            
+            {/* Navigation section */}
+            <div className="flex flex-row items-center justify-between gap-4">
+                <Button
+                label="Filters"
+                icon={
+                    isShowSearchPanel ? (
+                    <FaSort className="text-white" />
+                    ) : (
+                    <FaAngleLeft className="text-white" />
+                    )
+                }
+                iconPosition="left"
+                type="primary"
+                onClick={() => setIsShowSearchPanel(!isShowSearchPanel)}
+                mobileHideLabel={true}
+                />
+                <p className="text-base font-bold text-[#8F95A0] md:block hidden">{filteredNfts.length} items</p>
+                <div className="flex-1">
+                <InputField
+                    itemType="default"
+                    type="text"
+                    name="search"
+                    icon={<FaSearch className="text-white/80" />}
+                    placeholder="Name or description"
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                />
+                </div>
+                <Dropdown
+                items={initialShowList}
+                isOpen={isShowList}
+                setIsOpen={setIsShowList}
+                ref={dropdownRef}
+                className="md:block hidden"
+                setSelectedItem={setSelListItem}
+                >
+                <Button
+                    label={selListItem}
+                    icon={<FaAngleDown className="text-white" />}
+                    iconPosition="right"
+                    type="primary"
+                    onClick={() => setIsShowList(!isShowList)}
+                    mobileHideLabel={true}
+                />
+                </Dropdown>
+            </div>
+            {/* Content section */}
+            <div className="grid grid-cols-10 gap-4 mt-4">
+                <div className={`${isShowSearchPanel ? "xl:col-span-2 md:col-span-3 md:block" : "md:hidden"} col-span-0 md:block hidden rounded-xl bg-[#0c0c0c] p-4`}>  
+                <Accordion label="Sale Type">
+                    <RadioGroup
+                    items={saleTypeRadios}
+                    onSelect={handleSaleTypeSelect}
+                    />
+                </Accordion>
+                <Accordion label="Price Range">
+                    <PriceRangeSearchBar />
+                </Accordion>
                 </div>
                 {/* price filter */}
 
-                <div className="flex flex-wrap gap-4 md:mt-8 mt-4 col-span-7">
-                    <InputField 
-                        itemType="default" type="text" 
-                        name="search" value={searchValue} 
-                        placeholder="Search by name or trait"
-                        onChange={handleSearchValueChange}
-                    />
-                    {
-                            nftList && nftList.map((nft: NFTProps, idx) => (
-                                <NFTViewBtn
-                                    handleBuyNft={handleBuyNft}
-                                    nftData={nft}
-                                    key={idx}
-                                    isProcessing={isProcessing}
-                                />
-                            ))
-                    }
+                <div className={`${isShowSearchPanel ? "xl:col-span-8 md:col-span-7" : "col-span-10"} col-span-10 rounded-xl`}>
+                    <div className="md:p-4 flex gap-4 flex-wrap">
+                        {
+                                filteredNfts && filteredNfts.map((nft: NFTProps, idx) => (
+                                    <NFTViewBtn
+                                        handleBuyNft={handleBuyNft}
+                                        nftData={nft}
+                                        key={idx}
+                                        isProcessing={isProcessing}
+                                    />
+                                ))
+                        }
+                    </div>
                 </div>
             </div>
+            {/* Mobile Search Panel */}
+            <MobilePanel
+                isOpen={!isShowSearchPanel}
+                onClose={() => setIsShowSearchPanel(false)}
+            >
+                <div className="grid px-4">
+                <p className="text-base font-bold">Sale Type</p>
+                    <RadioGroup
+                    items={saleTypeRadios}
+                    onSelect={handleSaleTypeSelect}
+                    />
+                <hr className="border-gray-600 py-2"/>
+                <p className="text-base font-bold">Price Range</p>
+                    <PriceRangeSearchBar />
+                </div>
+            </MobilePanel>
+            <MobilePanel
+                isOpen={isShowList}
+                onClose={() => setIsShowList(false)}
+            >
+                <div className="gap-4 flex flex-col w-full">
+                {
+                initialShowList.map((log, idx) => (
+                    <button 
+                    className="block p-2 border border-1 border-gray-600 rounded-2xl my-3" 
+                    onClick={() => hanldeSetShowListItem(log.label)}
+                    key={idx}
+                    >
+                    <p className="text-lg font-bold">{log.label}</p>
+                    </button>
+                ))
+                }
+                </div>
+            </MobilePanel>
         </div>
     )
 }

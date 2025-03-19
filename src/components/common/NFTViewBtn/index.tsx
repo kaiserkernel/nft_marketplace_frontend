@@ -54,14 +54,14 @@ export const NFTViewBtn = ({nftData, isProcessing, handleBuyNft}: NFTViewBtnProp
 
                     {/* NFT Info */}
                     <div className="w-[40vw] md:w-64 flex flex-col text-white items-start">
-                        <p className="md:text-sm text-xs font-light mt-3 ml-4">{nftMetaData.name}</p>
-                        <p className={`md:text-base text-sm font-medium mt-2 ml-4 ${price === 0 ? 'text-blue-600' : ''}`}>
+                        <p className="md:text-sm text-xs font-light mt-3 md:ml-4 ml-2">{nftMetaData.name}</p>
+                        <p className={`md:text-base sm:text-sm text-xs font-medium mt-2 md:ml-4 ml-2 ${price === 0 ? 'text-blue-600' : ''}`}>
                             {
                                 priceType === "auction" ? "Auction" : priceType === 'fixed' ? 
                                     `${price}ETH` : "Not for sale"
                             }
                         </p>
-                        <p className="md:text-base text-white text-sm font-medium mt-2 ml-4 mb-4">
+                        <p className="md:text-base text-white sm:text-sm text-xs font-medium mt-2 md:ml-4 ml-2 md:mb-4 mb-2">
                             {
                                 priceType === "auction" ? `Start Bid: ${startBid}ETH` :
                                     !!price ? `Last Price: ${lastPrice}` : ""
@@ -71,7 +71,7 @@ export const NFTViewBtn = ({nftData, isProcessing, handleBuyNft}: NFTViewBtnProp
 
                     {/* Button appears when hovering the entire component */}
                     <div 
-                        className={`absolute bottom-0 left-0 w-full h-[25] flex justify-center items-center bg-blue-600 text-white text-sm font-medium rounded-b-md opacity-0 ${(priceType === "not_for_sale") ? "" : "group-hover:opacity-100 group-hover:translate-y-0 group-hover:h-[2.5rem] transition-all duration-300"} rounded-b-xl grid grid-cols-9 ${isProcessing === tokenId ? "opacity-100" : ""}`} 
+                        className={`absolute bottom-0 left-0 w-full flex justify-center items-center bg-blue-600 text-white text-sm font-medium rounded-b-md opacity-0 ${(priceType === "not_for_sale") ? "" : "group-hover:opacity-100 group-hover:translate-y-0 md:group-hover:h-[2.5rem] group-hover:h-[2rem] transition-all duration-300"} rounded-b-xl grid grid-cols-9 ${isProcessing === tokenId ? "opacity-100" : ""}`} 
                         onClick={handleClickBuyNft}
                     >
                         {
@@ -83,7 +83,7 @@ export const NFTViewBtn = ({nftData, isProcessing, handleBuyNft}: NFTViewBtnProp
                                 <>
                                     {
                                         nftData.priceType === "auction" && (
-                                            <span className="col-span-8 font-bold">
+                                            <span className="col-span-8 font-bold md:text-base sm:text-sm text-xs">
                                                 Place Bid
                                             </span>        
                                         )
@@ -91,9 +91,9 @@ export const NFTViewBtn = ({nftData, isProcessing, handleBuyNft}: NFTViewBtnProp
                                     {
                                         nftData.priceType === "fixed" && (
                                             <>
-                                                <span className="col-span-6 mx-auto font-bold">Buy Now</span>
+                                                <span className="col-span-6 mx-auto font-bold md:text-base sm:text-sm text-xs">Buy Now</span>
                                                 <div className="h-6 border-r-2 border-white mx-2"></div>
-                                                <img className="col-span-2 h-6 w-6 mx-auto" src="/buy.webp" />
+                                                <img className="col-span-2 md:h-6 md:w-6 h-4 w-4 mx-auto" src="/buy.webp" />
                                             </>
                                         )
                                     }

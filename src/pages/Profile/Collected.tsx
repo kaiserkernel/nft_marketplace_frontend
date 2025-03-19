@@ -85,8 +85,11 @@ const Collected = () => {
 
   const handleApplyClick = useCallback(() => setApplyPriceFilter(true), []);
 
-  const handleShowlistClick = () => setIsShowList((prev) => !prev);
-
+  const hanldeSetShowListItem = (item: string) => {
+    setSelListItem(item);
+    setIsShowList(false);
+  };
+  
   const filteredNfts:NFTProps[] = useMemo(() => {
     let result:NFTProps[] = [...nftList];
     
@@ -111,7 +114,6 @@ const Collected = () => {
     }
 
     // Sorting
-    // Sorting
     const sortStrategies: Record<string, (a: NFTProps, b: NFTProps) => number> = {
       "Recently Created": (a, b) => (new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()),
       "Highest last sale": (a, b) => (b.lastPrice || 0) - (a.lastPrice || 0),
@@ -121,11 +123,6 @@ const Collected = () => {
 
     return selListItem in sortStrategies ? result.sort(sortStrategies[selListItem]) : result;
   }, [nftList, saleTypeRadios, applyPriceFilter, fromPrice, toPrice, searchInput, selListItem])
-  
-  const hanldeSetShowListItem = (item: string) => {
-    setSelListItem(item);
-    setIsShowList(false);
-  };
   
   const PriceRangeSearchBar:React.FC = () => (
     <div>
@@ -213,7 +210,7 @@ const Collected = () => {
             icon={<FaAngleDown className="text-white" />}
             iconPosition="right"
             type="primary"
-            onClick={handleShowlistClick}
+            onClick={() => setIsShowList(!isShowList)}
             mobileHideLabel={true}
           />
         </Dropdown>
@@ -253,7 +250,7 @@ const Collected = () => {
       </div>
       {/* Mobile Search Panel */}
       <MobilePanel
-        isOpen={isShowSearchPanel}
+        isOpen={!isShowSearchPanel}
         onClose={() => setIsShowSearchPanel(false)}
       >
         <div className="grid px-4">
