@@ -64,7 +64,7 @@ export const NFTViewBtn = ({nftData, isProcessing, handleBuyNft}: NFTViewBtnProp
                         <p className="md:text-base text-white sm:text-sm text-xs font-medium mt-2 md:ml-4 ml-2 md:mb-4 mb-2">
                             {
                                 priceType === "auction" ? `Start Bid: ${startBid}ETH` :
-                                    !!price ? `Last Price: ${lastPrice}` : ""
+                                    !!price ? `Last Price: ${lastPrice?.value} ${lastPrice?.currency}` : ""
                             }
                         </p>
                     </div>

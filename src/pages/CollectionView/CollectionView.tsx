@@ -128,7 +128,7 @@ const CollectionView = () => {
         // Sorting
         const sortStrategies: Record<string, (a: NFTProps, b: NFTProps) => number> = {
           "Recently Created": (a, b) => (new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()),
-          "Highest last sale": (a, b) => (b.lastPrice || 0) - (a.lastPrice || 0),
+          "Highest last sale": (a, b) => (b.lastPrice?.value || 0) - (a.lastPrice?.value || 0),
           "Price high to low": (a, b) => (b.price || 0) - (a.price || 0),
           "Price low to high": (a, b) => (a.price || 0) - (b.price || 0),
         };
@@ -152,7 +152,8 @@ const CollectionView = () => {
     const handleSavebuyNFTDB = async (
         owner: string,
         _tokenId: number,
-        _price: number
+        _price: number,
+        _currency: "BNB" | "ETH"
     ) => {
         try {
             const _buyData = { collection: collection._id, owner, tokenId: Number(_tokenId), price: Number(_price)};
@@ -162,7 +163,7 @@ const CollectionView = () => {
             setNftList((prevNFTList) => {
                 return prevNFTList.map((nft) => {
                     if (nft.tokenId === _tokenId) {
-                        return { ...nft, price: 0, lastPrice: _price }; // Update the price of the matched NFT
+                        return { ...nft, price: 0, lastPrice: { value: _price, currency: _currency } }; // Update the price of the matched NFT
                     }
                     return nft;
                 });

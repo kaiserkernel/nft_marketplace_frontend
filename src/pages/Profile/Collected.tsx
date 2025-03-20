@@ -116,7 +116,7 @@ const Collected = () => {
     // Sorting
     const sortStrategies: Record<string, (a: NFTProps, b: NFTProps) => number> = {
       "Recently Created": (a, b) => (new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()),
-      "Highest last sale": (a, b) => (b.lastPrice || 0) - (a.lastPrice || 0),
+      "Highest last sale": (a, b) => (b.lastPrice?.value || 0) - (a.lastPrice?.value || 0),
       "Price high to low": (a, b) => (b.price || 0) - (a.price || 0),
       "Price low to high": (a, b) => (a.price || 0) - (b.price || 0),
     };

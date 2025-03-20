@@ -20,7 +20,10 @@ export interface NFTProps {
     createdAt?: string,
     collection?: CollectionProps,
     price?: number,
-    lastPrice?: number,
+    lastPrice?: {
+        value: number,
+        currency: "BNB" | "ETH" | null
+    },
     priceType?: string,
     startBid?: number,
     bidHistory?: [{
@@ -33,6 +36,7 @@ export interface NFTProps {
     description?: string;
     image?: string;
     attributes?: Attribute[];
+    currency: "BNB" | "ETH" | null
 }
 
 interface Attribute {
