@@ -315,18 +315,24 @@ export const NFTSetPriceModal = ({ nftMetaData, nftProps, isOpen, onClose, setNF
                 <option value="auction">Auction</option>
                 <option value="not_for_sale">Not for sale</option>
               </select>
-              <label htmlFor="priceCurrency" className="block mb-2 text-md font-semibold text-white mt-2">
-                Select Price Currency
-              </label>
-              <select
-                id="priceCurreny"
-                value={priceCurrency}
-                onChange={(e) => setPriceCurrency(e.target.value as "BNB" | "ETH")}
-                className="border text-sm rounded-lg block w-full p-2.5 border-[#1F1F21] bg-[#1F1F21] text-white focus:ring-blue-500"
-              >
-                <option value="BNB">BNB</option>
-                <option value="ETH">ETH</option>
-              </select>
+              {
+                priceType !== "not_for_sale" && (
+                    <>
+                        <label htmlFor="priceCurrency" className="block mb-2 text-md font-semibold text-white mt-2">
+                            Select Price Currency
+                        </label>
+                        <select
+                            id="priceCurreny"
+                            value={priceCurrency}
+                            onChange={(e) => setPriceCurrency(e.target.value as "BNB" | "ETH")}
+                            className="border text-sm rounded-lg block w-full p-2.5 border-[#1F1F21] bg-[#1F1F21] text-white focus:ring-blue-500"
+                        >
+                            <option value="BNB">BNB</option>
+                            <option value="ETH">ETH</option>
+                        </select>
+                    </>
+                )
+              }
               <div className="mb-4">
               {
                 priceType === "fixed" ? (
