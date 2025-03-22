@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { FileObject } from "pinata";
+import { ethers } from "ethers";
 
-import CollectionLogo from "../../components/common/CollectionLogo"
+import CollectionLogo from "../../components/common/CollectionLogo";
 import InputField from "../../components/common/InputField";
 import TextArea from "../../components/common/TextArea";
 import { notify } from "../../components/common/Notify";
@@ -11,11 +12,15 @@ import { createCollectionDB } from "../../services/colllectionService";
 import { useContract } from "../../context/ContractContext";
 import { pinata } from "../../config/pinata";
 import { TransactionErrorhandle } from "../../utils/TransactionErrorhandle";
+import { ContractFactoryABI } from "../../contracts";
+
+// Environment variable for contract address (default to an empty string if not provided)
+const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS ?? "";
 
 interface CreateCollectionModalProps {
-  isOpen: boolean,
-  onClose: () => void,
-  setCreated: React.Dispatch<React.SetStateAction<boolean>>
+  isOpen: boolean;
+  onClose: () => void;
+  setCreated: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 interface CollectionData {
@@ -23,29 +28,56 @@ interface CollectionData {
   tokenSymbol: string;
 }
 
-const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onClose, setCreated}) => {
+const CreateCollectionModal: React.FC<CreateCollectionModalProps> = ({
+  isOpen,
+  onClose,
+  setCreated,
+}) => {
   const [LogoImage, setLogoImage] = useState<string | null>(null);
-  const [logoImageFile, setLogoImageFile] = useState<FileObject | null>(null);
+  // const [logoImageFile, setLogoImageFile] = useState<FileObject | null>(null);
+  const [logoImageFile, setLogoImageFile] = useState<File | null>(null);
   const [description, setDescription] = useState<string>("");
-  const [collectionData, setCollectionData] = useState<CollectionData>({ name: "", tokenSymbol: "" });
+  const [collectionData, setCollectionData] = useState<CollectionData>({
+    name: "",
+    tokenSymbol: "",
+  });
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-  const { contract, wsContract } = useContract();
+  const { signer, wsProvider } = useContract();
+
+  const contract = useMemo(() => {
+    return new ethers.Contract(CONTRACT_ADDRESS, ContractFactoryABI, signer);
+  }, [signer]);
+  // setContract(contractInstance);
+
+  // Set up WebSocket provider to listen for contract events
+  const wsContract = useMemo(() => {
+    return new ethers.Contract(
+      CONTRACT_ADDRESS,
+      ContractFactoryABI,
+      wsProvider
+    );
+  }, [wsProvider]);
 
   // Validate form before creating collection
   const validatorForm = (): boolean => {
-    if (!collectionData.name || !collectionData.tokenSymbol || !description || !LogoImage) {
+    if (
+      !collectionData.name ||
+      !collectionData.tokenSymbol ||
+      !description ||
+      !LogoImage
+    ) {
       notify("Please complete all fields", "warning");
       return false;
     }
     return true;
-  }
+  };
 
   // Handle input changes
   const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
-    const {name, value}  = evt.target;
-    setCollectionData(prev => ({ ...prev, [name]: value }));
-  }
+    const { name, value } = evt.target;
+    setCollectionData((prev) => ({ ...prev, [name]: value }));
+  };
 
   // Create collection logic
   const handleCreateCollection = async () => {
@@ -57,22 +89,26 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
       return;
     }
     if (!logoImageFile) {
-      notify("Please check logo image again", "error")
+      notify("Please check logo image again", "error");
       return;
     }
-      
+
     setIsProcessing(true);
 
     try {
       // upload images to IPFS
       const uploadLogoImage = await pinata.upload.public.file(logoImageFile);
-      const imageURL = await pinata.gateways.public.convert(uploadLogoImage.cid);
-  
-      // Create metadata JSON and upload to IPFS
+      const imageURL = await pinata.gateways.public.convert(
+        uploadLogoImage.cid
+      );
+
+      // // Create metadata JSON and upload to IPFS
       const metadata = { description, image: imageURL };
       const metadataUpload = await pinata.upload.public.json(metadata);
-      const metadataURI = await pinata.gateways.public.convert(metadataUpload.cid);
-      
+      const metadataURI = await pinata.gateways.public.convert(
+        metadataUpload.cid
+      );
+
       // Estimate the gas required for the transaction
       const gasEstimate = await contract.createCollection.estimateGas(
         collectionData.name,
@@ -80,22 +116,28 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
         metadataURI
       );
 
-      const tx = await contract.createCollection( collectionData.name, collectionData.tokenSymbol, metadataURI, { 
-        gasLimit: gasEstimate 
-      });
+      const tx = await contract.createCollection(
+        collectionData.name,
+        collectionData.tokenSymbol,
+        metadataURI,
+        {
+          gasLimit: gasEstimate,
+        }
+      );
 
       const log = await tx.wait();
-      
-      // log.logs[0].address -> contractAddress 
+
+      // log.logs[0].address -> contractAddress
       // log.from -> owner address
 
       notify("Collection created successfully", "success");
     } catch (error: any) {
+      console.log(error, "error");
       TransactionErrorhandle(error);
     } finally {
       setIsProcessing(false);
     }
-  }
+  };
 
   // Create collection on DB - off chain
   const handleCollectionCreated = async (
@@ -105,10 +147,16 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
     symbol: string,
     metadataURI: string
   ) => {
-    const _collectionData = { name, symbol, metadataURI, owner, contractAddress: collectionAddress };
+    const _collectionData = {
+      name,
+      symbol,
+      metadataURI,
+      owner,
+      contractAddress: collectionAddress,
+    };
     try {
       await createCollectionDB(_collectionData);
-      setCreated(prev => !prev);
+      setCreated((prev) => !prev);
       onClose();
     } catch (error) {
       notify("Failed to create collection", "error");
@@ -120,24 +168,42 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
     if (!isOpen) return;
     setLogoImage(null);
     setDescription("");
-    setCollectionData({ name: "", tokenSymbol: ""});
-  } , [isOpen])
+    setCollectionData({ name: "", tokenSymbol: "" });
+  }, [isOpen]);
 
   // Handle contract event for collection creation
   useEffect(() => {
     if (!wsContract) return;
-  
-    // Attach event listener to the contract
-    if (isOpen)
-      wsContract.on("CollectionCreated", handleCollectionCreated);
 
-    // Cleanup function to remove the listener when component unmounts or contract changes
-    if (!isOpen) {
-      return () => {
-        wsContract.off("CollectionCreated", handleCollectionCreated);
-      };
+    // Define the event listener function outside the effect to avoid unnecessary re-creation
+    const onCollectionCreated = (
+      owner: string,
+      collectionAddress: string,
+      name: string,
+      symbol: string,
+      metadataURI: string
+    ) => {
+      handleCollectionCreated(
+        owner,
+        collectionAddress,
+        name,
+        symbol,
+        metadataURI
+      );
+    };
+
+    // Attach event listener to the contract
+    if (isOpen) {
+      wsContract.on("CollectionCreated", onCollectionCreated);
     }
-  }, [wsContract, isOpen]);  
+
+    // Cleanup function to remove the listener when modal closes or wsContract changes
+    return () => {
+      if (wsContract) {
+        wsContract.off("CollectionCreated", onCollectionCreated);
+      }
+    };
+  }, [wsContract, isOpen]); // Make sure the effect is triggered when `wsContract` or `isOpen` changes
 
   return (
     <Modal
@@ -154,8 +220,8 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
           Your Collection’s Avatar
         </h3>
         <div className="mt-2">
-          <CollectionLogo 
-            logoImage={LogoImage} 
+          <CollectionLogo
+            logoImage={LogoImage}
             setLogoImage={setLogoImage}
             setLogoImageFile={setLogoImageFile}
           />
@@ -164,9 +230,7 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
 
       {/* Name */}
       <div className="mt-8">
-        <h3 className="text-white font-semibold text-md mb-2">
-          Display Name
-        </h3>
+        <h3 className="text-white font-semibold text-md mb-2">Display Name</h3>
         <InputField
           itemType="default"
           type="text"
@@ -189,9 +253,7 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
 
       {/* Token Symbol */}
       <div className="mt-4">
-        <h3 className="text-white font-semibold text-md mb-2">
-          Token symbol
-        </h3>
+        <h3 className="text-white font-semibold text-md mb-2">Token symbol</h3>
         <InputField
           itemType="default"
           type="text"
@@ -202,7 +264,6 @@ const CreateCollectionModal:React.FC<CreateCollectionModalProps> = ({isOpen, onC
           onChange={handleChange}
         />
       </div>
-      
     </Modal>
   );
 };

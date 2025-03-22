@@ -3,7 +3,6 @@ import "./App.css";
 import Container from "./components/layouts/Container";
 import { createAppKit } from "@reown/appkit/react";
 import { EthersAdapter } from "@reown/appkit-adapter-ethers";
-import { bsc, mainnet, bscTestnet } from "@reown/appkit/networks";
 
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
@@ -24,17 +23,17 @@ const metadata = {
 };
 
 // 3. Create an AppKit instance
-createAppKit({
-  adapters: [new EthersAdapter()],
-  networks: [bsc, mainnet, bscTestnet],
-  metadata,
-  projectId,
-  features: {
-    analytics: false,
-    socials: false,
-    email: false,
-  },
-});
+// createAppKit({
+//   adapters: [new EthersAdapter()],
+//   networks: [bsc, mainnet, bscTestnet],
+//   metadata,
+//   projectId,
+//   features: {
+//     analytics: false,
+//     socials: false,
+//     email: false,
+//   },
+// });
 
 function App() {
   return (

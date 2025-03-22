@@ -1,7 +1,14 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from "react";
-import { FaAngleDown, FaAngleLeft, FaSearch, FaSort, FaPlus } from "react-icons/fa";
+import {
+  FaAngleDown,
+  FaAngleLeft,
+  FaSearch,
+  FaSort,
+  FaPlus,
+} from "react-icons/fa";
 import { useNavigate } from "react-router";
-import { ThreeDot } from "react-loading-indicators"; 
+import { ThreeDot } from "react-loading-indicators";
+import { useAccount } from "wagmi";
 
 import Button from "../../components/common/Button";
 import InputField from "../../components/common/InputField";
@@ -13,7 +20,6 @@ import { MobilePanel } from "../../components/common/MobilePanel";
 import Dropdown from "../../components/common/Dropdown";
 
 import { NFTProps, CollectionProps, ItemGroupList } from "../../types";
-import { useContract } from "../../context/ContractContext";
 import { fetchOwnedNFT } from "../../services/nftService";
 
 // Constants
@@ -39,13 +45,15 @@ const Collected = () => {
   const [toPrice, setToPrice] = useState<number | null>(null);
   const [applyPriceFilter, setApplyPriceFilter] = useState<boolean>(false);
   const [isShowSearchPanel, setIsShowSearchPanel] = useState<boolean>(true);
-  const [saleTypeRadios, setSaleTypeRadios] = useState<ItemGroupList[]>(initialSaleType);
+  const [saleTypeRadios, setSaleTypeRadios] =
+    useState<ItemGroupList[]>(initialSaleType);
   const [nftList, setNFTList] = useState<NFTProps[]>([]);
   const [collectionList, setCollectionList] = useState<CollectionProps[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const navigate = useNavigate();
-  const { walletAddress } = useContract();
+  const { address } = useAccount();
+  const walletAddress = address as string;
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -56,30 +64,33 @@ const Collected = () => {
       try {
         const { nfts } = await fetchOwnedNFT(walletAddress);
         setNFTList(nfts);
-  
+
         // Use a Map to store unique collections by their _id
         const collectionMap = new Map();
-  
+
         // Loop through the NFTs and extract the collection
         nfts.forEach((nft: NFTProps) => {
-            collectionMap.set(nft?.collection?._id, nft.collection); // _id as the key
+          collectionMap.set(nft?.collection?._id, nft.collection); // _id as the key
         });
-  
+
         // Convert Map values to an array of unique collections
         const uniqueCollections = Array.from(collectionMap.values());
         setCollectionList(uniqueCollections);
       } catch (error) {
-        console.log(error, "initial error")
+        console.log(error, "initial error");
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     fetchInitialData();
-  }, [walletAddress])
+  }, [walletAddress]);
 
   const handleSaleTypeSelect = useCallback(
-    (index: number) => setSaleTypeRadios((prev) => prev.map((item, idx) => ({ ...item, checked: idx === index }))),
+    (index: number) =>
+      setSaleTypeRadios((prev) =>
+        prev.map((item, idx) => ({ ...item, checked: idx === index }))
+      ),
     []
   );
 
@@ -89,42 +100,61 @@ const Collected = () => {
     setSelListItem(item);
     setIsShowList(false);
   };
-  
-  const filteredNfts:NFTProps[] = useMemo(() => {
-    let result:NFTProps[] = [...nftList];
-    
+
+  const filteredNfts: NFTProps[] = useMemo(() => {
+    let result: NFTProps[] = [...nftList];
+
     // Sale Type Filter
-    const selectedType = saleTypeRadios.find(log => log.checked);
+    const selectedType = saleTypeRadios.find((log) => log.checked);
     if (selectedType && selectedType.value !== "all") {
-      result = result.filter(log => log.priceType === selectedType.value);
+      result = result.filter((log) => log.priceType === selectedType.value);
     }
-    
+
     // Price Filter
     if (applyPriceFilter) {
       result = result.filter((nft) => {
-        if (fromPrice !== null && (!nft.price || nft.price < fromPrice)) return false;
-        if (toPrice !== null && (!nft.price || nft.price > toPrice)) return false;
+        if (fromPrice !== null && (!nft.price || nft.price < fromPrice))
+          return false;
+        if (toPrice !== null && (!nft.price || nft.price > toPrice))
+          return false;
         return true;
       });
     }
-    
+
     // Search Filter
     if (searchInput) {
-      result = result.filter((nft) => nft.name?.includes(searchInput) || nft.description?.includes(searchInput));
+      result = result.filter(
+        (nft) =>
+          nft.name?.includes(searchInput) ||
+          nft.description?.includes(searchInput)
+      );
     }
 
     // Sorting
-    const sortStrategies: Record<string, (a: NFTProps, b: NFTProps) => number> = {
-      "Recently Created": (a, b) => (new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()),
-      "Highest last sale": (a, b) => (b.lastPrice || 0) - (a.lastPrice || 0),
-      "Price high to low": (a, b) => (b.price || 0) - (a.price || 0),
-      "Price low to high": (a, b) => (a.price || 0) - (b.price || 0),
-    };
-    
-    return selListItem in sortStrategies ? result.sort(sortStrategies[selListItem]) : result;
-  }, [nftList, saleTypeRadios, applyPriceFilter, fromPrice, toPrice, searchInput, selListItem])
-  
-  const PriceRangeSearchBar:React.FC = () => (
+    const sortStrategies: Record<string, (a: NFTProps, b: NFTProps) => number> =
+      {
+        "Recently Created": (a, b) =>
+          new Date(b.createdAt || 0).getTime() -
+          new Date(a.createdAt || 0).getTime(),
+        "Highest last sale": (a, b) => (b.lastPrice || 0) - (a.lastPrice || 0),
+        "Price high to low": (a, b) => (b.price || 0) - (a.price || 0),
+        "Price low to high": (a, b) => (a.price || 0) - (b.price || 0),
+      };
+
+    return selListItem in sortStrategies
+      ? result.sort(sortStrategies[selListItem])
+      : result;
+  }, [
+    nftList,
+    saleTypeRadios,
+    applyPriceFilter,
+    fromPrice,
+    toPrice,
+    searchInput,
+    selListItem,
+  ]);
+
+  const PriceRangeSearchBar: React.FC = () => (
     <div>
       <div className="w-full flex flex-row items-center justify-between gap-4 mt-2">
         <InputField
@@ -165,7 +195,7 @@ const Collected = () => {
         />
       </div>
     </div>
-  )
+  );
 
   return (
     <div className="w-full py-4">
@@ -185,7 +215,9 @@ const Collected = () => {
           onClick={() => setIsShowSearchPanel(!isShowSearchPanel)}
           mobileHideLabel={true}
         />
-        <p className="text-base font-bold text-[#8F95A0] md:block hidden">{filteredNfts.length} items</p>
+        <p className="text-base font-bold text-[#8F95A0] md:block hidden">
+          {filteredNfts.length} items
+        </p>
         <div className="flex-1">
           <InputField
             itemType="default"
@@ -214,18 +246,24 @@ const Collected = () => {
             mobileHideLabel={true}
           />
         </Dropdown>
-        <Button 
-          label="Add NFT" 
-          type="blue" 
-          onClick={() => navigate("/create-in-collection")} 
+        <Button
+          label="Add NFT"
+          type="blue"
+          onClick={() => navigate("/create-in-collection")}
           iconPosition="right"
-          icon={<FaPlus className="text-white"/>}
+          icon={<FaPlus className="text-white" />}
           mobileHideLabel={true}
         />
       </div>
       {/* Content section */}
       <div className="grid grid-cols-10 gap-4 mt-4">
-        <div className={`${isShowSearchPanel ? "xl:col-span-2 md:col-span-3 md:block" : "md:hidden"} col-span-0 md:block hidden rounded-xl bg-[#0c0c0c] p-4`}>  
+        <div
+          className={`${
+            isShowSearchPanel
+              ? "xl:col-span-2 md:col-span-3 md:block"
+              : "md:hidden"
+          } col-span-0 md:block hidden rounded-xl bg-[#0c0c0c] p-4`}
+        >
           <Accordian label="Sale Type">
             <RadioGroup
               items={saleTypeRadios}
@@ -236,15 +274,23 @@ const Collected = () => {
             <PriceRangeSearchBar />
           </Accordian>
         </div>
-        <div className={`${isShowSearchPanel ? "xl:col-span-8 md:col-span-7" : "col-span-10"} col-span-10 rounded-xl`}>
+        <div
+          className={`${
+            isShowSearchPanel ? "xl:col-span-8 md:col-span-7" : "col-span-10"
+          } col-span-10 rounded-xl`}
+        >
           <div className="p-4 flex gap-4 flex-wrap">
-            {
-              isLoading ? <ThreeDot color="#fff" size="large"/> : (
-                filteredNfts.map((log: NFTProps, idx) => (
-                  <NFTCollectedBtn key={idx} NFTProp={log} setNFTList={setNFTList}/>
-                ))
-              )
-            }
+            {isLoading ? (
+              <ThreeDot color="#fff" size="large" />
+            ) : (
+              filteredNfts.map((log: NFTProps, idx) => (
+                <NFTCollectedBtn
+                  key={idx}
+                  NFTProp={log}
+                  setNFTList={setNFTList}
+                />
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -255,31 +301,23 @@ const Collected = () => {
       >
         <div className="grid px-4">
           <p className="text-base font-bold">Sale Type</p>
-            <RadioGroup
-              items={saleTypeRadios}
-              onSelect={handleSaleTypeSelect}
-            />
-          <hr className="border-gray-600 py-2"/>
+          <RadioGroup items={saleTypeRadios} onSelect={handleSaleTypeSelect} />
+          <hr className="border-gray-600 py-2" />
           <p className="text-base font-bold">Price Range</p>
-            <PriceRangeSearchBar />
+          <PriceRangeSearchBar />
         </div>
       </MobilePanel>
-      <MobilePanel
-        isOpen={isShowList}
-        onClose={() => setIsShowList(false)}
-      >
+      <MobilePanel isOpen={isShowList} onClose={() => setIsShowList(false)}>
         <div className="gap-4 flex flex-col w-full">
-        {
-          initialShowList.map((log, idx) => (
-            <button 
-              className="block p-2 border border-1 border-gray-600 rounded-2xl my-3" 
+          {initialShowList.map((log, idx) => (
+            <button
+              className="block p-2 border border-1 border-gray-600 rounded-2xl my-3"
               onClick={() => hanldeSetShowListItem(log.label)}
               key={idx}
             >
               <p className="text-lg font-bold">{log.label}</p>
             </button>
-          ))
-        }
+          ))}
         </div>
       </MobilePanel>
     </div>

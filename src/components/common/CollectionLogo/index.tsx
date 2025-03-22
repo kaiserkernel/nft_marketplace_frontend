@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { FaCloudUploadAlt } from "react-icons/fa";
-import { FileObject } from "pinata";
+// import { FileObject } from "pinata";
 
 interface CollectionLogoProps {
   logoImage: string | null,
   setLogoImage: React.Dispatch<React.SetStateAction<string | null>>;
-  setLogoImageFile: React.Dispatch<React.SetStateAction<FileObject | null>>;
+  // setLogoImageFile: React.Dispatch<React.SetStateAction<FileObject | null>>;
+  setLogoImageFile: React.Dispatch<React.SetStateAction<File | null>>;
 }
 
 const CollectionAvatar: React.FC<CollectionLogoProps> = ({ logoImage, setLogoImage, setLogoImageFile }) => {

@@ -9,6 +9,7 @@ import {
   FaTwitter,
   FaYoutube,
 } from "react-icons/fa";
+import { useAccount } from "wagmi";
 
 import Banner from "../../components/common/Banner";
 import Button from "../../components/common/Button";
@@ -18,7 +19,6 @@ import InputField from "../../components/common/InputField";
 import TextArea from "../../components/common/TextArea";
 import { notify } from "../../components/common/Notify";
 
-import { useContract } from "../../context/ContractContext";
 import { FormatAddress } from "../../utils/FormatAddress";
 
 import Collected from "./Collected";
@@ -31,23 +31,24 @@ const tabItems = [
 ];
 
 interface SocialLinks {
-  twitter: string,
-  tiktok: string,
-  youtube: string,
-  instagram: string,
-  telegram: string,
-  discord: string
+  twitter: string;
+  tiktok: string;
+  youtube: string;
+  instagram: string;
+  telegram: string;
+  discord: string;
 }
 
 interface UserInfo {
-  name: string,
-  description: string,
-  avatar: string
+  name: string;
+  description: string;
+  avatar: string;
 }
 
 const Profile = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const { walletAddress } = useContract();
+  const { address } = useAccount();
+  const walletAddress = address as string;
   const [displayName, setDisplayName] = useState<string>(
     FormatAddress(walletAddress)
   );
@@ -58,20 +59,20 @@ const Profile = () => {
     youtube: "",
     instagram: "",
     telegram: "",
-    discord: ""
+    discord: "",
   });
   const [userInfo, setUserInfo] = useState<UserInfo>({
     name: "",
     description: "",
-    avatar: ""
-  })
+    avatar: "",
+  });
   const [userInfoSocialLinks, setUserInfoSocialLinks] = useState<SocialLinks>({
     twitter: "",
     tiktok: "",
     youtube: "",
     instagram: "",
     telegram: "",
-    discord: ""
+    discord: "",
   });
 
   const [bannerImage, setBannerImage] = useState<string | null>(null);
@@ -79,17 +80,17 @@ const Profile = () => {
 
   const [avatarImage, setAvatarImage] = useState<string | null>(null);
   const [avatarImageFile, setAvatarImageFile] = useState<File | null>(null);
-  
+
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleEditClick = () => {
     setIsOpen(true);
   };
 
-  const handleChangeLinks = (evt:ChangeEvent<HTMLInputElement>) => {
+  const handleChangeLinks = (evt: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = evt.target;
-    setLinksInfo(prev => ({ ...prev, [name]: value }));
-  }
+    setLinksInfo((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleProfileSave = async () => {
     setIsLoading(true);
@@ -98,35 +99,34 @@ const Profile = () => {
       notify("Please check out wallet connection", "warning");
       return;
     }
-    
+
     try {
       const formData = new FormData();
       formData.append("address", walletAddress);
       formData.append("name", displayName);
       formData.append("description", displayDescription);
-      formData.append("socialLinks",  JSON.stringify(linksInfo));
+      formData.append("socialLinks", JSON.stringify(linksInfo));
 
-      if (avatarImageFile)
-        formData.append("avatar", avatarImageFile); // File upload
+      if (avatarImageFile) formData.append("avatar", avatarImageFile); // File upload
 
       const { data } = await register(formData);
       const { name, description, avatar, socialLinks } = data;
       // save user info
-      setUserInfo(prev => ({
+      setUserInfo((prev) => ({
         ...prev,
         name,
         description,
-        avatar
-      }))
-      setUserInfoSocialLinks(prev => ({
+        avatar,
+      }));
+      setUserInfoSocialLinks((prev) => ({
         ...prev,
-        ...socialLinks
-      }))
-      
-      notify("Profile saved successfully", "success")
+        ...socialLinks,
+      }));
+
+      notify("Profile saved successfully", "success");
       setIsOpen(false);
     } catch (error) {
-      console.log(error, "register error")
+      console.log(error, "register error");
     } finally {
       setIsLoading(false);
     }
@@ -138,27 +138,27 @@ const Profile = () => {
       try {
         const fetchInitialUserInfo = async () => {
           const { data } = await fetchUserInfo({ address: walletAddress });
-          
+
           if (data) {
             const { name, description, avatar, socialLinks } = data;
-            setUserInfo(prev => ({
+            setUserInfo((prev) => ({
               ...prev,
               name,
               description,
-              avatar
-            }))
-            setUserInfoSocialLinks(prev => ({
+              avatar,
+            }));
+            setUserInfoSocialLinks((prev) => ({
               ...prev,
-              ...socialLinks
-            }))
+              ...socialLinks,
+            }));
           }
-        }
+        };
         fetchInitialUserInfo();
       } catch (error) {
-        console.log(error, "error")
+        console.log(error, "error");
       }
     }
-  }, [walletAddress])
+  }, [walletAddress]);
 
   useEffect(() => {
     if (isOpen) {
@@ -172,13 +172,18 @@ const Profile = () => {
         setAvatarImage(_imageUrl);
       }
     }
-  }, [isOpen, userInfo, userInfoSocialLinks])
+  }, [isOpen, userInfo, userInfoSocialLinks]);
 
   return (
     <>
       {/* Banner section */}
       <div className="w-full">
-        <Banner setImageFile={setBannerImageFile} image={bannerImage} setImage={setBannerImage} className="h-[40vh]" />
+        <Banner
+          setImageFile={setBannerImageFile}
+          image={bannerImage}
+          setImage={setBannerImage}
+          className="h-[40vh]"
+        />
       </div>
       {/* Profile detail section */}
       <div className="w-full md:px-8 py-14 sm:px-3 px-2">
@@ -225,7 +230,12 @@ const Profile = () => {
         btnClick={handleProfileSave}
         btnProcessing={isLoading}
       >
-        <Banner setImageFile={setAvatarImageFile} image={avatarImage} setImage={setAvatarImage} className="h-[30vh]" />
+        <Banner
+          setImageFile={setAvatarImageFile}
+          image={avatarImage}
+          setImage={setAvatarImage}
+          className="h-[30vh]"
+        />
         <div className="w-full">
           <h3 className="text-white font-semibold text-md mt-8">
             Display Name

@@ -1,148 +1,88 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { ethers, BrowserProvider, formatEther } from "ethers";
+import { ethers, BrowserProvider } from "ethers";
 import { useNavigate } from "react-router";
-import {
-  type Provider,
-  useAppKitAccount,
-  useAppKitProvider,
-} from "@reown/appkit/react";
+import { useAccount } from "wagmi";
 
 import { notify } from "../components/common/Notify";
-import { ContractFactoryABI } from "../contracts/index"; // Make sure the path is correct
+import { useEthersSigner } from "../utils/GetSigner";
 
-// Environment variable for contract address (default to an empty string if not provided)
-const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS ?? "";
+// WebSocket URL from environment variables
 const WS_RPC_URL = process.env.REACT_APP_TESTNET_WS_RPC_URL ?? "";
 
-// Define types for context to ensure type safety
+// Define context types
 interface ContractContextType {
-  contract: ethers.Contract | null; // Contract instance or null if not yet initialized
-  wsContract: ethers.Contract | null; // Provider instance or null if not yet initialized
-  walletAddress: string | null;
-  walletBalance: string  | null;
-  walletAvatar: string | null;
-  isWalletConnected: boolean;
-  setContract: React.Dispatch<React.SetStateAction<ethers.Contract | null>>;
-  setWsContract: React.Dispatch<React.SetStateAction<ethers.Contract | null>>;
-  setWalletAddress: React.Dispatch<React.SetStateAction<string | null>>;
-  setWalletBalance: React.Dispatch<React.SetStateAction<string | null>>;
-  setWalletAvatar: React.Dispatch<React.SetStateAction<string | null>>;
-  setIsWalletConnected: React.Dispatch<React.SetStateAction<boolean>>;
-  signer: ethers.JsonRpcSigner | null,
-  wsProvider: ethers.WebSocketProvider | null
+  signer: ethers.JsonRpcSigner | null;
+  wsProvider: ethers.WebSocketProvider | null;
 }
 
-// Create context with default values
+// Create the contract context
 const ContractContext = createContext<ContractContextType>({
-  contract: null,
-  wsContract: null,
-  walletAddress: null,
-  walletBalance: null,
-  walletAvatar: null,
-  isWalletConnected: false,
-  setContract: () => {},
-  setWsContract: () => {},
-  setWalletAddress: () => {},
-  setWalletBalance: () => {},
-  setWalletAvatar: () => {},
-  setIsWalletConnected: () => {},
   signer: null,
-  wsProvider: null
+  wsProvider: null,
 });
 
-// Context Provider Component that manages the contract and provider state
-export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [contract, setContract] = useState<ethers.Contract | null>(null);
-  const [wsContract, setWsContract] = useState<ethers.Contract | null>(null);
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  const [walletBalance, setWalletBalance] = useState<string | null>(null);
-  const [walletAvatar, setWalletAvatar] = useState<string | null>(null);
-  const [isWalletConnected, setIsWalletConnected] = useState<boolean>(false);
+// Context Provider Component
+export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [signer, setSigner] = useState<ethers.JsonRpcSigner | null>(null);
-  const [wsProvider, setWsProvider] = useState<ethers.WebSocketProvider | null>(null);
+  const [wsProvider, setWsProvider] = useState<ethers.WebSocketProvider | null>(
+    null
+  );
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(true); // State to track loading
-  const navigator = useNavigate();
+  const { address, isConnected } = useAccount();
+  const _signer = useEthersSigner();
 
-  const { address, isConnected } = useAppKitAccount();
-  const { walletProvider } = useAppKitProvider<Provider>("eip155");
+  useEffect(() => {
+    let _wsProvider: ethers.WebSocketProvider | null = null;
 
-  const getAllUserInfo = async (provider: BrowserProvider, address: string) => {
-    try {
-      // Fetch wallet balance
-      const balance = await provider.getBalance(address);
-      setWalletBalance(formatEther(balance)); // Convert balance from Wei to ETH
-  
-      // Attempt to fetch the wallet avatar (if supported)
-        if (provider.getAvatar) {
-          const avatar = await provider.getAvatar(address);
-          setWalletAvatar(avatar);
-        } else {
-          console.log("Avatar fetching is not supported by this provider.");
-          setWalletAvatar(null);
-        }
-    } catch (error) {
-      console.log("Error fetching wallet info:", error);
-    }
-  };
-
-  useEffect(() => {   
-    const _initContract = async (_address: string) => {
+    const initContract = async (_address: string) => {
       try {
-        setLoading(true); // Set loading to true before initializing
-  
-        // Convert AppKit's provider to a BrowserProvider (Ethers v6 requirement)
-        const browserProvider = new BrowserProvider(walletProvider);
-        const _signer = await browserProvider.getSigner(); // Get signer for transactions
-        setSigner(_signer);
-  
-        // Fetch wallet balance and avatar
-        await getAllUserInfo(browserProvider, _address);
-  
-        // Initialize the contract with the signer and ABI, then set it in state
-        const contractInstance = new ethers.Contract(CONTRACT_ADDRESS, ContractFactoryABI, _signer);
-        setContract(contractInstance);
-  
-        // Set up WebSocket provider to listen for contract events
-        const _wsProvider = new ethers.WebSocketProvider(WS_RPC_URL);
-        setWsProvider(_wsProvider);
-        const wsContractInstance = new ethers.Contract(CONTRACT_ADDRESS, ContractFactoryABI, _wsProvider);
-        setWsContract(wsContractInstance);
-        
-        setIsWalletConnected(true);
-        setWalletAddress(_address);
-      }
-      catch (error) {
+        setLoading(true);
+
+        if (!isConnected) {
+          console.warn("Wallet is not connected");
+          return;
+        }
+
+        // Setup WebSocket provider
+        if (WS_RPC_URL) {
+          _wsProvider = new ethers.WebSocketProvider(WS_RPC_URL);
+          setWsProvider(_wsProvider);
+        } else {
+          notify("WebSocket RPC URL is missing", "error");
+        }
+
+        if (_signer) {
+          setSigner(_signer);
+        }
+      } catch (error) {
+        console.error("Error initializing contract:", error);
         notify("Error initializing contract", "error");
-        console.log(error);
+      } finally {
+        setLoading(false);
       }
-      finally {
-        setLoading(false); // Mark as loaded
-      }
-    }
+    };
 
     if (isConnected && address) {
-      _initContract(address);
-    } else if (!loading) {  // Only reset state when loading is false
-      // initialize state
-      setContract(null);
-      setWsContract(null);
-      setWalletAddress(null);
-      setWalletAvatar(null);
-      setWalletBalance(null);
-      setIsWalletConnected(false);
-
-      // navigate home page
-      navigator("/");
+      initContract(address);
+    } else if (!loading) {
+      navigate("/");
     }
-  }, [isConnected, address, walletProvider])
+
+    return () => {
+      if (_wsProvider) _wsProvider.destroy();
+    };
+  }, [isConnected, address, navigate, _signer]);
 
   return (
-    <ContractContext.Provider value={{ contract, wsContract, walletAddress, walletBalance, walletAvatar, isWalletConnected, setContract, setWsContract, setWalletAddress, setWalletBalance, setWalletAvatar, setIsWalletConnected, signer, wsProvider }}>
+    <ContractContext.Provider value={{ signer, wsProvider }}>
       {children}
     </ContractContext.Provider>
   );
 };
 
-// Custom Hook for using contract
+// Custom Hook to use contract
 export const useContract = () => useContext(ContractContext);

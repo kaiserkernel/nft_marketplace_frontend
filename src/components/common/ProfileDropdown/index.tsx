@@ -15,13 +15,14 @@ import {
 import { Link } from "react-router-dom";
 import ConnectWallet from "../ConnectWallet";
 import { useAppKit } from "@reown/appkit/react";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useDisconnect, useAccount } from "wagmi";
 
 import Avatar from "../Avatar";
 import type { DropdownItemType } from "../Dropdown";
 import IconButton from "../IconButton";
 import Button from "../Button";
 
-import { useContract } from "../../../context/ContractContext";
 import { FormatAddress } from "../../../utils/FormatAddress";
 
 const dropdownItems: DropdownItemType[] = [
@@ -42,8 +43,10 @@ const ProfileDropdown = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { isWalletConnected, walletAddress, walletBalance } = useContract();
-  const { open } = useAppKit();
+  const { address, isConnected } = useAccount();
+  const walletAddress = address as string;
+  // const { open } = useAppKit();
+  const { disconnect } = useDisconnect();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -58,16 +61,33 @@ const ProfileDropdown = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (!isConnected) setIsOpen(false);
+  }, [isConnected]);
+
   return (
     <div className="relative inline-block" ref={dropdownRef}>
-      {!isWalletConnected ? (
-        <ConnectWallet />
+      {/* {!isConnected ? (
+        // <ConnectWallet />
+        <ConnectButton label="Connect Wallet" />
       ) : (
         <IconButton
           icon={<FaUser className="text-white" />}
           onClick={() => setIsOpen(!isOpen)}
         />
-      )}
+      )} */}
+      <div className="flex flex-wrap">
+        <p className="text-white">{isConnected}</p>
+        <ConnectButton label="Connect Wallet" />
+        {isConnected && (
+          <div className="ps-3">
+            <IconButton
+              icon={<FaUser className="text-white" />}
+              onClick={() => setIsOpen(!isOpen)}
+            />
+          </div>
+        )}
+      </div>
 
       <AnimatePresence>
         {isOpen && (
@@ -80,7 +100,7 @@ const ProfileDropdown = () => {
             }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="absolute right-0 mt-2 xl:w-[33vw] lg:w-[40vw] md:w-[55vw] sm:w-[60vw] w-[80vw] z-50 bg-[#111111] border border-[#444444] rounded-3xl overflow-hidden shadow-lg"
+            className="absolute right-0 mt-2 2xl:w-[20vw] xl:w-[33vw] lg:w-[40vw] md:w-[55vw] sm:w-[60vw] w-[80vw] z-50 bg-[#111111] border border-[#444444] rounded-3xl overflow-hidden shadow-lg"
           >
             <motion.ul
               layout
@@ -102,7 +122,7 @@ const ProfileDropdown = () => {
                 </Link>
               </li>
 
-              <li className="border border-[#444444] rounded-lg py-2 px-4 mt-4">
+              {/* <li className="border border-[#444444] rounded-lg py-2 px-4 mt-4">
                 <span className="text-sm text-slate-500 font-semibold">
                   BALANCE
                 </span>
@@ -112,7 +132,7 @@ const ProfileDropdown = () => {
                     {walletBalance}
                   </span>
                 </div>
-              </li>
+              </li> */}
 
               {/* Create Button with Animated Dropdown */}
               <li className="py-2 px-4 mt-4 cursor-pointer hover:bg-[#1c1c1c] transition-all rounded-lg">
@@ -169,7 +189,8 @@ const ProfileDropdown = () => {
               <li className="py-2 px-4 mt-1 cursor-pointer hover:bg-[#1c1c1c] transition rounded-lg">
                 <button
                   className="flex flex-row items-center gap-4 w-full"
-                  onClick={() => open({ view: "Account" })}
+                  // onClick={() => open({ view: "Account" })}
+                  onClick={() => disconnect()}
                 >
                   <FaSignOutAlt className="text-white w-6 h-6" />
                   <span className="text-white text-md">Logout</span>
