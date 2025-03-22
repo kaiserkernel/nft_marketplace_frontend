@@ -63,7 +63,7 @@ const Dashboard: FC = () => {
           <div className="flex justify-center content-center">
             <ThreeDot color="#ffffff" size="large" />
           </div>
-        ) : collectionList && collectionList.length > 0 ? (
+        ) : collectionList && collectionList?.length > 0 ? (
           <ManipulateSlider itemList={renderCollectionCards(collectionList)} />
         ) : (
           <h1 className="text-white md:text-xl text-lg text-center md:font-semibold font-bold">
@@ -81,7 +81,7 @@ const Dashboard: FC = () => {
           <div className="flex justify-center content-center">
             <ThreeDot color="#ffffff" size="large" />
           </div>
-        ) : topAuctionList && topAuctionList.length > 0 ? (
+        ) : topAuctionList && topAuctionList?.length > 0 ? (
           <div className="mt-8">
             <ManipulateSlider itemList={renderNFTCards(topAuctionList)} />
           </div>

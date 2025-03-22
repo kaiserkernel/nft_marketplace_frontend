@@ -213,50 +213,6 @@ const CreateInCollection = () => {
     }
   };
 
-  const InitialCollectionInfo: React.FC<{
-    displayName: string;
-    setDisplayName: (value: string) => void;
-    displayDescription: string;
-    setDisplayDescription: (value: string) => void;
-  }> = ({
-    displayName,
-    setDisplayName,
-    displayDescription,
-    setDisplayDescription,
-  }) => (
-    <>
-      <h2 className="text-white lg:text-2xl text-xl font-semibold">
-        Create an NFT in a Collection
-      </h2>
-
-      {/* Display Name */}
-      <div className="mt-4">
-        <h3 className="text-white font-semibold text-base md:text-lg mb-2">
-          Display Name
-        </h3>
-        <InputField
-          itemType="default"
-          type="text"
-          name="displayName"
-          placeholder="Name your NFT"
-          bordered
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-        />
-      </div>
-
-      {/* Description */}
-      <div className="mt-4">
-        <TextArea
-          label="Description"
-          placeholder="Describe the idea behind your NFT and explain how it stands out from the rest."
-          value={displayDescription}
-          onChange={(_value) => setDisplayDescription(_value)}
-        />
-      </div>
-    </>
-  );
-
   // Fetch and setup contract instances when the collection address is confirmed
   useEffect(() => {
     if (!confirmedCollectionAddress) return;
