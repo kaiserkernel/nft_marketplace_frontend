@@ -5,6 +5,7 @@ import { useAccount } from "wagmi";
 
 import { notify } from "../components/common/Notify";
 import { useEthersSigner } from "../utils/GetSigner";
+import { ThreeDot } from "react-loading-indicators";
 
 // WebSocket URL from environment variables
 const WS_RPC_URL = process.env.REACT_APP_TESTNET_WS_RPC_URL ?? "";
@@ -76,6 +77,10 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({
       if (_wsProvider) _wsProvider.destroy();
     };
   }, [isConnected, address, navigate, _signer]);
+
+  if (loading) {
+    return <ThreeDot size="large" color="#fff" />;
+  }
 
   return (
     <ContractContext.Provider value={{ signer, wsProvider }}>

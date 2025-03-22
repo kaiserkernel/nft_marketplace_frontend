@@ -70,7 +70,6 @@ const CollectionView = () => {
       const { data } = await fetchNFTListOfCollection({
         collection: collection._id,
       });
-      console.log(data, "data");
       setNftList(data);
     } catch (error) {
       notify("Fetch nfts of collection occur error", "error");
@@ -97,6 +96,7 @@ const CollectionView = () => {
     );
     setCollectionContract(contractInstance);
 
+    // const _wsProvider = new ethers.WebSocketProvider(WS_RPC_URL);
     const _wsContractInstance = new ethers.Contract(
       walletAddress,
       ContractCollectionABI,
@@ -109,6 +109,10 @@ const CollectionView = () => {
       }
       return _wsContractInstance;
     });
+
+    return () => {
+      _wsContractInstance.off("NFTSold", handleSavebuyNFTDB);
+    };
   }, [walletAddress, wsProvider, signer, ContractCollectionABI]);
 
   useEffect(() => {
@@ -121,10 +125,6 @@ const CollectionView = () => {
     } catch (error) {
       console.log(error, "listener error");
     }
-
-    return () => {
-      wsCollectionContract.off("NFTSold", handleSavebuyNFTDB);
-    };
   }, [wsCollectionContract]);
 
   const filteredNfts: NFTProps[] = useMemo(() => {
@@ -156,7 +156,6 @@ const CollectionView = () => {
       );
     }
 
-    console.log(result, "resl");
     // Sorting
     const sortStrategies: Record<string, (a: NFTProps, b: NFTProps) => number> =
       {
