@@ -267,6 +267,10 @@ const CreateInCollection = () => {
 
     // Attach event listener to the contract
     wsCollectionContract.on("NFTMinted", handleMintNFTDB);
+
+    return () => {
+      wsCollectionContract.off("NFTMinted", handleMintNFTDB);
+    };
   }, [wsCollectionContract]);
 
   return (

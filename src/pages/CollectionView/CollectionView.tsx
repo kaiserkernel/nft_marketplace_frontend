@@ -102,15 +102,25 @@ const CollectionView = () => {
       ContractCollectionABI,
       wsProvider
     );
-    setWsCollectionContract(_wsContractInstance);
+    setWsCollectionContract((prev) => {
+      if (prev) {
+        // whenever change confirmcollectionaddress remove ws event listener
+        prev.off("NFTSold", handleSavebuyNFTDB);
+      }
+      return _wsContractInstance;
+    });
   }, [walletAddress, wsProvider, signer, ContractCollectionABI]);
 
   useEffect(() => {
     if (!wsCollectionContract) return;
 
-    // Attach event listener to the contract
-    console.log("listener ready");
-    wsCollectionContract.on("NFTSold", handleSavebuyNFTDB);
+    try {
+      // Attach event listener to the contract
+      console.log("listener ready");
+      wsCollectionContract.on("NFTSold", handleSavebuyNFTDB);
+    } catch (error) {
+      console.log(error, "listener error");
+    }
 
     return () => {
       wsCollectionContract.off("NFTSold", handleSavebuyNFTDB);
