@@ -110,10 +110,10 @@ const CollectionView = () => {
 
     // Attach event listener to the contract
     console.log("listener ready");
-    wsCollectionContract.on("NFTMinted", handleSavebuyNFTDB);
+    wsCollectionContract.on("NFTSold", handleSavebuyNFTDB);
 
     return () => {
-      wsCollectionContract.off("NFTMinted", handleSavebuyNFTDB);
+      wsCollectionContract.off("NFTSold", handleSavebuyNFTDB);
     };
   }, [wsCollectionContract]);
 
