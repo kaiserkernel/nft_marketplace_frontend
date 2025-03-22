@@ -41,15 +41,21 @@ const Dashboard: FC = () => {
   }, []);
 
   const renderCollectionCards = (itemList: CollectionProps[]): ReactNode[] => {
-    return itemList?.map((item, idx) => (
-      <CardBtn key={idx} collection={item} cardType="Collection" />
-    ));
+    return (
+      itemList &&
+      itemList.map((item, idx) => (
+        <CardBtn key={idx} collection={item} cardType="Collection" />
+      ))
+    );
   };
 
   const renderNFTCards = (itemList: NFTProps[]): ReactNode[] => {
-    return itemList?.map((item, idx) => (
-      <CardBtn key={idx} nft={item} cardType="NFT" />
-    ));
+    return (
+      itemList &&
+      itemList.map((item, idx) => (
+        <CardBtn key={idx} nft={item} cardType="NFT" />
+      ))
+    );
   };
 
   return (
