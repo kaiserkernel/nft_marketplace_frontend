@@ -698,6 +698,25 @@ export const ContractCollectionABI = [
           "type": "uint256"
         }
       ],
+      "name": "getTokenOwner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
       "name": "getTokenPrice",
       "outputs": [
         {
