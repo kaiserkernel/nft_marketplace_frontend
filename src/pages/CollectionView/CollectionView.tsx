@@ -254,19 +254,6 @@ const CollectionView = () => {
       // Attach event listener to the contract
       console.log("listener ready");
       wsCollectionContract.on("NFTSold", handleSavebuyNFTDB);
-      wsCollectionContract.on(
-        "LogNFTPurchase",
-        (address, creator, owner, tokenId, price) => {
-          console.log(
-            address,
-            creator,
-            owner,
-            tokenId,
-            price,
-            "log nft purchase"
-          );
-        }
-      );
     } catch (error) {
       console.log(error, "listener error");
     }
