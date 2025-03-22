@@ -161,20 +161,18 @@ const CreateInCollection = () => {
         metadataUpload.cid
       );
 
-      const _royaltyNFT = royaltyNFT * 100; // Convert to basis points
-
       // Estimate the gas required for the transaction
       const gasEstimate = await collectionContract.mintNFT.estimateGas(
         walletAddress,
         metadataURI,
-        _royaltyNFT
+        royaltyNFT
       );
 
       // Mint the NFT on the blockchain
       const tx = await collectionContract.mintNFT(
         walletAddress,
         metadataURI,
-        _royaltyNFT,
+        royaltyNFT,
         {
           gasLimit: gasEstimate,
         }

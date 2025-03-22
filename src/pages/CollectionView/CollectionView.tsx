@@ -78,55 +78,6 @@ const CollectionView = () => {
     }
   };
 
-  useEffect(() => {
-    if (collection?._id) fetchNFTList();
-  }, [collection]);
-
-  // Fetch and setup contract instances when the collection address is confirmed
-  useEffect(() => {
-    if (!walletAddress) {
-      // notify("Please check out wallet connection", "error");
-      return;
-    }
-
-    const contractInstance = new ethers.Contract(
-      walletAddress,
-      ContractCollectionABI,
-      signer
-    );
-    setCollectionContract(contractInstance);
-
-    // const _wsProvider = new ethers.WebSocketProvider(WS_RPC_URL);
-    const _wsContractInstance = new ethers.Contract(
-      walletAddress,
-      ContractCollectionABI,
-      wsProvider
-    );
-    setWsCollectionContract((prev) => {
-      if (prev) {
-        // whenever change confirmcollectionaddress remove ws event listener
-        prev.off("NFTSold", handleSavebuyNFTDB);
-      }
-      return _wsContractInstance;
-    });
-
-    return () => {
-      _wsContractInstance.off("NFTSold", handleSavebuyNFTDB);
-    };
-  }, [walletAddress, wsProvider, signer, ContractCollectionABI]);
-
-  useEffect(() => {
-    if (!wsCollectionContract) return;
-
-    try {
-      // Attach event listener to the contract
-      console.log("listener ready");
-      wsCollectionContract.on("NFTSold", handleSavebuyNFTDB);
-    } catch (error) {
-      console.log(error, "listener error");
-    }
-  }, [wsCollectionContract]);
-
   const filteredNfts: NFTProps[] = useMemo(() => {
     let result: NFTProps[] = [...nftList];
 
@@ -201,6 +152,7 @@ const CollectionView = () => {
     _price: number,
     _currency: "BNB" | "ETH"
   ) => {
+    console.log("NFT sold");
     try {
       const _buyData = {
         collection: collection._id,
@@ -234,6 +186,8 @@ const CollectionView = () => {
     try {
       const _price = FormatToWeiCurrency(price); // Convert to BigInt and wei currency
       // Estimate the gas required for the transaction
+      //   const address = await collectionContract.getTokenPrice(tokenId);
+      //   console.log("Decoded Address:", address);
       const gasEstimate = await collectionContract.buyNFT.estimateGas(tokenId, {
         value: _price,
       });
@@ -256,13 +210,67 @@ const CollectionView = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center content-center">
-        <ThreeDot color="#fff" size="large" />
-      </div>
+  useEffect(() => {
+    if (collection?._id) fetchNFTList();
+  }, [collection]);
+
+  // Fetch and setup contract instances when the collection address is confirmed
+  useEffect(() => {
+    if (!walletAddress) {
+      // notify("Please check out wallet connection", "error");
+      return;
+    }
+
+    const contractInstance = new ethers.Contract(
+      walletAddress,
+      ContractCollectionABI,
+      signer
     );
-  }
+    setCollectionContract(contractInstance);
+
+    // const _wsProvider = new ethers.WebSocketProvider(WS_RPC_URL);
+    const _wsContractInstance = new ethers.Contract(
+      walletAddress,
+      ContractCollectionABI,
+      wsProvider
+    );
+    setWsCollectionContract((prev) => {
+      if (prev) {
+        // whenever change confirmcollectionaddress remove ws event listener
+        prev.off("NFTSold", handleSavebuyNFTDB);
+      }
+      return _wsContractInstance;
+    });
+
+    return () => {
+      _wsContractInstance.off("NFTSold", handleSavebuyNFTDB);
+    };
+  }, [walletAddress, wsProvider, signer, ContractCollectionABI]);
+
+  useEffect(() => {
+    if (!wsCollectionContract) return;
+
+    try {
+      // Attach event listener to the contract
+      console.log("listener ready");
+      wsCollectionContract.on("NFTSold", handleSavebuyNFTDB);
+      wsCollectionContract.on(
+        "LogNFTPurchase",
+        (address, creator, owner, tokenId, price) => {
+          console.log(
+            address,
+            creator,
+            owner,
+            tokenId,
+            price,
+            "log nft purchase"
+          );
+        }
+      );
+    } catch (error) {
+      console.log(error, "listener error");
+    }
+  }, [wsCollectionContract]);
 
   const PriceRangeSearchBar: React.FC = () => (
     <div>
@@ -306,6 +314,14 @@ const CollectionView = () => {
       </div>
     </div>
   );
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center content-center">
+        <ThreeDot color="#fff" size="large" />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full md:mb-10 mb-4">
