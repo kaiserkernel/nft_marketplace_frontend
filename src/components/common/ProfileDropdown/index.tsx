@@ -110,6 +110,7 @@ const ProfileDropdown = () => {
               <li className="mt-2">
                 <Link
                   to="/profile"
+                  onClick={() => setIsOpen(false)}
                   className="flex flex-row items-center gap-4 py-2 px-4 cursor-pointer hover:bg-[#1c1c1c] rounded-lg transition"
                 >
                   <Avatar size={70} />
@@ -139,6 +140,7 @@ const ProfileDropdown = () => {
                 <Link
                   className="flex flex-row items-center justify-between w-full"
                   // onClick={() => setIsCreateOpen(!isCreateOpen)}
+                  onClick={() => setIsOpen(false)}
                   to="/create-in-collection"
                 >
                   <div className="flex flex-row items-center gap-4">

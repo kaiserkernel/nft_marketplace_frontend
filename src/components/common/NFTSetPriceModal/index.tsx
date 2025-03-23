@@ -353,6 +353,10 @@ export const NFTSetPriceModal = ({
           <span className="ps-3">{formatDate(nftProps?.createdAt)}</span>
         </div>
       )}
+      <div className="mt-4 p-3 bg-black rounded-md text-white">
+        <span className="font-semibold text-md mb-2">Currency :</span>
+        <span className="ps-3">{nftProps.currency}</span>
+      </div>
       <NftPriceInfo />
       <form className="mx-auto mt-5 bg-black p-3 rounded-md">
         <label

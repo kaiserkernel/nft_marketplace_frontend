@@ -48,16 +48,21 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({
           return;
         }
 
+        if (_signer) {
+          setSigner(_signer);
+        }
+
+        if (wsProvider) {
+          console.warn("Websocket provider is already created");
+          return;
+        }
+
         // Setup WebSocket provider
         if (WS_RPC_URL) {
           _wsProvider = new ethers.WebSocketProvider(WS_RPC_URL);
           setWsProvider(_wsProvider);
         } else {
           notify("WebSocket RPC URL is missing", "error");
-        }
-
-        if (_signer) {
-          setSigner(_signer);
         }
       } catch (error) {
         console.error("Error initializing contract:", error);
@@ -72,10 +77,6 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({
     } else if (!loading) {
       navigate("/");
     }
-
-    return () => {
-      if (_wsProvider) _wsProvider.destroy();
-    };
   }, [isConnected, address, navigate, _signer]);
 
   if (loading) {

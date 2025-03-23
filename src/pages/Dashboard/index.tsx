@@ -29,7 +29,6 @@ const Dashboard: FC = () => {
       setIsTopAuctionLoading(true);
       try {
         const { data } = await fetchTopAuctions();
-        console.log(data, "top aution");
         setTopAuctionList(data);
       } catch (error) {
         console.log(error, "Error occur fetch Collecions");

@@ -6,20 +6,19 @@ import { FileObject } from "pinata";
 
 interface NFTBannerProps {
   setImage: React.Dispatch<React.SetStateAction<FileObject | null>>;
+  image: FileObject | null;
 }
 
-const NFTBanner: React.FC<NFTBannerProps> = ({ setImage }) => {
+const NFTBanner: React.FC<NFTBannerProps> = ({ setImage, image }) => {
   const [mediaType, setMediaType] = useState<"image" | "video" | null>(null);
   const [isHovered, setIsHovered] = useState<boolean>(false);
   const [imageURL, setImageURL] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // useEffect(() => {
-  //   return () => {
-  //     if (image) URL.revokeObjectURL(image);
-  //   };
-  // }, [image]);
+  useEffect(() => {
+    if (!image) setImageURL(null);
+  }, [image]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

@@ -233,11 +233,11 @@ const CollectionView = () => {
   // Fetch and setup contract instances when the collection address is confirmed
   useEffect(() => {
     const contractAddress = collection.contractAddress;
-    if (!contractAddress) {
+    if (!signer || !wsProvider || !contractAddress) {
       // notify("Please check out wallet connection", "error");
       return;
     }
-
+    console.log(wsProvider, "wsprovider");
     const contractInstance = new ethers.Contract(
       contractAddress,
       ContractCollectionABI,
@@ -432,7 +432,7 @@ const CollectionView = () => {
             isShowSearchPanel ? "xl:col-span-8 md:col-span-7" : "col-span-10"
           } col-span-10 rounded-xl`}
         >
-          <div className="p-4 flex md:gap-4 gap-8 flex-wrap justify-between">
+          <div className="p-4 flex md:gap-4 gap-8 flex-wrap">
             {filteredNfts &&
               filteredNfts.map((nft: NFTProps, idx) => (
                 <NFTViewBtn

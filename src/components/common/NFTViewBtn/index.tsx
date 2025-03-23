@@ -80,7 +80,7 @@ export const NFTViewBtn = ({
               {priceType === "auction"
                 ? `Start Bid: ${startBid} ${nftData.currency}`
                 : !!price
-                ? `Last Price: ${lastPrice} ${currency}`
+                ? `Last Price: ${lastPrice ? lastPrice : 0} ${currency}`
                 : ""}
             </p>
           </div>

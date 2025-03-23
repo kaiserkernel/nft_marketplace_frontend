@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { ToastContainer } from "react-toastify";
 import { FileObject } from "pinata";
 import { ThreeDot } from "react-loading-indicators";
@@ -60,11 +60,10 @@ const CreateInCollection = () => {
 
   const { signer, wsProvider } = useContract();
   const { address, chain } = useAccount();
+  const wsContractRef = useRef<ethers.Contract | null>(null);
 
   const walletAddress = address as string;
   const [collectionContract, setCollectionContract] =
-    useState<ethers.Contract | null>(null);
-  const [wsCollectionContract, setWsCollectionContract] =
     useState<ethers.Contract | null>(null);
 
   // Form validation check for required fields
@@ -126,6 +125,7 @@ const CreateInCollection = () => {
   // Mint the NFT and upload metadata to IPFS
   const handleClickMint = async () => {
     if (!validatorForm) return;
+
     if (!walletAddress || !signer || !wsProvider) {
       notify("Please check wallet connection", "warning");
       return;
@@ -194,6 +194,13 @@ const CreateInCollection = () => {
       // log.logs[0].address -> contractAddress
       // log.from -> owner address
       notify("NFT minted successfully", "success");
+
+      // init form
+      setDisplayName("");
+      setDisplayDescription("");
+      setRoyaltyNFT(0);
+      setAttributes([]);
+      setImage(null);
     } catch (error: any) {
       TransactionErrorhandle(error);
     } finally {
@@ -209,6 +216,7 @@ const CreateInCollection = () => {
     collection: string,
     currency: string
   ) => {
+    console.log(currency, "currency");
     try {
       const _nftData = {
         owner,
@@ -235,16 +243,28 @@ const CreateInCollection = () => {
     );
     setCollectionContract(contractInstance);
 
+    // Cleanup previous instance
+    if (wsContractRef.current) {
+      wsContractRef.current.off("NFTMinted", handleMintNFTDB);
+    }
+
     // let prevWsContractInstance : ethers.Contract;
     const _wsContractInstance = new ethers.Contract(
       confirmedCollectionAddress,
       ContractCollectionABI,
       wsProvider
     );
-    setWsCollectionContract(_wsContractInstance);
+
+    console.log("mint listener ready");
+    _wsContractInstance.on("NFTMinted", handleMintNFTDB);
+
+    // Store the new instance in ref
+    wsContractRef.current = _wsContractInstance;
 
     return () => {
-      _wsContractInstance.off("NFTMinted", handleMintNFTDB);
+      if (wsContractRef.current) {
+        wsContractRef.current.off("NFTMinted", handleMintNFTDB);
+      }
     };
   }, [confirmedCollectionAddress, wsProvider, signer, ContractCollectionABI]);
 
@@ -271,12 +291,12 @@ const CreateInCollection = () => {
   }, [walletAddress, collectionCreatedFlag]);
 
   // Set up event listener for "NFTMinted" event and store NFT data in DB
-  useEffect(() => {
-    if (!wsCollectionContract) return;
+  // useEffect(() => {
+  //   if (!wsCollectionContract) return;
 
-    // Attach event listener to the contract
-    wsCollectionContract.on("NFTMinted", handleMintNFTDB);
-  }, [wsCollectionContract]);
+  //   // Attach event listener to the contract
+  //   wsCollectionContract.on("NFTMinted", handleMintNFTDB);
+  // }, [wsCollectionContract]);
 
   return (
     <div className="mb-8">
@@ -314,7 +334,7 @@ const CreateInCollection = () => {
           </div>
         </div>
         {/* Left section for NFT Banner */}
-        <NFTBanner setImage={setImage} />
+        <NFTBanner setImage={setImage} image={image} />
 
         {/* Right section for NFT Creation Form */}
         <div className="flex flex-col justify-between">
