@@ -73,12 +73,12 @@ export const NFTViewBtn = ({
               {priceType === "auction"
                 ? "Auction"
                 : priceType === "fixed"
-                ? `${price}ETH`
+                ? `${price} ${nftData.currency}`
                 : "Not for sale"}
             </p>
             <p className="md:text-base text-white sm:text-sm text-xs font-medium mt-2 md:ml-4 ml-2 md:mb-4 mb-2">
               {priceType === "auction"
-                ? `Start Bid: ${startBid}ETH`
+                ? `Start Bid: ${startBid} ${nftData.currency}`
                 : !!price
                 ? `Last Price: ${lastPrice} ${currency}`
                 : ""}

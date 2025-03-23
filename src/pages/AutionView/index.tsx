@@ -273,7 +273,7 @@ const AuctionView: React.FC = () => {
                 Start bid
               </p>
               <p className="md:ps-8 ps-4 text-white text-2xl font-bold pb-2">
-                {nftData.startBid}ETH
+                {nftData.startBid} {nftData.currency}
               </p>
               <div className="md:px-8 px-2">
                 <Button
