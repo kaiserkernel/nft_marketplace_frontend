@@ -1,55 +1,59 @@
 export interface CollectionProps {
-    _id: string,
-    name: string,
-    owner: string,
-    symbol: string,
-    metadataURI: string,
-    description?: string,
-    image?: string,
-    contractAddress: string,
-    createdAt: string,
-    __v: number
+  _id: string;
+  name: string;
+  owner: string;
+  symbol: string;
+  metadataURI: string;
+  description?: string;
+  image?: string;
+  contractAddress: string;
+  createdAt: string;
+  __v: number;
 }
 
 export interface NFTProps {
-    _id?: string,
-    owner: string
-    tokenId: number,
-    tokenURI: string,
-    royalty: number,
-    createdAt?: string,
-    collection?: CollectionProps,
-    price?: number,
-    lastPrice?: number,
-    priceType?: string,
-    startBid?: number,
-    bidHistory?: [{
-        bidder: string,
-        price: number,
-        date: string
-    }],
-    bidEndDate?: string,
-    name?: string,
-    description?: string;
-    image?: string;
-    attributes?: Attribute[];
-    currency: "BNB" | "ETH" | null
+  _id?: string;
+  owner: string;
+  tokenId: number;
+  tokenURI: string;
+  royalty: number;
+  createdAt?: string;
+  collection?: CollectionProps;
+  price?: number;
+  lastPrice?: number;
+  priceType?: string;
+  startBid?: number;
+  bidHistory?: [
+    {
+      bidder: string;
+      price: number;
+      date: string;
+    }
+  ];
+  bidEndDate?: string;
+  name?: string;
+  description?: string;
+  image?: string;
+  attributes?: Attribute[];
+  currency: "BNB" | "ETH" | "tBNB";
 }
 
 interface Attribute {
-    trait: string;
-    value: string | number;
+  trait: string;
+  value: string | number;
 }
 
 export interface NFTMetaData {
-    name: string;
-    description: string;
-    image: string;
-    attributes?: Attribute[];
+  name: string;
+  description: string;
+  image: string;
+  attributes?: Attribute[];
 }
 
 export interface ItemGroupList {
-    label: string;
-    checked: boolean;
-    value: string
-};
+  label: string;
+  checked: boolean;
+  value: string;
+}
+
+export const CurrencyType = ["BNB", "ETH", "tBNB"];

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { ethers, BrowserProvider } from "ethers";
+import { ethers } from "ethers";
 import { useNavigate } from "react-router";
 import { useAccount } from "wagmi";
 

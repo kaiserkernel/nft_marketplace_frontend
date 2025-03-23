@@ -37,7 +37,7 @@ const AuctionView: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
   const { signer, wsProvider } = useContract();
-  const { address } = useAccount();
+  const { address, chain } = useAccount();
   const [contractInstance, setContractInstance] =
     useState<ethers.Contract | null>(null);
 
@@ -61,19 +61,26 @@ const AuctionView: React.FC = () => {
       notify("Bid price should be greater then top bid price", "warning");
       return;
     }
+    const currencyOfNft = nft.currency;
+    const currentCurrency = chain?.nativeCurrency.symbol;
+    if (currencyOfNft !== currentCurrency) {
+      notify("Please select correct currency", "warning");
+      return;
+    }
 
     setIsProcessing(true);
     const _realPrice = FormatToWeiCurrency(bidPrice);
     try {
       const gasEstimate = await contractInstance.placeBid.estimateGas(
         nft.tokenId,
+        currentCurrency,
         {
           value: _realPrice,
         }
       );
 
       // Mint the NFT on the blockchain
-      const tx = await contractInstance.placeBid(nft.tokenId, {
+      const tx = await contractInstance.placeBid(nft.tokenId, currentCurrency, {
         gasLimit: gasEstimate,
         value: _realPrice,
       });
@@ -91,13 +98,17 @@ const AuctionView: React.FC = () => {
     }
   };
 
-  const handleAuctionEnded = async (
+  const handleAuctionEndedDB = async (
     winner: string,
     tokenId: bigint,
     winningBid: bigint
   ) => {
     const _tokenId = Number(tokenId);
     const _realWinningBid = FormatToRealCurrency(Number(winningBid));
+
+    if (winner === "0x0000000000000000000000000000000000000000") {
+      notify("No bids were placed. The auction ended without a winner.");
+    }
 
     try {
       const requestBody = {
@@ -116,13 +127,19 @@ const AuctionView: React.FC = () => {
   const handleClickEndAuction = async () => {
     if (!contractInstance) return;
 
+    const tokenId = nft.tokenId;
+    if (!tokenId) {
+      notify("Please try again", "warning");
+      return;
+    }
+
     try {
       const gasEstimate = await contractInstance.endAuction.estimateGas(
-        nft.tokenId
+        tokenId
       );
 
       // Mint the NFT on the blockchain
-      const tx = await contractInstance.endAuction(nft.tokenId, {
+      const tx = await contractInstance.endAuction(tokenId, {
         gasLimit: gasEstimate,
       });
 
@@ -183,14 +200,14 @@ const AuctionView: React.FC = () => {
         wsProvider
       );
       wsInstance.on("NewBidPlaced", handleBidNFTDB);
-      wsInstance.on("AuctionEnded", handleAuctionEnded);
+      wsInstance.on("AuctionEnded", handleAuctionEndedDB);
     } catch (error) {
       console.log(error, "error");
     }
 
     return () => {
       wsInstance.off("NewBidPlaced", handleBidNFTDB);
-      wsInstance.off("AuctionEnded", handleAuctionEnded);
+      wsInstance.off("AuctionEnded", handleAuctionEndedDB);
     };
   }, [
     wsProvider,

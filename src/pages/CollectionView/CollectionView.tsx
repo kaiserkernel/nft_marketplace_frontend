@@ -19,9 +19,13 @@ import { CollectionProps, NFTProps } from "../../types";
 import { fetchNFTListOfCollection, buyNFT } from "../../services/nftService";
 import { ContractCollectionABI } from "../../contracts";
 import { useContract } from "../../context/ContractContext";
-import { FormatToWeiCurrency } from "../../utils/FormatCurrency";
+import {
+  FormatToRealCurrency,
+  FormatToWeiCurrency,
+} from "../../utils/FormatCurrency";
 import { TransactionErrorhandle } from "../../utils/TransactionErrorhandle";
 import { ItemGroupList } from "../../types";
+import { FormatAddress } from "../../utils/FormatAddress";
 
 // Constants
 const initialSaleType: ItemGroupList[] = [
@@ -56,7 +60,7 @@ const CollectionView = () => {
     useState<ItemGroupList[]>(initialSaleType);
 
   const { signer, wsProvider } = useContract();
-  const { address } = useAccount();
+  const { address, chain } = useAccount();
   const walletAddress = address as string;
   const [collectionContract, setCollectionContract] =
     useState<ethers.Contract | null>(null);
@@ -149,16 +153,15 @@ const CollectionView = () => {
   const handleSavebuyNFTDB = async (
     owner: string,
     _tokenId: number,
-    _price: number,
-    _currency: "BNB" | "ETH"
+    _price: number
   ) => {
-    console.log("NFT sold");
+    const _realPrice = FormatToRealCurrency(Number(_price));
     try {
       const _buyData = {
         collection: collection._id,
         owner,
         tokenId: Number(_tokenId),
-        price: Number(_price),
+        price: _realPrice,
       };
       await buyNFT(_buyData);
 
@@ -176,24 +179,37 @@ const CollectionView = () => {
     }
   };
 
-  const handleBuyNft = async (price: number, tokenId: number) => {
+  const handleBuyNft = async (
+    price: number,
+    tokenId: number,
+    currency: string
+  ) => {
     if (!price || !tokenId) return;
     if (!collectionContract) {
-      notify("Please check out wallect connection", "error");
+      notify("Please check out wallect connection", "warning");
       return;
     }
+    const currentCurrency = chain?.nativeCurrency.symbol;
+    if (currentCurrency !== currency) {
+      notify("Please select correct currency", "warning");
+      return;
+    }
+
     setIsProcessing(tokenId);
     try {
       const _price = FormatToWeiCurrency(price); // Convert to BigInt and wei currency
+
       // Estimate the gas required for the transaction
-      //   const address = await collectionContract.getTokenPrice(tokenId);
-      //   console.log("Decoded Address:", address);
-      const gasEstimate = await collectionContract.buyNFT.estimateGas(tokenId, {
-        value: _price,
-      });
+      const gasEstimate = await collectionContract.buyNFT.estimateGas(
+        tokenId,
+        currentCurrency,
+        {
+          value: _price,
+        }
+      );
 
       // Mint the NFT on the blockchain
-      const tx = await collectionContract.buyNFT(tokenId, {
+      const tx = await collectionContract.buyNFT(tokenId, currentCurrency, {
         gasLimit: gasEstimate,
         value: _price,
       });
@@ -216,13 +232,14 @@ const CollectionView = () => {
 
   // Fetch and setup contract instances when the collection address is confirmed
   useEffect(() => {
-    if (!walletAddress) {
+    const contractAddress = collection.contractAddress;
+    if (!contractAddress) {
       // notify("Please check out wallet connection", "error");
       return;
     }
 
     const contractInstance = new ethers.Contract(
-      walletAddress,
+      contractAddress,
       ContractCollectionABI,
       signer
     );
@@ -230,17 +247,11 @@ const CollectionView = () => {
 
     // const _wsProvider = new ethers.WebSocketProvider(WS_RPC_URL);
     const _wsContractInstance = new ethers.Contract(
-      walletAddress,
+      contractAddress,
       ContractCollectionABI,
       wsProvider
     );
-    setWsCollectionContract((prev) => {
-      if (prev) {
-        // whenever change confirmcollectionaddress remove ws event listener
-        prev.off("NFTSold", handleSavebuyNFTDB);
-      }
-      return _wsContractInstance;
-    });
+    setWsCollectionContract(_wsContractInstance);
 
     return () => {
       _wsContractInstance.off("NFTSold", handleSavebuyNFTDB);
@@ -339,10 +350,8 @@ const CollectionView = () => {
               </span>
             </div>
             <p className="md:text-sm text-xs mt-1">
-              {`${collection.contractAddress?.slice(
-                0,
-                4
-              )}...${collection.contractAddress?.slice(-4)}`}
+              {collection?.contractAddress &&
+                FormatAddress(collection.contractAddress)}
             </p>
           </div>
         </div>

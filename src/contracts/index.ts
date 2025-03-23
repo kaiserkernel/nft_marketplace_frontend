@@ -471,6 +471,12 @@ export const ContractCollectionABI = [
           "internalType": "address",
           "name": "collectionAddress",
           "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "enum NFTCollection.Currency",
+          "name": "currency",
+          "type": "uint8"
         }
       ],
       "name": "NFTMinted",
@@ -632,6 +638,11 @@ export const ContractCollectionABI = [
           "internalType": "uint256",
           "name": "tokenId",
           "type": "uint256"
+        },
+        {
+          "internalType": "enum NFTCollection.Currency",
+          "name": "currency",
+          "type": "uint8"
         }
       ],
       "name": "buyNFT",
@@ -781,6 +792,11 @@ export const ContractCollectionABI = [
           "internalType": "uint256",
           "name": "royaltyPercentage",
           "type": "uint256"
+        },
+        {
+          "internalType": "enum NFTCollection.Currency",
+          "name": "currency",
+          "type": "uint8"
         }
       ],
       "name": "mintNFT",
@@ -839,6 +855,11 @@ export const ContractCollectionABI = [
           "internalType": "uint256",
           "name": "tokenId",
           "type": "uint256"
+        },
+        {
+          "internalType": "enum NFTCollection.Currency",
+          "name": "currency",
+          "type": "uint8"
         }
       ],
       "name": "placeBid",

@@ -4,11 +4,11 @@ import { FileObject } from "pinata";
 import { ThreeDot } from "react-loading-indicators";
 import { ethers } from "ethers";
 import { FaAngleDown } from "react-icons/fa";
+import { useAccount } from "wagmi";
 
 import { ContractCollectionABI } from "../../contracts";
 import CreateCollectionModal from "./CreateCollectionModal";
 import CollectionSelectModal from "./CollectionSelectModal";
-import { useAccount } from "wagmi";
 
 import CollectionBtnGroup from "../../components/common/CollectionBtnGroup";
 import NFTBanner from "../../components/common/NFTBanner";
@@ -25,6 +25,7 @@ import { fetchOwnerCollection } from "../../services/colllectionService";
 import { mintNFTDB } from "../../services/nftService";
 import { pinata } from "../../config/pinata";
 import { TransactionErrorhandle } from "../../utils/TransactionErrorhandle";
+import { CurrencyType } from "../../types";
 
 const CreateInCollection = () => {
   const [displayName, setDisplayName] = useState<string>("");
@@ -58,7 +59,8 @@ const CreateInCollection = () => {
   const [isNFTProcessing, setIsNFTProcessing] = useState<boolean>(false);
 
   const { signer, wsProvider } = useContract();
-  const { address } = useAccount();
+  const { address, chain } = useAccount();
+
   const walletAddress = address as string;
   const [collectionContract, setCollectionContract] =
     useState<ethers.Contract | null>(null);
@@ -128,6 +130,13 @@ const CreateInCollection = () => {
       notify("Please check wallet connection", "warning");
       return;
     }
+
+    const currency = chain?.nativeCurrency.symbol ?? "";
+    if (!CurrencyType.includes(currency)) {
+      notify("Please select correct currency");
+      return;
+    }
+
     if (!confirmedCollectionAddress || !collectionContract) {
       notify("Please select collection", "warning");
       return;
@@ -165,7 +174,8 @@ const CreateInCollection = () => {
       const gasEstimate = await collectionContract.mintNFT.estimateGas(
         walletAddress,
         metadataURI,
-        royaltyNFT
+        royaltyNFT,
+        currency
       );
 
       // Mint the NFT on the blockchain
@@ -173,6 +183,7 @@ const CreateInCollection = () => {
         walletAddress,
         metadataURI,
         royaltyNFT,
+        currency,
         {
           gasLimit: gasEstimate,
         }
@@ -195,7 +206,8 @@ const CreateInCollection = () => {
     _tokenId: number,
     tokenURI: string,
     _royalty: number,
-    collection: string
+    collection: string,
+    currency: string
   ) => {
     try {
       const _nftData = {
@@ -204,6 +216,7 @@ const CreateInCollection = () => {
         tokenURI,
         royalty: Number(_royalty),
         collection,
+        currency,
       };
       await mintNFTDB(_nftData);
     } catch (error) {
@@ -228,13 +241,11 @@ const CreateInCollection = () => {
       ContractCollectionABI,
       wsProvider
     );
-    setWsCollectionContract((prev) => {
-      if (prev) {
-        // whenever change confirmcollectionaddress remove ws event listener
-        prev.off("NFTMinted", handleMintNFTDB);
-      }
-      return _wsContractInstance;
-    });
+    setWsCollectionContract(_wsContractInstance);
+
+    return () => {
+      _wsContractInstance.off("NFTMinted", handleMintNFTDB);
+    };
   }, [confirmedCollectionAddress, wsProvider, signer, ContractCollectionABI]);
 
   // Fetch user's collections when wallet address changes
@@ -265,10 +276,6 @@ const CreateInCollection = () => {
 
     // Attach event listener to the contract
     wsCollectionContract.on("NFTMinted", handleMintNFTDB);
-
-    return () => {
-      wsCollectionContract.off("NFTMinted", handleMintNFTDB);
-    };
   }, [wsCollectionContract]);
 
   return (
