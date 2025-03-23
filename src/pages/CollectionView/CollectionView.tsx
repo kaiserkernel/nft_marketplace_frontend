@@ -161,17 +161,14 @@ const CollectionView = () => {
         tokenId: Number(_tokenId),
         price: _realPrice,
       };
-      await buyNFT(_buyData);
+      const { data } = await buyNFT(_buyData);
 
       // Update nft list
-      setNftList((prevNFTList) => {
-        return prevNFTList.map((nft) => {
-          if (nft.tokenId === _tokenId) {
-            return { ...nft, price: 0, lastPrice: _price }; // Update the price of the matched NFT
-          }
-          return nft;
-        });
-      });
+      setNftList((prevNFTList) => [
+        ...prevNFTList.map((log) =>
+          log.tokenId === data.tokenId ? data : log
+        ),
+      ]);
     } catch (error) {
       console.log("Log NFT Buy data occur error", error);
     }

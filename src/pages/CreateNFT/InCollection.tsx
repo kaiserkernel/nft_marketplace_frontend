@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
 import { ToastContainer } from "react-toastify";
 import { FileObject } from "pinata";
 import { ThreeDot } from "react-loading-indicators";
@@ -60,10 +60,11 @@ const CreateInCollection = () => {
 
   const { signer, wsProvider } = useContract();
   const { address, chain } = useAccount();
-  const wsContractRef = useRef<ethers.Contract | null>(null);
 
   const walletAddress = address as string;
   const [collectionContract, setCollectionContract] =
+    useState<ethers.Contract | null>(null);
+  const [wsCollectionContract, setWsCollectionContract] =
     useState<ethers.Contract | null>(null);
 
   // Form validation check for required fields
@@ -243,11 +244,6 @@ const CreateInCollection = () => {
     );
     setCollectionContract(contractInstance);
 
-    // Cleanup previous instance
-    if (wsContractRef.current) {
-      wsContractRef.current.off("NFTMinted", handleMintNFTDB);
-    }
-
     // let prevWsContractInstance : ethers.Contract;
     const _wsContractInstance = new ethers.Contract(
       confirmedCollectionAddress,
@@ -255,16 +251,13 @@ const CreateInCollection = () => {
       wsProvider
     );
 
+    setWsCollectionContract(_wsContractInstance);
+
     console.log("mint listener ready");
     _wsContractInstance.on("NFTMinted", handleMintNFTDB);
 
-    // Store the new instance in ref
-    wsContractRef.current = _wsContractInstance;
-
     return () => {
-      if (wsContractRef.current) {
-        wsContractRef.current.off("NFTMinted", handleMintNFTDB);
-      }
+      _wsContractInstance.off("NFTMinted", handleMintNFTDB);
     };
   }, [confirmedCollectionAddress, wsProvider, signer, ContractCollectionABI]);
 
