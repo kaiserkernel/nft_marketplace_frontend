@@ -35,6 +35,7 @@ const AuctionView: React.FC = () => {
   const [bidPrice, setBidPrice] = useState<number>(0);
   const [openBidModal, setOpenBidModal] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [endAuctionLoading, setEndAuctionLoading] = useState<boolean>(false);
 
   const { signer, wsProvider } = useContract();
   const { address, chain } = useAccount();
@@ -110,6 +111,7 @@ const AuctionView: React.FC = () => {
       notify("No bids were placed. The auction ended without a winner.");
     }
 
+    console.log("Auction ended");
     try {
       const requestBody = {
         _id: nftData._id,
@@ -133,6 +135,7 @@ const AuctionView: React.FC = () => {
       return;
     }
 
+    setEndAuctionLoading(true);
     try {
       const gasEstimate = await contractInstance.endAuction.estimateGas(
         tokenId
@@ -144,10 +147,11 @@ const AuctionView: React.FC = () => {
       });
 
       const log = await tx.wait();
+      notify("Auction ended successfully", "success");
     } catch (error: any) {
       TransactionErrorhandle(error);
     } finally {
-      setIsProcessing(false);
+      setEndAuctionLoading(false);
     }
   };
 
@@ -159,12 +163,13 @@ const AuctionView: React.FC = () => {
     const _realPrice = FormatToRealCurrency(Number(bidAmount));
 
     try {
-      await bidToAuctionDB({
+      const { data } = await bidToAuctionDB({
         _id: nft._id,
         bidder,
         tokenId: Number(tokenId),
         bidAmount: _realPrice,
       });
+      setNftData((prev) => ({ ...prev, bidHistory: data.bidHistory }));
     } catch (error) {
       console.log(error, "Bid NFT Error");
     }
@@ -258,6 +263,7 @@ const AuctionView: React.FC = () => {
                   label="End Auction"
                   type="blue"
                   onClick={handleClickEndAuction}
+                  disabled={endAuctionLoading}
                 />
               )}
             </div>
