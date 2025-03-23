@@ -64,8 +64,6 @@ const CollectionView = () => {
   const walletAddress = address as string;
   const [collectionContract, setCollectionContract] =
     useState<ethers.Contract | null>(null);
-  const [wsCollectionContract, setWsCollectionContract] =
-    useState<ethers.Contract | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const fetchNFTList = async () => {
@@ -215,7 +213,6 @@ const CollectionView = () => {
       });
 
       const log = await tx.wait();
-      console.log(log, "log");
       // log.logs[0].address -> contractAddress
       // log.from -> owner address
       notify("Buy NFT successfully", "success");
@@ -237,7 +234,6 @@ const CollectionView = () => {
       // notify("Please check out wallet connection", "error");
       return;
     }
-    console.log(wsProvider, "wsprovider");
     const contractInstance = new ethers.Contract(
       contractAddress,
       ContractCollectionABI,
@@ -251,24 +247,13 @@ const CollectionView = () => {
       ContractCollectionABI,
       wsProvider
     );
-    setWsCollectionContract(_wsContractInstance);
+    // setWsCollectionContract(_wsContractInstance);
+    _wsContractInstance.on("NFTSold", handleSavebuyNFTDB);
 
     return () => {
       _wsContractInstance.off("NFTSold", handleSavebuyNFTDB);
     };
   }, [walletAddress, wsProvider, signer, ContractCollectionABI]);
-
-  useEffect(() => {
-    if (!wsCollectionContract) return;
-
-    try {
-      // Attach event listener to the contract
-      console.log("listener ready");
-      wsCollectionContract.on("NFTSold", handleSavebuyNFTDB);
-    } catch (error) {
-      console.log(error, "listener error");
-    }
-  }, [wsCollectionContract]);
 
   const PriceRangeSearchBar: React.FC = () => (
     <div>
