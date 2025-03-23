@@ -253,7 +253,7 @@ const AuctionView: React.FC = () => {
               {nftData.name} #{nftData.tokenId}
             </h1>
             <div className="p-2">
-              {nftData.owner.toLowerCase() === address && (
+              {nftData.owner === address && (
                 <Button
                   label="End Auction"
                   type="blue"
