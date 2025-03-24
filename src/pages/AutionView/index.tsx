@@ -87,7 +87,6 @@ const AuctionView: React.FC = () => {
       });
 
       const log = await tx.wait();
-      console.log(log, "log");
       // log.logs[0].address -> contractAddress
       // log.from -> owner address
       notify("Bid NFT successfully", "success");
