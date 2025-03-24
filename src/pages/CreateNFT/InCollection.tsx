@@ -251,14 +251,19 @@ const CreateInCollection = () => {
       wsProvider
     );
 
-    setWsCollectionContract(_wsContractInstance);
+    setWsCollectionContract((prev) => {
+      if (prev) {
+        prev.off("NFTMinted", handleMintNFTDB);
+      }
+      return _wsContractInstance;
+    });
 
     console.log("mint listener ready");
     _wsContractInstance.on("NFTMinted", handleMintNFTDB);
 
-    return () => {
-      _wsContractInstance.off("NFTMinted", handleMintNFTDB);
-    };
+    // return () => {
+    //   _wsContractInstance.off("NFTMinted", handleMintNFTDB);
+    // };
   }, [confirmedCollectionAddress, wsProvider, signer, ContractCollectionABI]);
 
   // Fetch user's collections when wallet address changes
