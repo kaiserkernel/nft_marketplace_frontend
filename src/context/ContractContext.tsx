@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { ethers } from "ethers";
 import { useNavigate } from "react-router";
 import { useAccount } from "wagmi";
@@ -30,6 +36,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({
   const [wsProvider, setWsProvider] = useState<ethers.WebSocketProvider | null>(
     null
   );
+  const wsProviderRef = useRef<ethers.WebSocketProvider | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -38,6 +45,19 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     let _wsProvider: ethers.WebSocketProvider | null = null;
+
+    const reconnectWebSocket = () => {
+      if (!WS_RPC_URL) return;
+
+      console.log("Reconnecting WebSocket...");
+      _wsProvider = new ethers.WebSocketProvider(WS_RPC_URL);
+      setWsProvider(_wsProvider);
+
+      (_wsProvider as any)._websocket.onclose = () => {
+        console.warn("WebSocket closed again. Reconnecting...");
+        setTimeout(reconnectWebSocket, 3000); // Wait 3s before reconnecting
+      };
+    };
 
     const initContract = async (_address: string) => {
       try {
@@ -52,7 +72,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({
           setSigner(_signer);
         }
 
-        if (wsProvider) {
+        if (wsProviderRef.current) {
           console.warn("Websocket provider is already created");
           return;
         }
@@ -60,7 +80,18 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({
         // Setup WebSocket provider
         if (WS_RPC_URL) {
           _wsProvider = new ethers.WebSocketProvider(WS_RPC_URL);
+          wsProviderRef.current = _wsProvider;
           setWsProvider(_wsProvider);
+
+          // Ensure _websocket exists before setting the onclose handler
+          if ((_wsProvider as any)._websocket) {
+            (_wsProvider as any)._websocket.onclose = () => {
+              console.warn("WebSocket closed. Attempting to reconnect...");
+              setTimeout(reconnectWebSocket, 3000);
+            };
+          } else {
+            console.warn("WebSocket object not found in provider.");
+          }
         } else {
           notify("WebSocket RPC URL is missing", "error");
         }
