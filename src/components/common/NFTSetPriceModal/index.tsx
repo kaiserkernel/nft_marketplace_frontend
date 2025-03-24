@@ -108,7 +108,7 @@ export const NFTSetPriceModal = ({
     try {
       // Convert values to readable format
       const formattedTokenId = Number(tokenId); // Convert BigInt to string
-      const formattedBid = FormatToRealCurrency(Number(startingBid)); // Convert BigInt to string (wei)
+      const formattedBid = FormatToRealCurrency(startingBid ?? "0"); // Convert BigInt to string (wei)
       const formattedEndTime = Number(auctionEndTime); // Convert timestamp to ISO format
 
       // Define the request body
@@ -135,9 +135,9 @@ export const NFTSetPriceModal = ({
     }
   };
 
-  const handleNFTPriceSetDB = async (_tokenId: number, _price: BigInt) => {
+  const handleNFTPriceSetDB = async (_tokenId: number, _price: bigint) => {
     try {
-      const realPrice = FormatToRealCurrency(Number(_price)); // convert from wei currency
+      const realPrice = FormatToRealCurrency(_price ?? "0"); // convert from wei currency
 
       let data: NFTProps;
 

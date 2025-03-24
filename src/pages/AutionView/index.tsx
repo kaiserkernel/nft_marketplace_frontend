@@ -104,7 +104,7 @@ const AuctionView: React.FC = () => {
     winningBid: bigint
   ) => {
     const _tokenId = Number(tokenId);
-    const _realWinningBid = FormatToRealCurrency(Number(winningBid));
+    const _realWinningBid = FormatToRealCurrency(winningBid ?? "0");
 
     if (winner === "0x0000000000000000000000000000000000000000") {
       notify("No bids were placed. The auction ended without a winner.");
@@ -159,7 +159,7 @@ const AuctionView: React.FC = () => {
     tokenId: bigint,
     bidAmount: bigint
   ) => {
-    const _realPrice = FormatToRealCurrency(Number(bidAmount));
+    const _realPrice = FormatToRealCurrency(bidAmount ?? "0");
 
     try {
       const { data } = await bidToAuctionDB({

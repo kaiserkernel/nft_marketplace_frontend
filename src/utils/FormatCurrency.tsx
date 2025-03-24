@@ -1,9 +1,9 @@
-import { parseUnits, formatUnits  } from "ethers";
+import { parseUnits, formatUnits } from "ethers";
 
-export const FormatToWeiCurrency = (_price: number) => {
-    return parseUnits(_price.toString(), 18);
-}
+export const FormatToWeiCurrency = (_price: number | string) => {
+  return parseUnits(_price.toString(), 18); // Ensure it's a string
+};
 
-export const FormatToRealCurrency = (_price: number) => {
-    return formatUnits(_price, 18);
-}
+export const FormatToRealCurrency = (_price: bigint | string) => {
+  return formatUnits(BigInt(_price), 18); // Convert to bigint to avoid precision issues
+};

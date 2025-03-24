@@ -151,9 +151,9 @@ const CollectionView = () => {
   const handleSavebuyNFTDB = async (
     owner: string,
     _tokenId: number,
-    _price: number
+    _price: bigint
   ) => {
-    const _realPrice = FormatToRealCurrency(Number(_price));
+    const _realPrice = FormatToRealCurrency(_price ?? "0");
     try {
       const _buyData = {
         collection: collection._id,
