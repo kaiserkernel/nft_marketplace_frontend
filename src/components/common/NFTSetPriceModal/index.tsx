@@ -67,7 +67,6 @@ export const NFTSetPriceModal = ({
       return;
     }
     if (!nftProps.collection?.contractAddress) {
-      notify("Invalid Collection", "error");
       return;
     }
 
@@ -84,20 +83,23 @@ export const NFTSetPriceModal = ({
       wsProvider
     );
     setWsCollectionContract(wsContractInstance);
+
+    if (isOpen) {
+      wsContractInstance.on("NFTPriceSet", handleNFTPriceSetDB);
+      wsContractInstance.on("AuctionStarted", handleNFTAuctionStartedDB);
+    }
+    return () => {
+      wsContractInstance.off("NFTPriceSet", handleNFTPriceSetDB);
+      wsContractInstance.off("AuctionStarted", handleNFTAuctionStartedDB);
+    };
   }, [signer, wsProvider, nftProps.collection?.contractAddress, isOpen]);
 
   useEffect(() => {
-    if (!wsCollectionContract || !isOpen) return;
-
-    wsCollectionContract.on("NFTPriceSet", handleNFTPriceSetDB);
-    wsCollectionContract.on("AuctionStarted", handleNFTAuctionStartedDB);
-    if (!isOpen) {
-      return () => {
-        wsCollectionContract.off("NFTPriceSet", handleNFTPriceSetDB);
-        wsCollectionContract.off("AuctionStarted", handleNFTAuctionStartedDB);
-      };
+    if (wsCollectionContract && !isOpen) {
+      wsCollectionContract.off("NFTPriceSet", handleNFTPriceSetDB);
+      wsCollectionContract.off("AuctionStarted", handleNFTAuctionStartedDB);
     }
-  }, [wsCollectionContract, nftProps._id, isOpen]);
+  }, [wsCollectionContract, isOpen]);
 
   const handleNFTAuctionStartedDB = async (
     tokenId: bigint,
@@ -139,6 +141,7 @@ export const NFTSetPriceModal = ({
       const realPrice = FormatToRealCurrency(Number(_price)); // convert from wei currency
 
       let data: NFTProps;
+
       if (realPrice) {
         const response = await setNFTFixedPriceDB({
           _id: nftProps._id,
@@ -229,6 +232,7 @@ export const NFTSetPriceModal = ({
         // await handleNFTAuctionStartedDB(nftProps.tokenId, startingBid, )
         notify("Auction started successfully!", "success");
         onClose();
+        return;
       }
 
       if (priceType === "fixed") {
