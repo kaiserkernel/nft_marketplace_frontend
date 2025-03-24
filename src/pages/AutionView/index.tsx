@@ -43,14 +43,14 @@ const AuctionView: React.FC = () => {
     useState<ethers.Contract | null>(null);
 
   const topBidPrice = useMemo(() => {
-    if (!nft.bidHistory?.length) {
+    if (!nftData.bidHistory?.length) {
       return nft.startBid;
     }
-    const highestBid = nft.bidHistory
+    const highestBid = nftData.bidHistory
       ?.slice()
       .sort((a, b) => b.price - a.price)[0];
     return highestBid.price;
-  }, [nft]);
+  }, [nftData.bidHistory]);
 
   const handlePlaceBidNft = async () => {
     if (!contractInstance) return;
