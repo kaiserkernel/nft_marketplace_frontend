@@ -131,6 +131,7 @@ const CreateCollectionModal: React.FC<CreateCollectionModalProps> = ({
       // log.from -> owner address
 
       notify("Collection created successfully", "success");
+      onClose();
     } catch (error: any) {
       console.log(error, "error");
       TransactionErrorhandle(error);
@@ -157,7 +158,6 @@ const CreateCollectionModal: React.FC<CreateCollectionModalProps> = ({
     try {
       await createCollectionDB(_collectionData);
       setCreated((prev) => !prev);
-      onClose();
     } catch (error) {
       notify("Failed to create collection", "error");
     }
