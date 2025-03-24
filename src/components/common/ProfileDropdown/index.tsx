@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   FaAngleRight,
   FaCircleNotch,
+  FaFacebook,
   FaGithub,
   FaPlusCircle,
   FaRegFolder,
@@ -222,8 +223,8 @@ const ProfileDropdown = () => {
                 <Link to="">
                   <Button
                     type="outline"
-                    label="Github"
-                    icon={<FaGithub className="text-white w-5 h-5" />}
+                    label="Facebook"
+                    icon={<FaFacebook className="text-white w-5 h-5" />}
                     iconPosition="left"
                     mobileHideLabel={true}
                   />

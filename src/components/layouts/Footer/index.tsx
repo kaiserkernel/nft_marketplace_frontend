@@ -1,6 +1,6 @@
 import React from "react";
 import Button from "../../common/Button";
-import { FaGithub, FaTelegram, FaTwitter } from "react-icons/fa";
+import { FaFacebook, FaGithub, FaTelegram, FaTwitter } from "react-icons/fa";
 import { Link } from "react-router";
 
 const Footer = () => {
@@ -44,8 +44,8 @@ const Footer = () => {
               <Link to="">
                 <Button
                   type="outline"
-                  label="Github"
-                  icon={<FaGithub className="text-white w-5 h-5" />}
+                  label="Facebook"
+                  icon={<FaFacebook className="text-white w-5 h-5" />}
                   iconPosition="left"
                   mobileHideLabel={true}
                 />
