@@ -232,6 +232,10 @@ const AuctionView: React.FC = () => {
     fetchAddress();
   }, [nft]);
 
+  useEffect(() => {
+    setBidPrice(0);
+  }, [openBidModal]);
+
   return (
     <>
       <ToastContainer toastStyle={{ backgroundColor: "black" }} />
