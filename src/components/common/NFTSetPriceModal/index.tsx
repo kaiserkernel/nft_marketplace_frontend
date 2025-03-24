@@ -84,10 +84,9 @@ export const NFTSetPriceModal = ({
     );
     setWsCollectionContract(wsContractInstance);
 
-    if (isOpen) {
-      wsContractInstance.on("NFTPriceSet", handleNFTPriceSetDB);
-      wsContractInstance.on("AuctionStarted", handleNFTAuctionStartedDB);
-    }
+    wsContractInstance.on("NFTPriceSet", handleNFTPriceSetDB);
+    wsContractInstance.on("AuctionStarted", handleNFTAuctionStartedDB);
+
     return () => {
       wsContractInstance.off("NFTPriceSet", handleNFTPriceSetDB);
       wsContractInstance.off("AuctionStarted", handleNFTAuctionStartedDB);
