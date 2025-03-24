@@ -76,7 +76,7 @@ const ProfileDropdown = () => {
           onClick={() => setIsOpen(!isOpen)}
         />
       )} */}
-      <div className="flex flex-wrap">
+      <div className="flex flex-nowrap">
         <p className="text-white">{isConnected}</p>
         <ConnectButton label="Connect Wallet" />
         {isConnected && (
