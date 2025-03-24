@@ -225,7 +225,6 @@ const AuctionView: React.FC = () => {
     const fetchAddress = async () => {
       try {
         const { data } = await fetchNFTAuctionInfo({ _id: nft._id });
-        console.log(data, "data");
         setNftData(data);
       } catch (error) {
         console.error("Error fetch address:", error);
