@@ -101,7 +101,7 @@ const ProfileDropdown = () => {
             }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="absolute right-0 mt-2 2xl:w-[20vw] xl:w-[33vw] lg:w-[40vw] md:w-[55vw] sm:w-[60vw] w-[80vw] z-50 bg-[#111111] border border-[#444444] rounded-3xl overflow-hidden shadow-lg"
+            className="absolute right-0 mt-2 2xl:w-[28vw] xl:w-[33vw] lg:w-[40vw] md:w-[55vw] sm:w-[60vw] w-[80vw] z-50 bg-[#111111] border border-[#444444] rounded-3xl overflow-hidden shadow-lg"
           >
             <motion.ul
               layout

@@ -54,13 +54,13 @@ const CreateCollectionModal: React.FC<CreateCollectionModalProps> = ({
   // setContract(contractInstance);
 
   // Set up WebSocket provider to listen for contract events
-  const wsContract = useMemo(() => {
-    return new ethers.Contract(
-      CONTRACT_ADDRESS,
-      ContractFactoryABI,
-      wsProvider
-    );
-  }, [wsProvider]);
+  // const wsContract = useMemo(() => {
+  //   return new ethers.Contract(
+  //     CONTRACT_ADDRESS,
+  //     ContractFactoryABI,
+  //     wsProvider
+  //   );
+  // }, [wsProvider]);
 
   // Validate form before creating collection
   const validatorForm = (): boolean => {
@@ -182,38 +182,38 @@ const CreateCollectionModal: React.FC<CreateCollectionModalProps> = ({
   }, [isOpen]);
 
   // Handle contract event for collection creation
-  useEffect(() => {
-    if (!wsContract) return;
+  // useEffect(() => {
+  //   if (!wsContract) return;
 
-    // Define the event listener function outside the effect to avoid unnecessary re-creation
-    const onCollectionCreated = (
-      owner: string,
-      collectionAddress: string,
-      name: string,
-      symbol: string,
-      metadataURI: string
-    ) => {
-      handleCollectionCreated(
-        owner,
-        collectionAddress,
-        name,
-        symbol,
-        metadataURI
-      );
-    };
+  //   // Define the event listener function outside the effect to avoid unnecessary re-creation
+  //   const onCollectionCreated = (
+  //     owner: string,
+  //     collectionAddress: string,
+  //     name: string,
+  //     symbol: string,
+  //     metadataURI: string
+  //   ) => {
+  //     handleCollectionCreated(
+  //       owner,
+  //       collectionAddress,
+  //       name,
+  //       symbol,
+  //       metadataURI
+  //     );
+  //   };
 
-    // Attach event listener to the contract
-    if (isOpen) {
-      // wsContract.on("CollectionCreated", onCollectionCreated);
-    }
+  //   // Attach event listener to the contract
+  //   if (isOpen) {
+  //     wsContract.on("CollectionCreated", onCollectionCreated);
+  //   }
 
-    // Cleanup function to remove the listener when modal closes or wsContract changes
-    return () => {
-      if (wsContract) {
-        wsContract.off("CollectionCreated", onCollectionCreated);
-      }
-    };
-  }, [wsContract, isOpen]); // Make sure the effect is triggered when `wsContract` or `isOpen` changes
+  //   // Cleanup function to remove the listener when modal closes or wsContract changes
+  //   return () => {
+  //     if (wsContract) {
+  //       wsContract.off("CollectionCreated", onCollectionCreated);
+  //     }
+  //   };
+  // }, [wsContract, isOpen]); // Make sure the effect is triggered when `wsContract` or `isOpen` changes
 
   return (
     <Modal

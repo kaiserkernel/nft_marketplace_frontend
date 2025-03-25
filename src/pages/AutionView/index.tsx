@@ -41,6 +41,7 @@ const AuctionView: React.FC = () => {
   const { address, chain } = useAccount();
   const [contractInstance, setContractInstance] =
     useState<ethers.Contract | null>(null);
+  let wsInstance: ethers.Contract | null = null;
 
   const topBidPrice = useMemo(() => {
     if (!nftData.bidHistory?.length) {
@@ -189,29 +190,32 @@ const AuctionView: React.FC = () => {
       return;
     }
 
-    let wsInstance: ethers.Contract;
-    try {
-      const contractInstance = new ethers.Contract(
-        nftData.collection.contractAddress,
-        ContractCollectionABI,
-        signer
-      );
-      setContractInstance(contractInstance);
+    const contractInstance = new ethers.Contract(
+      nftData.collection.contractAddress,
+      ContractCollectionABI,
+      signer
+    );
+    setContractInstance(contractInstance);
 
-      wsInstance = new ethers.Contract(
-        nftData.collection.contractAddress,
-        ContractCollectionABI,
-        wsProvider
-      );
-      wsInstance.on("NewBidPlaced", handleBidNFTDB);
-      wsInstance.on("AuctionEnded", handleAuctionEndedDB);
-    } catch (error) {
-      console.log(error, "error");
-    }
-
-    return () => {
+    if (wsInstance) {
       wsInstance.off("NewBidPlaced", handleBidNFTDB);
       wsInstance.off("AuctionEnded", handleAuctionEndedDB);
+    }
+
+    wsInstance = new ethers.Contract(
+      nftData.collection.contractAddress,
+      ContractCollectionABI,
+      wsProvider
+    );
+
+    wsInstance.on("NewBidPlaced", handleBidNFTDB);
+    wsInstance.on("AuctionEnded", handleAuctionEndedDB);
+
+    return () => {
+      if (wsInstance) {
+        wsInstance.off("NewBidPlaced", handleBidNFTDB);
+        wsInstance.off("AuctionEnded", handleAuctionEndedDB);
+      }
     };
   }, [
     wsProvider,

@@ -64,8 +64,7 @@ const CreateInCollection = () => {
   const walletAddress = address as string;
   const [collectionContract, setCollectionContract] =
     useState<ethers.Contract | null>(null);
-  const [wsCollectionContract, setWsCollectionContract] =
-    useState<ethers.Contract | null>(null);
+  let wsCollectionContract: ethers.Contract | null = null;
 
   // Form validation check for required fields
   const validatorForm = () => {
@@ -245,26 +244,21 @@ const CreateInCollection = () => {
     );
     setCollectionContract(contractInstance);
 
-    // let prevWsContractInstance : ethers.Contract;
-    const _wsContractInstance = new ethers.Contract(
+    if (wsCollectionContract)
+      wsCollectionContract.off("NFTMinted", handleMintNFTDB);
+
+    wsCollectionContract = new ethers.Contract(
       confirmedCollectionAddress,
       ContractCollectionABI,
       wsProvider
     );
 
-    // setWsCollectionContract((prev) => {
-    //   if (prev) {
-    //     prev.off("NFTMinted", handleMintNFTDB);
-    //   }
-    //   return _wsContractInstance;
-    // });
+    wsCollectionContract.on("NFTMinted", handleMintNFTDB);
 
-    // console.log("mint listener ready");
-    // _wsContractInstance.on("NFTMinted", handleMintNFTDB);
-
-    // return () => {
-    //   _wsContractInstance.off("NFTMinted", handleMintNFTDB);
-    // };
+    return () => {
+      if (wsCollectionContract)
+        wsCollectionContract.off("NFTMinted", handleMintNFTDB);
+    };
   }, [confirmedCollectionAddress, wsProvider, signer, ContractCollectionABI]);
 
   // Fetch user's collections when wallet address changes

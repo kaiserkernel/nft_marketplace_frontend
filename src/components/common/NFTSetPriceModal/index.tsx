@@ -56,49 +56,49 @@ export const NFTSetPriceModal = ({
   const { signer, wsProvider } = useContract();
   const [collectionContract, setCollectionContract] =
     useState<ethers.Contract | null>(null);
-  const [wsCollectionContract, setWsCollectionContract] =
-    useState<ethers.Contract | null>(null);
+  let wsContractInstance: ethers.Contract | null = null;
 
   useEffect(() => {
+    if (!nftProps.collection?.contractAddress) {
+      return;
+    }
+
+    if (isOpen) {
+      const contractInstance = new ethers.Contract(
+        nftProps.collection.contractAddress,
+        ContractCollectionABI,
+        signer
+      );
+      setCollectionContract(contractInstance);
+
+      if (wsContractInstance) {
+        wsContractInstance.off("NFTPriceSet", handleNFTPriceSetDB);
+        wsContractInstance.off("AuctionStarted", handleNFTAuctionStartedDB);
+      }
+
+      wsContractInstance = new ethers.Contract(
+        nftProps.collection.contractAddress,
+        ContractCollectionABI,
+        wsProvider
+      );
+      wsContractInstance.on("NFTPriceSet", handleNFTPriceSetDB);
+      wsContractInstance.on("AuctionStarted", handleNFTAuctionStartedDB);
+    }
+
     if (!isOpen) {
       setPrice(0);
       setPriceType("fixed");
       setDuration({ date: null, hour: null, minute: null });
       return;
     }
-    if (!nftProps.collection?.contractAddress) {
-      return;
-    }
-
-    const contractInstance = new ethers.Contract(
-      nftProps.collection.contractAddress,
-      ContractCollectionABI,
-      signer
-    );
-    setCollectionContract(contractInstance);
-
-    const wsContractInstance = new ethers.Contract(
-      nftProps.collection.contractAddress,
-      ContractCollectionABI,
-      wsProvider
-    );
-    setWsCollectionContract(wsContractInstance);
-
-    wsContractInstance.on("NFTPriceSet", handleNFTPriceSetDB);
-    wsContractInstance.on("AuctionStarted", handleNFTAuctionStartedDB);
 
     return () => {
-      wsContractInstance.off("NFTPriceSet", handleNFTPriceSetDB);
-      wsContractInstance.off("AuctionStarted", handleNFTAuctionStartedDB);
+      if (wsContractInstance) {
+        wsContractInstance.off("NFTPriceSet", handleNFTPriceSetDB);
+        wsContractInstance.off("AuctionStarted", handleNFTAuctionStartedDB);
+      }
     };
-  }, [signer, wsProvider, nftProps.collection?.contractAddress, isOpen]);
-
-  useEffect(() => {
-    if (wsCollectionContract && !isOpen) {
-      wsCollectionContract.off("NFTPriceSet", handleNFTPriceSetDB);
-      wsCollectionContract.off("AuctionStarted", handleNFTAuctionStartedDB);
-    }
-  }, [wsCollectionContract, isOpen]);
+  }, [isOpen]);
 
   const handleNFTAuctionStartedDB = async (
     tokenId: bigint,
