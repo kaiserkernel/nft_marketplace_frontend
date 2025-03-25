@@ -46,6 +46,7 @@ const CreateCollectionModal: React.FC<CreateCollectionModalProps> = ({
 
   const { signer, wsProvider } = useContract();
   const { address } = useAccount();
+  const walletAddress = address as string;
 
   const contract = useMemo(() => {
     return new ethers.Contract(CONTRACT_ADDRESS, ContractFactoryABI, signer);
@@ -131,8 +132,8 @@ const CreateCollectionModal: React.FC<CreateCollectionModalProps> = ({
 
       // log.logs[0].address -> contractAddress
       // log.from -> owner address
-      handleCollectionCreated(
-        address as string,
+      await handleCollectionCreated(
+        walletAddress,
         log.logs[0].address,
         collectionData.name,
         collectionData.tokenSymbol,

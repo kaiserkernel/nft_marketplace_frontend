@@ -191,9 +191,10 @@ const CreateInCollection = () => {
       );
 
       const log = await tx.wait();
-
+      console.log(log, "nft minted");
       // log.logs[0].address -> contractAddress
       // log.from -> owner address
+      // await handleMintNFTDB(walletAddress, )
       notify("NFT minted successfully", "success");
 
       // init form
@@ -251,15 +252,15 @@ const CreateInCollection = () => {
       wsProvider
     );
 
-    setWsCollectionContract((prev) => {
-      if (prev) {
-        prev.off("NFTMinted", handleMintNFTDB);
-      }
-      return _wsContractInstance;
-    });
+    // setWsCollectionContract((prev) => {
+    //   if (prev) {
+    //     prev.off("NFTMinted", handleMintNFTDB);
+    //   }
+    //   return _wsContractInstance;
+    // });
 
-    console.log("mint listener ready");
-    _wsContractInstance.on("NFTMinted", handleMintNFTDB);
+    // console.log("mint listener ready");
+    // _wsContractInstance.on("NFTMinted", handleMintNFTDB);
 
     // return () => {
     //   _wsContractInstance.off("NFTMinted", handleMintNFTDB);
