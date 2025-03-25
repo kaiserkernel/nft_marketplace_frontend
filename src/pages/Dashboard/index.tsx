@@ -52,7 +52,7 @@ const Dashboard: FC = () => {
     return (
       itemList &&
       itemList.map((item, idx) => (
-        <CardBtn key={idx} nft={item} cardType="NFT" />
+        <CardBtn key={idx} nft={item} cardType="Auction" />
       ))
     );
   };

@@ -59,10 +59,10 @@ const SingleNFT = () => {
           />
         </div>
         <div className="h-4"></div>
-        <TextArea
+        {/* <TextArea
           label="Description"
           placeholder="Describe the idea behind your NFT and explain how it stands out from the rest."
-        />
+        /> */}
         <div className="mt-4">
           <h3 className="text-white font-semibold text-md mb-2">
             Royalties for the Creator

@@ -9,15 +9,15 @@ import { CollectionProps, NFTProps } from "../../../types";
 import "./style.css";
 
 interface CardBtnProps {
-  collection?: CollectionProps,
-  nft?: NFTProps,
-  cardType: "Collection" | "NFT"
+  collection?: CollectionProps;
+  nft?: NFTProps;
+  cardType: "Collection" | "Auction";
 }
 
 const CardBtn: FC<CardBtnProps> = ({ collection, nft, cardType }) => {
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const navigate = useNavigate();
-  
+
   // Memoize card data based on the card type
   const cardData = useMemo(() => {
     if (cardType === "Collection" && collection) {
@@ -29,7 +29,7 @@ const CardBtn: FC<CardBtnProps> = ({ collection, nft, cardType }) => {
       };
     }
 
-    if (cardType === "NFT" && nft) {
+    if (cardType === "Auction" && nft) {
       return {
         name: nft.name || null,
         description: nft.description || null,
@@ -39,12 +39,12 @@ const CardBtn: FC<CardBtnProps> = ({ collection, nft, cardType }) => {
 
     return {};
   }, [cardType, collection, nft]);
+
   const handleViewCardClick = () => {
-    if ( cardType === "Collection" )
-      navigate("/collection-view", { state: collection })
-    if (cardType === "NFT")
-      navigate("/auction-view", { state: nft })
-  }
+    if (cardType === "Collection")
+      navigate("/collection-view", { state: collection });
+    if (cardType === "Auction") navigate("/auction-view", { state: nft });
+  };
 
   return (
     <div
@@ -69,8 +69,14 @@ const CardBtn: FC<CardBtnProps> = ({ collection, nft, cardType }) => {
           animate={{ height: "auto", opacity: 1 }}
           className="absolute left-[1px] right-[1px] bottom-[1px] p-4 rounded-b-3xl bg-black/5 backdrop-blur-md z-20 h-auto"
         >
-          { cardData.name && <h3 className="text-white font-semibold text-md">{cardData.name}</h3> }
-          { cardData.description && <p className="text-white text-sm mt-2">{cardData.description}</p>}
+          {cardData.name && (
+            <h3 className="text-white font-semibold text-md">
+              {cardData.name}
+            </h3>
+          )}
+          {cardData.description && (
+            <p className="text-white text-sm mt-2">{cardData.description}</p>
+          )}
           <AnimatePresence>
             {isFocused && (
               <motion.div
@@ -81,10 +87,14 @@ const CardBtn: FC<CardBtnProps> = ({ collection, nft, cardType }) => {
                 transition={{ duration: 0.3, ease: "easeInOut" }}
               >
                 <div className="mt-4">
-                  {cardData.symbol && <p className="text-white text-sm font-bold">{cardData.symbol}</p>}
+                  {cardData.symbol && (
+                    <p className="text-white text-sm font-bold">
+                      {cardData.symbol}
+                    </p>
+                  )}
                   <div className="flex items-center justify-center mt-4">
                     <Button
-                      label="Explore Collection"
+                      label={`Explore ${cardType}`}
                       width="full"
                       type="colorful"
                       onClick={handleViewCardClick}

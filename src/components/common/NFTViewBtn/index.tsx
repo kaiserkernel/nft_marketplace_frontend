@@ -20,8 +20,17 @@ export const NFTViewBtn = ({
   isProcessing,
   handleBuyNft,
 }: NFTViewBtnProps) => {
-  const { price, tokenURI, lastPrice, tokenId, priceType, startBid, currency } =
-    nftData;
+  const {
+    price,
+    tokenURI,
+    lastPrice,
+    tokenId,
+    priceType,
+    startBid,
+    currency,
+    ownerName,
+  } = nftData;
+
   const [nftMetaData, setNFTMetaData] = useState<NFTMetaData | null>(null);
   const navigate = useNavigate();
 
@@ -63,7 +72,7 @@ export const NFTViewBtn = ({
           {/* NFT Info */}
           <div className="w-[40vw] md:w-64 flex flex-col text-white items-start">
             <p className="md:text-sm text-xs font-light mt-3 md:ml-4 ml-2">
-              {nftMetaData.name}
+              {nftMetaData.name} {ownerName ? ` ( ${ownerName} ) ` : ""}
             </p>
             <p
               className={`md:text-base sm:text-sm text-xs font-medium mt-2 md:ml-4 ml-2 ${

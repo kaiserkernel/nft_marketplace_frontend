@@ -17,9 +17,13 @@ const Avatar = ({
       }`}
       style={{ width: size, height: size }}
     >
-      <div className="absolute rounded-full inset-[1px] bg-[#1C1C1C] flex flex-col items-center justify-center">
+      <div className="absolute rounded-full inset-[1px] bg-[#1C1C1C] flex flex-col items-center justify-center overflow-hidden">
         {img ? (
-          <img src={img} alt="avatar" className="w-full h-auto rounded-full" />
+          <img
+            src={img}
+            alt="avatar"
+            className="rounded-full w-[100px] h-[100px] object-cover"
+          />
         ) : (
           <FaUser className="text-white/80 w-8 h-8" />
         )}

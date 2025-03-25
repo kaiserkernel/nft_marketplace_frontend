@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { FileObject } from "pinata";
 import { ethers } from "ethers";
 
-import CollectionLogo from "../../components/common/CollectionLogo";
+import LogoInput from "../../components/common/LogoInput";
 import InputField from "../../components/common/InputField";
 import TextArea from "../../components/common/TextArea";
 import { notify } from "../../components/common/Notify";
@@ -44,23 +44,13 @@ const CreateCollectionModal: React.FC<CreateCollectionModalProps> = ({
   });
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-  const { signer, wsProvider } = useContract();
+  const { signer } = useContract();
   const { address } = useAccount();
   const walletAddress = address as string;
 
   const contract = useMemo(() => {
     return new ethers.Contract(CONTRACT_ADDRESS, ContractFactoryABI, signer);
   }, [signer]);
-  // setContract(contractInstance);
-
-  // Set up WebSocket provider to listen for contract events
-  // const wsContract = useMemo(() => {
-  //   return new ethers.Contract(
-  //     CONTRACT_ADDRESS,
-  //     ContractFactoryABI,
-  //     wsProvider
-  //   );
-  // }, [wsProvider]);
 
   // Validate form before creating collection
   const validatorForm = (): boolean => {
@@ -181,40 +171,6 @@ const CreateCollectionModal: React.FC<CreateCollectionModalProps> = ({
     setCollectionData({ name: "", tokenSymbol: "" });
   }, [isOpen]);
 
-  // Handle contract event for collection creation
-  // useEffect(() => {
-  //   if (!wsContract) return;
-
-  //   // Define the event listener function outside the effect to avoid unnecessary re-creation
-  //   const onCollectionCreated = (
-  //     owner: string,
-  //     collectionAddress: string,
-  //     name: string,
-  //     symbol: string,
-  //     metadataURI: string
-  //   ) => {
-  //     handleCollectionCreated(
-  //       owner,
-  //       collectionAddress,
-  //       name,
-  //       symbol,
-  //       metadataURI
-  //     );
-  //   };
-
-  //   // Attach event listener to the contract
-  //   if (isOpen) {
-  //     wsContract.on("CollectionCreated", onCollectionCreated);
-  //   }
-
-  //   // Cleanup function to remove the listener when modal closes or wsContract changes
-  //   return () => {
-  //     if (wsContract) {
-  //       wsContract.off("CollectionCreated", onCollectionCreated);
-  //     }
-  //   };
-  // }, [wsContract, isOpen]); // Make sure the effect is triggered when `wsContract` or `isOpen` changes
-
   return (
     <Modal
       title="Create a Collection"
@@ -230,10 +186,11 @@ const CreateCollectionModal: React.FC<CreateCollectionModalProps> = ({
           Your Collection’s Avatar
         </h3>
         <div className="mt-2">
-          <CollectionLogo
+          <LogoInput
             logoImage={LogoImage}
             setLogoImage={setLogoImage}
             setLogoImageFile={setLogoImageFile}
+            logoType="Collection"
           />
         </div>
       </div>

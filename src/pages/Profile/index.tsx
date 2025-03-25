@@ -20,30 +20,18 @@ import TextArea from "../../components/common/TextArea";
 import { notify } from "../../components/common/Notify";
 
 import { FormatAddress } from "../../utils/FormatAddress";
+import { fetchUserInfo, register } from "../../services/userService";
+import { SocialLinks, UserInfo } from "../../types";
+import { validateSocialLinks } from "../../utils/ValidateSocialLinks";
+import { useContract } from "../../context/ContractContext";
 
 import Collected from "./Collected";
 import History from "./History";
-import { fetchUserInfo, register } from "../../services/userService";
 
 const tabItems = [
   { label: "Collected", content: <Collected /> },
   // { label: "History", content: <History /> },
 ];
-
-interface SocialLinks {
-  twitter: string;
-  tiktok: string;
-  youtube: string;
-  instagram: string;
-  telegram: string;
-  discord: string;
-}
-
-interface UserInfo {
-  name: string;
-  description: string;
-  avatar: string;
-}
 
 const Profile = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -61,19 +49,8 @@ const Profile = () => {
     telegram: "",
     discord: "",
   });
-  const [userInfo, setUserInfo] = useState<UserInfo>({
-    name: "",
-    description: "",
-    avatar: "",
-  });
-  const [userInfoSocialLinks, setUserInfoSocialLinks] = useState<SocialLinks>({
-    twitter: "",
-    tiktok: "",
-    youtube: "",
-    instagram: "",
-    telegram: "",
-    discord: "",
-  });
+  const { userInfo, setUserInfo, userInfoSocialLinks, setUserInfoSocialLinks } =
+    useContract();
 
   const [bannerImage, setBannerImage] = useState<string | null>(null);
   const [bannerImageFile, setBannerImageFile] = useState<File | null>(null);
@@ -93,6 +70,12 @@ const Profile = () => {
   };
 
   const handleProfileSave = async () => {
+    const errorLink = validateSocialLinks(linksInfo);
+    if (errorLink) {
+      notify(errorLink, "error");
+      return;
+    }
+
     setIsLoading(true);
 
     if (!walletAddress) {
@@ -107,16 +90,22 @@ const Profile = () => {
       formData.append("description", displayDescription);
       formData.append("socialLinks", JSON.stringify(linksInfo));
 
-      if (avatarImageFile) formData.append("avatar", avatarImageFile); // File upload
+      if (avatarImageFile) formData.append("avatar", avatarImageFile);
+      if (bannerImageFile) formData.append("banner", bannerImageFile);
 
       const { data } = await register(formData);
-      const { name, description, avatar, socialLinks } = data;
+      const { name, description, avatar, socialLinks, banner } = data;
+
+      const avatarUrl = process.env.REACT_APP_URL + avatar;
+      const bannerUrl = process.env.REACT_APP_URL + banner;
+
       // save user info
       setUserInfo((prev) => ({
         ...prev,
         name,
         description,
-        avatar,
+        avatar: avatarUrl,
+        banner: bannerUrl,
       }));
       setUserInfoSocialLinks((prev) => ({
         ...prev,
@@ -126,7 +115,7 @@ const Profile = () => {
       notify("Profile saved successfully", "success");
       setIsOpen(false);
     } catch (error) {
-      console.log(error, "register error");
+      console.error(error, "register error");
     } finally {
       setIsLoading(false);
     }
@@ -138,14 +127,17 @@ const Profile = () => {
       try {
         const fetchInitialUserInfo = async () => {
           const { data } = await fetchUserInfo({ address: walletAddress });
-
           if (data) {
-            const { name, description, avatar, socialLinks } = data;
+            const { name, description, avatar, socialLinks, banner } = data;
+            const avatarUrl = process.env.REACT_APP_URL + avatar;
+            const bannerUrl = process.env.REACT_APP_URL + banner;
+            // user info
             setUserInfo((prev) => ({
               ...prev,
               name,
               description,
-              avatar,
+              avatar: avatarUrl,
+              banner: bannerUrl,
             }));
             setUserInfoSocialLinks((prev) => ({
               ...prev,
@@ -161,16 +153,16 @@ const Profile = () => {
   }, [walletAddress]);
 
   useEffect(() => {
-    if (isOpen) {
-      const { name, description, avatar } = userInfo;
+    if (isOpen && userInfo && userInfoSocialLinks) {
+      const { name, description, avatar, banner } = userInfo;
 
+      // change
       setDisplayName(name);
       setDisplayDescription(description);
+      setAvatarImage(avatar);
+      setBannerImage(banner);
+
       setLinksInfo(userInfoSocialLinks);
-      if (avatar) {
-        const _imageUrl = process.env.REACT_APP_URL + avatar;
-        setAvatarImage(_imageUrl);
-      }
     }
   }, [isOpen, userInfo, userInfoSocialLinks]);
 
@@ -179,16 +171,16 @@ const Profile = () => {
       {/* Banner section */}
       <div className="w-full">
         <Banner
-          setImageFile={setBannerImageFile}
-          image={bannerImage}
-          setImage={setBannerImage}
+          avatar={userInfo?.avatar ?? ""}
+          banner={userInfo?.banner ?? ""}
           className="h-[40vh]"
+          status="Read"
         />
       </div>
       {/* Profile detail section */}
       <div className="w-full md:px-8 py-14 sm:px-3 px-2">
         <h3 className="text-white font-semibold text-3xl">
-          {FormatAddress(walletAddress)}
+          {userInfo?.name ? userInfo.name : FormatAddress(walletAddress)}
         </h3>
         <div className="flex flex-row items-center gap-2 mt-2">
           <span className="text-slate-400 text-md">address: </span>
@@ -204,13 +196,13 @@ const Profile = () => {
             iconPosition="left"
             onClick={handleEditClick}
           />
-          <Button
+          {/* <Button
             type="outline"
             label="Add Links"
             icon={<FaPlusCircle className="text-white" />}
             iconPosition="left"
             onClick={handleEditClick}
-          />
+          /> */}
         </div>
         {/* Tabs */}
         <div className="w-full mt-8">
@@ -231,10 +223,12 @@ const Profile = () => {
         btnProcessing={isLoading}
       >
         <Banner
-          setImageFile={setAvatarImageFile}
-          image={avatarImage}
-          setImage={setAvatarImage}
+          avatar={avatarImage}
+          banner={bannerImage}
+          setAvatarFile={setAvatarImageFile}
+          setBannerFile={setBannerImageFile}
           className="h-[30vh]"
+          status="Write"
         />
         <div className="w-full">
           <h3 className="text-white font-semibold text-md mt-8">

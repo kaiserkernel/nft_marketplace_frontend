@@ -5,7 +5,7 @@ interface TextAreaProps {
   placeholder?: string;
   value?: string;
   max?: number;
-  onChange?: (value: string) => void; // New prop for handling changes
+  onChange: (value: string) => void; // New prop for handling changes
 }
 
 const TextArea: FC<TextAreaProps> = ({
@@ -16,12 +16,11 @@ const TextArea: FC<TextAreaProps> = ({
   onChange,
 }) => {
   const [isFocused, setIsFocused] = useState<boolean>(false);
-  const [text, setText] = useState<string>(value);
+  // const [text, setText] = useState<string>(value);
 
-  const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newValue = event.target.value;
-    setText(newValue); // Update local state
-    onChange?.(newValue); // Call parent handler if provided
+  const handleChange = (evt: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const _value = evt.target.value;
+    onChange(_value); // Call parent handler if provided
   };
 
   return (
@@ -35,7 +34,7 @@ const TextArea: FC<TextAreaProps> = ({
         }  outline-none transition-all duration-300 ease-in-out py-2 px-4 text-sm text-white`}
         placeholder={placeholder}
         maxLength={max}
-        value={text}
+        value={value}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         onChange={handleChange}

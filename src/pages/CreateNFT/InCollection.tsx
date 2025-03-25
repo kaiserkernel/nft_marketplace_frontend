@@ -190,7 +190,6 @@ const CreateInCollection = () => {
       );
 
       const log = await tx.wait();
-      console.log(log, "nft minted");
       // log.logs[0].address -> contractAddress
       // log.from -> owner address
       // await handleMintNFTDB(walletAddress, )

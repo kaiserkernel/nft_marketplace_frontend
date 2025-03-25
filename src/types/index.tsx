@@ -36,6 +36,7 @@ export interface NFTProps {
   image?: string;
   attributes?: Attribute[];
   currency: "BNB" | "ETH" | "tBNB";
+  ownerName?: string;
 }
 
 interface Attribute {
@@ -57,3 +58,19 @@ export interface ItemGroupList {
 }
 
 export const CurrencyType = ["BNB", "ETH", "tBNB"];
+
+export interface SocialLinks {
+  twitter: string;
+  tiktok: string;
+  youtube: string;
+  instagram: string;
+  telegram: string;
+  discord: string;
+}
+
+export interface UserInfo {
+  name: string;
+  description: string;
+  avatar: string;
+  banner: string;
+}

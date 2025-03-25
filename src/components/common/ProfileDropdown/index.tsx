@@ -25,6 +25,7 @@ import IconButton from "../IconButton";
 import Button from "../Button";
 
 import { FormatAddress } from "../../../utils/FormatAddress";
+import { useContract } from "../../../context/ContractContext";
 
 const dropdownItems: DropdownItemType[] = [
   {
@@ -44,6 +45,8 @@ const ProfileDropdown = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { userInfo, userInfoSocialLinks } = useContract();
+
   const { address, isConnected } = useAccount();
   const walletAddress = address as string;
   // const { open } = useAppKit();
@@ -114,10 +117,12 @@ const ProfileDropdown = () => {
                   onClick={() => setIsOpen(false)}
                   className="flex flex-row items-center gap-4 py-2 px-4 cursor-pointer hover:bg-[#1c1c1c] rounded-lg transition"
                 >
-                  <Avatar size={70} />
+                  <Avatar size={70} img={userInfo?.avatar} />
                   <div>
                     <h2 className="font-semibold text-white text-md">
-                      {FormatAddress(walletAddress)}
+                      {userInfo?.name
+                        ? userInfo.name
+                        : FormatAddress(walletAddress)}
                     </h2>
                     <p className="text-slate-500 text-sm">Open Profile</p>
                   </div>

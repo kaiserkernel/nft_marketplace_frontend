@@ -1,4 +1,6 @@
 import React, {
+  Dispatch,
+  SetStateAction,
   createContext,
   useContext,
   useEffect,
@@ -8,10 +10,12 @@ import React, {
 import { ethers } from "ethers";
 import { useNavigate } from "react-router";
 import { useAccount } from "wagmi";
+import { ThreeDot } from "react-loading-indicators";
 
 import { notify } from "../components/common/Notify";
 import { useEthersSigner } from "../utils/GetSigner";
-import { ThreeDot } from "react-loading-indicators";
+import { UserInfo, SocialLinks } from "../types";
+import { fetchUserInfo } from "../services/userService";
 
 // WebSocket URL from environment variables
 const WS_RPC_URL = process.env.REACT_APP_TESTNET_WS_RPC_URL ?? "";
@@ -20,12 +24,20 @@ const WS_RPC_URL = process.env.REACT_APP_TESTNET_WS_RPC_URL ?? "";
 interface ContractContextType {
   signer: ethers.JsonRpcSigner | null;
   wsProvider: ethers.WebSocketProvider | null;
+  userInfo: UserInfo | null;
+  setUserInfo: Dispatch<SetStateAction<UserInfo | null>>; // Allow it to be null initially
+  userInfoSocialLinks: SocialLinks | null;
+  setUserInfoSocialLinks: Dispatch<SetStateAction<SocialLinks | null>>; // Allow it to be null initially
 }
 
 // Create the contract context
 const ContractContext = createContext<ContractContextType>({
   signer: null,
   wsProvider: null,
+  userInfo: null,
+  setUserInfo: () => {}, // Initialize as null
+  userInfoSocialLinks: null,
+  setUserInfoSocialLinks: () => {}, // Initialize as null
 });
 
 // Context Provider Component
@@ -42,6 +54,11 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const { address, isConnected } = useAccount();
   const _signer = useEthersSigner();
+
+  // user Info
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [userInfoSocialLinks, setUserInfoSocialLinks] =
+    useState<SocialLinks | null>(null);
 
   useEffect(() => {
     let _wsProvider: ethers.WebSocketProvider | null = null;
@@ -62,11 +79,6 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({
     const initContract = async (_address: string) => {
       try {
         setLoading(true);
-
-        if (!isConnected) {
-          console.warn("Wallet is not connected");
-          return;
-        }
 
         if (_signer) {
           setSigner(_signer);
@@ -103,8 +115,34 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     };
 
+    const fetchInitialUserInfo = async (address: string) => {
+      if (userInfo || userInfoSocialLinks) {
+        return;
+      }
+
+      const { data } = await fetchUserInfo({ address });
+      if (data) {
+        const { name, description, avatar, socialLinks, banner } = data;
+        const avatarUrl = process.env.REACT_APP_URL + avatar;
+        const bannerUrl = process.env.REACT_APP_URL + banner;
+        // user info
+        setUserInfo((prev) => ({
+          ...prev,
+          name,
+          description,
+          avatar: avatarUrl,
+          banner: bannerUrl,
+        }));
+        setUserInfoSocialLinks((prev) => ({
+          ...prev,
+          ...socialLinks,
+        }));
+      }
+    };
+
     if (isConnected && address) {
       initContract(address);
+      fetchInitialUserInfo(address as string);
     } else if (!loading) {
       navigate("/");
     }
@@ -115,7 +153,16 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({
   // }
 
   return (
-    <ContractContext.Provider value={{ signer, wsProvider }}>
+    <ContractContext.Provider
+      value={{
+        signer,
+        wsProvider,
+        userInfo,
+        setUserInfo,
+        userInfoSocialLinks,
+        setUserInfoSocialLinks,
+      }}
+    >
       {children}
     </ContractContext.Provider>
   );

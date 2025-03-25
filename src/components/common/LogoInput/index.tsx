@@ -4,13 +4,19 @@ import { FaCloudUploadAlt } from "react-icons/fa";
 // import { FileObject } from "pinata";
 
 interface CollectionLogoProps {
-  logoImage: string | null,
+  logoImage: string | null;
   setLogoImage: React.Dispatch<React.SetStateAction<string | null>>;
   // setLogoImageFile: React.Dispatch<React.SetStateAction<FileObject | null>>;
   setLogoImageFile: React.Dispatch<React.SetStateAction<File | null>>;
+  logoType: "Collection" | "Profile";
 }
 
-const CollectionAvatar: React.FC<CollectionLogoProps> = ({ logoImage, setLogoImage, setLogoImageFile }) => {
+const CollectionAvatar: React.FC<CollectionLogoProps> = ({
+  logoImage,
+  setLogoImage,
+  setLogoImageFile,
+  logoType,
+}) => {
   const [isHovered, setIsHovered] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -101,14 +107,16 @@ const CollectionAvatar: React.FC<CollectionLogoProps> = ({ logoImage, setLogoIma
           </>
         )}
       </div>
-      <div className="flex-1">
-        <h4 className="text-white font-semibold text-md">
-          Upload Collection Avatar
-        </h4>
-        <p className="text-white/30 text-sm mt-2">
-          File types supported: JPG, PNG, SVG, GIF, and WEBP
-        </p>
-      </div>
+      {logoType === "Collection" && (
+        <div className="flex-1">
+          <h4 className="text-white font-semibold text-md">
+            Upload Collection Avatar
+          </h4>
+          <p className="text-white/30 text-sm mt-2">
+            File types supported: JPG, PNG, SVG, GIF, and WEBP
+          </p>
+        </div>
+      )}
     </div>
   );
 };
