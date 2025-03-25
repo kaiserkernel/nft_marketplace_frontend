@@ -13,6 +13,7 @@ import { useContract } from "../../context/ContractContext";
 import { pinata } from "../../config/pinata";
 import { TransactionErrorhandle } from "../../utils/TransactionErrorhandle";
 import { ContractFactoryABI } from "../../contracts";
+import { useAccount } from "wagmi";
 
 // Environment variable for contract address (default to an empty string if not provided)
 const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS ?? "";
@@ -44,6 +45,7 @@ const CreateCollectionModal: React.FC<CreateCollectionModalProps> = ({
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
   const { signer, wsProvider } = useContract();
+  const { address } = useAccount();
 
   const contract = useMemo(() => {
     return new ethers.Contract(CONTRACT_ADDRESS, ContractFactoryABI, signer);
@@ -129,6 +131,13 @@ const CreateCollectionModal: React.FC<CreateCollectionModalProps> = ({
 
       // log.logs[0].address -> contractAddress
       // log.from -> owner address
+      handleCollectionCreated(
+        address as string,
+        log.logs[0].address,
+        collectionData.name,
+        collectionData.tokenSymbol,
+        metadataURI
+      );
 
       notify("Collection created successfully", "success");
       onClose();
@@ -194,7 +203,7 @@ const CreateCollectionModal: React.FC<CreateCollectionModalProps> = ({
 
     // Attach event listener to the contract
     if (isOpen) {
-      wsContract.on("CollectionCreated", onCollectionCreated);
+      // wsContract.on("CollectionCreated", onCollectionCreated);
     }
 
     // Cleanup function to remove the listener when modal closes or wsContract changes

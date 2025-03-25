@@ -110,9 +110,9 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [isConnected, address, navigate, _signer]);
 
-  if (loading) {
-    return <ThreeDot size="large" color="#fff" />;
-  }
+  // if (loading) {
+  //   return <ThreeDot size="large" color="#fff" />;
+  // }
 
   return (
     <ContractContext.Provider value={{ signer, wsProvider }}>
