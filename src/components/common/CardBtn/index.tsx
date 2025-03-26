@@ -75,35 +75,45 @@ const CardBtn: FC<CardBtnProps> = ({ collection, nft, cardType }) => {
             </h3>
           )}
           {cardData.description && (
-            <p className="text-white text-sm mt-2">{cardData.description}</p>
+            <p className="text-white text-sm mt-2 md:block hidden">
+              {cardData.description}
+            </p>
           )}
-          <AnimatePresence>
-            {isFocused && (
-              <motion.div
-                layout // Add this to enable smooth height transition
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-              >
-                <div className="mt-4">
-                  {cardData.symbol && (
-                    <p className="text-white text-sm font-bold">
-                      {cardData.symbol}
-                    </p>
-                  )}
-                  <div className="flex items-center justify-center mt-4">
-                    <Button
-                      label={`Explore ${cardType}`}
-                      width="full"
-                      type="colorful"
-                      onClick={handleViewCardClick}
-                    />
+          <div
+            className="md:hidden block text-center text-sm font-bold bg-blue-600 px-4 py-2 text-white cursor-pointer"
+            onClick={handleViewCardClick}
+          >
+            Explorer {cardType}
+          </div>
+          <div className="md:block hidden">
+            <AnimatePresence>
+              {isFocused && (
+                <motion.div
+                  layout // Add this to enable smooth height transition
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                >
+                  <div className="mt-4">
+                    {cardData.symbol && (
+                      <p className="text-white text-sm font-bold">
+                        {cardData.symbol}
+                      </p>
+                    )}
+                    <div className="flex items-center justify-center mt-4">
+                      <Button
+                        label={`Explore ${cardType}`}
+                        width="full"
+                        type="colorful"
+                        onClick={handleViewCardClick}
+                      />
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </motion.div>
       </AnimatePresence>
     </div>

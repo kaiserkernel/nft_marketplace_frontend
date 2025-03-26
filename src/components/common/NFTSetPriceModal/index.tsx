@@ -343,7 +343,7 @@ export const NFTSetPriceModal = ({
         <img
           src={nftMetaData?.image}
           alt={`${nftMetaData?.name} NFT image`}
-          className="rounded-lg"
+          className="rounded-lg w-auto h-auto aspect-square object-cover object-center"
         />
       </div>
       <div className="mt-4 bg-black p-3 rounded-md text-white">

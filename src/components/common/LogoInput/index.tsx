@@ -109,10 +109,10 @@ const CollectionAvatar: React.FC<CollectionLogoProps> = ({
       </div>
       {logoType === "Collection" && (
         <div className="flex-1">
-          <h4 className="text-white font-semibold text-md">
+          <h4 className="text-white font-semibold md:text-md text-sm">
             Upload Collection Avatar
           </h4>
-          <p className="text-white/30 text-sm mt-2">
+          <p className="text-white/30 md:text-sm mt-2 text-xs">
             File types supported: JPG, PNG, SVG, GIF, and WEBP
           </p>
         </div>
