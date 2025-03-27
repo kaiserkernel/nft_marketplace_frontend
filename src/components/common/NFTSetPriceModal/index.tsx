@@ -71,18 +71,18 @@ export const NFTSetPriceModal = ({
       );
       setCollectionContract(contractInstance);
 
-      if (wsContractInstance) {
-        wsContractInstance.off("NFTPriceSet", handleNFTPriceSetDB);
-        wsContractInstance.off("AuctionStarted", handleNFTAuctionStartedDB);
-      }
+      // if (wsContractInstance) {
+      //   wsContractInstance.off("NFTPriceSet", handleNFTPriceSetDB);
+      //   wsContractInstance.off("AuctionStarted", handleNFTAuctionStartedDB);
+      // }
 
-      wsContractInstance = new ethers.Contract(
-        nftProps.collection.contractAddress,
-        ContractCollectionABI,
-        wsProvider
-      );
-      wsContractInstance.on("NFTPriceSet", handleNFTPriceSetDB);
-      wsContractInstance.on("AuctionStarted", handleNFTAuctionStartedDB);
+      // wsContractInstance = new ethers.Contract(
+      //   nftProps.collection.contractAddress,
+      //   ContractCollectionABI,
+      //   wsProvider
+      // );
+      // wsContractInstance.on("NFTPriceSet", handleNFTPriceSetDB);
+      // wsContractInstance.on("AuctionStarted", handleNFTAuctionStartedDB);
     }
 
     if (!isOpen) {
@@ -92,12 +92,12 @@ export const NFTSetPriceModal = ({
       return;
     }
 
-    return () => {
-      if (wsContractInstance) {
-        wsContractInstance.off("NFTPriceSet", handleNFTPriceSetDB);
-        wsContractInstance.off("AuctionStarted", handleNFTAuctionStartedDB);
-      }
-    };
+    // return () => {
+    //   if (wsContractInstance) {
+    //     wsContractInstance.off("NFTPriceSet", handleNFTPriceSetDB);
+    //     wsContractInstance.off("AuctionStarted", handleNFTAuctionStartedDB);
+    //   }
+    // };
   }, [isOpen]);
 
   const handleNFTAuctionStartedDB = async (
@@ -226,11 +226,20 @@ export const NFTSetPriceModal = ({
           auctionDuration,
           { gasLimit: gasEstimate }
         );
-        const log = await tx.wait();
+        const { logs } = await tx.wait();
 
-        // await handleNFTAuctionStartedDB(nftProps.tokenId, startingBid, )
+        const _auctionEndTimeString = logs[0].args[2].toString();
+        const _auctionEndTime = BigInt(_auctionEndTimeString);
+        const tokenIdBigInt = BigInt(nftProps.tokenId);
+
+        await handleNFTAuctionStartedDB(
+          tokenIdBigInt,
+          startingBid,
+          _auctionEndTime
+        );
+
         notify("Auction started successfully!", "success");
-        onClose();
+        setTimeout(() => onClose(), 2000);
         return;
       }
 
@@ -250,13 +259,13 @@ export const NFTSetPriceModal = ({
           _price,
           { gasLimit: gasEstimate }
         );
-        const log = await tx.wait();
+        await tx.wait();
 
-        // await handleNFTPriceSetDB(nftProps.tokenId, _price);
+        await handleNFTPriceSetDB(nftProps.tokenId, _price);
         // log.logs[0].address -> contractAddress
         // log.from -> owner address
         notify("Price set successfully", "success");
-        setTimeout(() => onClose(), 1500);
+        setTimeout(() => onClose(), 2000);
       }
 
       if (priceType === "not_for_sale") {
@@ -269,13 +278,14 @@ export const NFTSetPriceModal = ({
           price,
           { gasLimit: gasEstimate }
         );
-        const log = await tx.wait();
+        await tx.wait();
 
-        // await handleNFTPriceSetDB(nftProps.tokenId, 0);
+        const _price = FormatToWeiCurrency(0);
+        await handleNFTPriceSetDB(nftProps.tokenId, _price);
         // log.logs[0].address -> contractAddress
         // log.from -> owner address
         notify("Price set successfully", "success");
-        onClose();
+        setTimeout(() => onClose(), 2000);
       }
     } catch (error: any) {
       TransactionErrorhandle(error);
@@ -331,7 +341,7 @@ export const NFTSetPriceModal = ({
       btnClick={confirmPrice}
       btnProcessing={isProcessing}
     >
-      <ToastContainer toastStyle={{ backgroundColor: "black" }} />
+      <ToastContainer theme="dark" />
       <div className="text-white text-sm">
         <span className="font-bold">Address :</span> {nftProps.collection?._id}
       </div>

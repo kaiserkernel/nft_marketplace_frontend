@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  FaAngleRight,
+  FaPlus,
   FaCircleNotch,
   FaFacebook,
   FaGithub,
@@ -13,7 +13,7 @@ import {
   FaTwitter,
   FaUser,
 } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ConnectWallet from "../ConnectWallet";
 import { useAppKit } from "@reown/appkit/react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
@@ -46,6 +46,7 @@ const ProfileDropdown = () => {
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { userInfo, userInfoSocialLinks } = useContract();
+  const navigate = useNavigate();
 
   const { address, isConnected } = useAccount();
   const walletAddress = address as string;
@@ -81,7 +82,18 @@ const ProfileDropdown = () => {
         />
       )} */}
       <div className="flex flex-nowrap">
-        <p className="text-white">{isConnected}</p>
+        {isConnected && (
+          <div className="mr-2">
+            <Button
+              label="NFT"
+              type="blue"
+              onClick={() => navigate("/create-in-collection")}
+              iconPosition="right"
+              icon={<FaPlus className="text-white" />}
+              mobileHideLabel={true}
+            />
+          </div>
+        )}
         <ConnectButton label="Connect Wallet" />
         {isConnected && (
           <div className="ps-3">

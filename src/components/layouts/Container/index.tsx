@@ -10,9 +10,11 @@ interface ContainerProps {
 const Container: React.FC<ContainerProps> = ({ children }) => {
   return (
     <div className="flex flex-col min-h-screen bg-center bg-contain bg-no-repeat overflow-hidden background-image">
-      <ToastContainer toastStyle={{ backgroundColor: "black" }}/>
+      <ToastContainer theme="dark" />
       <Navbar />
-        <div className="w-full md:px-14 md:mt-14 mt-8 px-4 flex flex-grow items-center justify-center flex-col">{children}</div>
+      <div className="w-full md:px-14 md:mt-14 mt-8 px-4 flex flex-grow items-center justify-center flex-col">
+        {children}
+      </div>
       <Footer />
     </div>
   );

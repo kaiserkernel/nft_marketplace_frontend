@@ -1,6 +1,6 @@
 import { FC, useState, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 import Button from "../Button";
 
@@ -23,7 +23,6 @@ const CardBtn: FC<CardBtnProps> = ({ collection, nft, cardType }) => {
     if (cardType === "Collection" && collection) {
       return {
         name: collection.name || null,
-        description: collection.description || null,
         symbol: collection.symbol || null,
         image: collection.image || null,
       };
@@ -32,7 +31,6 @@ const CardBtn: FC<CardBtnProps> = ({ collection, nft, cardType }) => {
     if (cardType === "Auction" && nft) {
       return {
         name: nft.name || null,
-        description: nft.description || null,
         image: nft.image || null,
       };
     }
@@ -67,16 +65,16 @@ const CardBtn: FC<CardBtnProps> = ({ collection, nft, cardType }) => {
           transition={{ duration: 0.3, ease: "easeInOut" }}
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: "auto", opacity: 1 }}
-          className="absolute left-[1px] right-[1px] bottom-[1px] p-4 rounded-b-3xl bg-black/5 backdrop-blur-md z-20 h-auto"
+          className="absolute left-[1px] right-[1px] bottom-[1px] md:p-4 rounded-b-3xl bg-black/5 backdrop-blur-md z-20 h-auto"
         >
           {cardData.name && (
-            <h3 className="text-white font-semibold text-md">
+            <h3 className="text-white font-semibold text-md md:p-0 px-3 py-2">
               {cardData.name}
             </h3>
           )}
-          {cardData.description && (
+          {cardData.symbol && (
             <p className="text-white text-sm mt-2 md:block hidden">
-              {cardData.description}
+              {cardData.symbol}
             </p>
           )}
           <div
@@ -96,11 +94,6 @@ const CardBtn: FC<CardBtnProps> = ({ collection, nft, cardType }) => {
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                 >
                   <div className="mt-4">
-                    {cardData.symbol && (
-                      <p className="text-white text-sm font-bold">
-                        {cardData.symbol}
-                      </p>
-                    )}
                     <div className="flex items-center justify-center mt-4">
                       <Button
                         label={`Explore ${cardType}`}

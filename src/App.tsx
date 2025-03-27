@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom"; // Import BrowserRouter
+import { Routes, Route } from "react-router-dom"; // Import BrowserRouter
 import "./App.css";
 import Container from "./components/layouts/Container";
 import { createAppKit } from "@reown/appkit/react";
@@ -11,42 +11,40 @@ import CreateInCollection from "./pages/CreateNFT/InCollection";
 import CollectionView from "./pages/CollectionView/CollectionView";
 import AuctionView from "./pages/AutionView";
 
-// 1. Get projectId
-const projectId = "2107c00a7b77ee5371a8e43b5c13a4e6";
+import { ContractProvider } from "./context/ContractContext";
 
-// 2. Create a metadata object - optional
-const metadata = {
-  name: "Charlie Unicorn AI presale website",
-  description: "Charlie Unicorn AI presale website",
-  url: "https://charlietheunicoin.shop/", // origin must match your domain & subdomain
-  icons: ["/public/logo.png"],
-};
+import { RainbowKitProvider, darkTheme } from "@rainbow-me/rainbowkit";
+import { WagmiProvider } from "wagmi";
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import "@rainbow-me/rainbowkit/styles.css";
 
-// 3. Create an AppKit instance
-// createAppKit({
-//   adapters: [new EthersAdapter()],
-//   networks: [bsc, mainnet, bscTestnet],
-//   metadata,
-//   projectId,
-//   features: {
-//     analytics: false,
-//     socials: false,
-//     email: false,
-//   },
-// });
+import { config } from "./config/wagmiConfig";
+
+const queryClient = new QueryClient();
 
 function App() {
   return (
-    <Container>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/create-single" element={<SingleNFT />} />
-        <Route path="/create-in-collection" element={<CreateInCollection />} />
-        <Route path="/collection-view" element={<CollectionView />} />
-        <Route path="/auction-view" element={<AuctionView />} />
-      </Routes>
-    </Container>
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <RainbowKitProvider modalSize="compact" theme={darkTheme()}>
+          <ContractProvider>
+            <Container>
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/create-single" element={<SingleNFT />} />
+                <Route
+                  path="/create-in-collection"
+                  element={<CreateInCollection />}
+                />
+                <Route path="/collection-view" element={<CollectionView />} />
+                <Route path="/auction-view" element={<AuctionView />} />
+              </Routes>
+            </Container>
+          </ContractProvider>
+        </RainbowKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }
 

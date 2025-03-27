@@ -17,39 +17,35 @@ const ManipulateSlider = ({ itemList }: { itemList: ReactNode[] }) => {
       <Swiper
         slidesPerView={3.5}
         spaceBetween={30}
-        // navigation={true}
-        navigation={{
-          nextEl: ".swiper-button-next",
-          prevEl: ".swiper-button-prev",
-        }}
+        navigation={true}
         modules={[Navigation]}
         centeredSlides={true}
         loop={true}
         className="mySwiper"
         // Responsive breakpoints
-        breakpoints= {{
+        breakpoints={{
           // when window width is >= 360px
           360: {
-            slidesPerView: 1
+            slidesPerView: 1,
           },
           // when window width is >= 576px
           640: {
             slidesPerView: 1.3,
-            spaceBetween: 10
+            spaceBetween: 10,
           },
           // when window width is >= 768px
           768: {
             slidesPerView: 2,
-            spaceBetween: 40
+            spaceBetween: 40,
           },
           // when window width is >= 1025px
           1025: {
-            slidesPerView: 2.8
+            slidesPerView: 2.8,
           },
           // when window width is >= 1280px
           1280: {
-            slidesPerView: 3.5
-          }
+            slidesPerView: 3.5,
+          },
         }}
       >
         {itemList.map((item, index) => (

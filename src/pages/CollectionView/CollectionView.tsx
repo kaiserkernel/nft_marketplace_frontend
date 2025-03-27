@@ -209,7 +209,9 @@ const CollectionView = () => {
         value: _price,
       });
 
-      const log = await tx.wait();
+      await tx.wait();
+
+      await handleSavebuyNFTDB(walletAddress, tokenId, _price);
       // log.logs[0].address -> contractAddress
       // log.from -> owner address
       notify("Buy NFT successfully", "success");
@@ -239,17 +241,17 @@ const CollectionView = () => {
     setCollectionContract(contractInstance);
 
     // const _wsProvider = new ethers.WebSocketProvider(WS_RPC_URL);
-    const _wsContractInstance = new ethers.Contract(
-      contractAddress,
-      ContractCollectionABI,
-      wsProvider
-    );
-    // setWsCollectionContract(_wsContractInstance);
-    _wsContractInstance.on("NFTSold", handleSavebuyNFTDB);
+    // const _wsContractInstance = new ethers.Contract(
+    //   contractAddress,
+    //   ContractCollectionABI,
+    //   wsProvider
+    // );
+    // // setWsCollectionContract(_wsContractInstance);
+    // _wsContractInstance.on("NFTSold", handleSavebuyNFTDB);
 
-    return () => {
-      _wsContractInstance.off("NFTSold", handleSavebuyNFTDB);
-    };
+    // return () => {
+    //   _wsContractInstance.off("NFTSold", handleSavebuyNFTDB);
+    // };
   }, [walletAddress, wsProvider, signer, ContractCollectionABI]);
 
   const PriceRangeSearchBar: React.FC = () => (
@@ -305,7 +307,7 @@ const CollectionView = () => {
 
   return (
     <div className="w-full md:mb-10 mb-4">
-      <ToastContainer toastStyle={{ backgroundColor: "black" }} />
+      <ToastContainer theme="dark" />
       {collection && (
         <div className="relative w-full md:h-[75vh] h-[40vh]">
           <img
@@ -414,7 +416,7 @@ const CollectionView = () => {
             isShowSearchPanel ? "xl:col-span-8 md:col-span-7" : "col-span-10"
           } col-span-10 rounded-xl`}
         >
-          <div className="p-4 flex md:gap-4 gap-8 flex-wrap">
+          <div className="md:p-4 flex gap-x-5 md:gap-y-4 gap-y-6 flex-wrap">
             {filteredNfts &&
               filteredNfts.map((nft: NFTProps, idx) => (
                 <NFTViewBtn

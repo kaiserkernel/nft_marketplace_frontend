@@ -18,5 +18,15 @@ export const TransactionErrorhandle = (error: any) => {
     errorMessage = error.message;
   }
 
+  // Detect insufficient balance errors
+  if (
+    error.code === "CALL_EXCEPTION" &&
+    error.reason === null &&
+    error.data === null
+  ) {
+    errorMessage =
+      "Insufficient balance to place this bid. Please check your wallet funds.";
+  }
+
   notify(errorMessage, "error");
 };

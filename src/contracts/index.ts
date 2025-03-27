@@ -1,6 +1,11 @@
 // NFT Factory contract ABI
 export const ContractFactoryABI = [
     {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
       "anonymous": false,
       "inputs": [
         {
@@ -71,6 +76,11 @@ export const ContractFactoryABI = [
           "internalType": "string",
           "name": "metadataURI",
           "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "deployerRoyalty",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -129,6 +139,11 @@ export const ContractFactoryABI = [
               "internalType": "string",
               "name": "metadataURI",
               "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "deployerRoyalty",
+              "type": "uint256"
             }
           ],
           "internalType": "struct NFTFactory.CollectionInfo[]",
@@ -150,6 +165,19 @@ export const ContractFactoryABI = [
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "royalty",
+          "type": "uint256"
+        }
+      ],
+      "name": "setDeployerRoyalty",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     }
   ]
@@ -177,6 +205,16 @@ export const ContractCollectionABI = [
           "internalType": "address",
           "name": "creator",
           "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_deployerAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_deployerRoyalty",
+          "type": "uint256"
         }
       ],
       "stateMutability": "nonpayable",
@@ -659,7 +697,18 @@ export const ContractCollectionABI = [
         }
       ],
       "name": "endAuction",
-      "outputs": [],
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },

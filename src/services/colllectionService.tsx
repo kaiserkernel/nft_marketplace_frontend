@@ -1,5 +1,6 @@
 import axios, { isAxiosError } from "axios";
 import { notify } from "../components/common/Notify";
+import { axiosInstance } from "../config/axios";
 
 interface CollectionData {
   name: string;
@@ -11,7 +12,7 @@ interface CollectionData {
 
 const createCollectionDB = async (_collectionData: CollectionData) => {
   try {
-    const response = await axios.post(
+    const response = await axiosInstance.post(
       "/api/collection/create",
       _collectionData,
       {
@@ -30,7 +31,7 @@ const createCollectionDB = async (_collectionData: CollectionData) => {
 
 const fetchOwnerCollection = async (owner: string) => {
   try {
-    const response = await axios.post(
+    const response = await axiosInstance.post(
       "/api/collection/owner",
       { owner },
       {
@@ -49,7 +50,7 @@ const fetchOwnerCollection = async (owner: string) => {
 
 const fetchAllCollection = async () => {
   try {
-    const response = await axios.post("/api/collection/", {
+    const response = await axiosInstance.post("/api/collection/", {
       headers: { "Content-Type": "application/json" },
     });
     return response.data;

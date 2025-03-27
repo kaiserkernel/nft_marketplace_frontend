@@ -36,6 +36,8 @@ const AuctionView: React.FC = () => {
   const [openBidModal, setOpenBidModal] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [endAuctionLoading, setEndAuctionLoading] = useState<boolean>(false);
+  const [endAuctionBtnVisible, setEndAuctionBtnVisible] =
+    useState<boolean>(true);
 
   const { signer, wsProvider } = useContract();
   const { address, chain } = useAccount();
@@ -71,25 +73,28 @@ const AuctionView: React.FC = () => {
     }
 
     setIsProcessing(true);
-    const _realPrice = FormatToWeiCurrency(bidPrice);
+    const _price = FormatToWeiCurrency(bidPrice);
     try {
       const gasEstimate = await contractInstance.placeBid.estimateGas(
         nft.tokenId,
         currentCurrency,
         {
-          value: _realPrice,
+          value: _price,
         }
       );
 
       // Mint the NFT on the blockchain
       const tx = await contractInstance.placeBid(nft.tokenId, currentCurrency, {
         gasLimit: gasEstimate,
-        value: _realPrice,
+        value: _price,
       });
 
-      const log = await tx.wait();
+      await tx.wait();
       // log.logs[0].address -> contractAddress
       // log.from -> owner address
+      const tokenId = BigInt(nft.tokenId);
+      await handleBidNFTDB(address as string, tokenId, _price);
+
       notify("Bid NFT successfully", "success");
       handleCloseBidNftModal();
     } catch (error: any) {
@@ -146,7 +151,24 @@ const AuctionView: React.FC = () => {
         gasLimit: gasEstimate,
       });
 
-      const log = await tx.wait();
+      const { logs } = await tx.wait();
+
+      let winner: string;
+      let _tokenId: bigint;
+
+      if (nftData.bidHistory && nftData.bidHistory.length > 0) {
+        winner = logs[0].args[1];
+        _tokenId = logs[0].args[2];
+      } else {
+        winner = logs[0].args[0];
+        _tokenId = logs[0].args[1];
+      }
+
+      const winningBid = FormatToWeiCurrency(topBidPrice ?? 0);
+
+      await handleAuctionEndedDB(winner, _tokenId, winningBid);
+      setEndAuctionBtnVisible(false);
+
       notify("Auction ended successfully", "success");
     } catch (error: any) {
       TransactionErrorhandle(error);
@@ -197,26 +219,26 @@ const AuctionView: React.FC = () => {
     );
     setContractInstance(contractInstance);
 
-    if (wsInstance) {
-      wsInstance.off("NewBidPlaced", handleBidNFTDB);
-      wsInstance.off("AuctionEnded", handleAuctionEndedDB);
-    }
+    // if (wsInstance) {
+    //   wsInstance.off("NewBidPlaced", handleBidNFTDB);
+    //   wsInstance.off("AuctionEnded", handleAuctionEndedDB);
+    // }
 
-    wsInstance = new ethers.Contract(
-      nftData.collection.contractAddress,
-      ContractCollectionABI,
-      wsProvider
-    );
+    // wsInstance = new ethers.Contract(
+    //   nftData.collection.contractAddress,
+    //   ContractCollectionABI,
+    //   wsProvider
+    // );
 
-    wsInstance.on("NewBidPlaced", handleBidNFTDB);
-    wsInstance.on("AuctionEnded", handleAuctionEndedDB);
+    // wsInstance.on("NewBidPlaced", handleBidNFTDB);
+    // wsInstance.on("AuctionEnded", handleAuctionEndedDB);
 
-    return () => {
-      if (wsInstance) {
-        wsInstance.off("NewBidPlaced", handleBidNFTDB);
-        wsInstance.off("AuctionEnded", handleAuctionEndedDB);
-      }
-    };
+    // return () => {
+    //   if (wsInstance) {
+    //     wsInstance.off("NewBidPlaced", handleBidNFTDB);
+    //     wsInstance.off("AuctionEnded", handleAuctionEndedDB);
+    //   }
+    // };
   }, [
     wsProvider,
     signer,
@@ -242,7 +264,7 @@ const AuctionView: React.FC = () => {
 
   return (
     <>
-      <ToastContainer toastStyle={{ backgroundColor: "black" }} />
+      <ToastContainer theme="dark" />
       <div className="w-full grid md:grid-cols-2 grid-cols-1 mb-8 md:mb-16">
         <div className="md:mr-8">
           {!nftData.image ? (
@@ -264,7 +286,7 @@ const AuctionView: React.FC = () => {
               {nftData.name} #{nftData.tokenId}
             </h1>
             <div className="p-2">
-              {nftData.owner === address && (
+              {nftData.owner === address && endAuctionBtnVisible && (
                 <Button
                   label="End Auction"
                   type="blue"

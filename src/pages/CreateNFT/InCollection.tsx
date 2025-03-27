@@ -64,7 +64,7 @@ const CreateInCollection = () => {
   const walletAddress = address as string;
   const [collectionContract, setCollectionContract] =
     useState<ethers.Contract | null>(null);
-  let wsCollectionContract: ethers.Contract | null = null;
+  // let wsCollectionContract: ethers.Contract | null = null;
 
   // Form validation check for required fields
   const validatorForm = () => {
@@ -189,10 +189,19 @@ const CreateInCollection = () => {
         }
       );
 
-      const log = await tx.wait();
-      // log.logs[0].address -> contractAddress
-      // log.from -> owner address
-      // await handleMintNFTDB(walletAddress, )
+      const { logs } = await tx.wait();
+      const tokenIdBigInt = logs[0].args[2]; // Extract token ID (BigInt)
+      const tokenId = Number(tokenIdBigInt); // Convert BigInt to a normal number
+
+      await handleMintNFTDB(
+        walletAddress,
+        tokenId,
+        metadataURI,
+        royaltyNFT,
+        confirmedCollectionAddress,
+        currency
+      );
+
       notify("NFT minted successfully", "success");
 
       // init form
@@ -243,21 +252,21 @@ const CreateInCollection = () => {
     );
     setCollectionContract(contractInstance);
 
-    if (wsCollectionContract)
-      wsCollectionContract.off("NFTMinted", handleMintNFTDB);
+    // if (wsCollectionContract)
+    //   wsCollectionContract.off("NFTMinted", handleMintNFTDB);
 
-    wsCollectionContract = new ethers.Contract(
-      confirmedCollectionAddress,
-      ContractCollectionABI,
-      wsProvider
-    );
+    // wsCollectionContract = new ethers.Contract(
+    //   confirmedCollectionAddress,
+    //   ContractCollectionABI,
+    //   wsProvider
+    // );
 
-    wsCollectionContract.on("NFTMinted", handleMintNFTDB);
+    // wsCollectionContract.on("NFTMinted", handleMintNFTDB);
 
-    return () => {
-      if (wsCollectionContract)
-        wsCollectionContract.off("NFTMinted", handleMintNFTDB);
-    };
+    // return () => {
+    //   if (wsCollectionContract)
+    //     wsCollectionContract.off("NFTMinted", handleMintNFTDB);
+    // };
   }, [confirmedCollectionAddress, wsProvider, signer, ContractCollectionABI]);
 
   // Fetch user's collections when wallet address changes
@@ -292,7 +301,7 @@ const CreateInCollection = () => {
 
   return (
     <div className="mb-8">
-      <ToastContainer toastStyle={{ backgroundColor: "black" }} />
+      <ToastContainer theme="dark" />
       <div className="w-full grid md:grid-cols-2 grid-cols-1 md:gap-10 gap-4 md:pb-0">
         <div className="md:hidden block">
           <h2 className="text-white lg:text-2xl text-xl font-semibold">

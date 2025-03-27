@@ -1,5 +1,15 @@
 import axios from 'axios'
 
-axios.defaults.baseURL = process.env.REACT_APP_URL;
+export const axiosInstance = axios.create({
+  baseURL: process.env.REACT_APP_URL || "",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
-axios.defaults.headers.post['Content-Type'] = 'application/json';
+export const axiosFileInstance = axios.create({
+  baseURL: process.env.REACT_APP_URL || "",
+  headers: {
+    "Content-Type": "multipart/form-data",
+  },
+});;
